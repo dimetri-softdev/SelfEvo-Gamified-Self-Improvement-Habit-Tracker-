@@ -5,6 +5,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.example.selfevo.data.local.SelfEvoDatabase
 import com.example.selfevo.data.local.entity.HabitEntity
 import com.example.selfevo.data.model.PlayerCard
@@ -16,12 +21,14 @@ import com.example.selfevo.data.remote.dto.LoginRequest
 import com.example.selfevo.data.remote.dto.NetworkHabitDto
 import com.example.selfevo.data.remote.dto.NetworkPlayerCardDto
 import com.example.selfevo.data.repository.HabitRepository
+import com.example.selfevo.data.sync.SyncWorker
 import com.example.selfevo.ui.dashboard.DashboardScreen
 import com.example.selfevo.ui.dashboard.DashboardViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import retrofit2.Response
+import java.util.concurrent.TimeUnit
 
 class MainActivity : ComponentActivity() {
 
@@ -83,6 +90,22 @@ class MainActivity : ComponentActivity() {
         val viewModel = ViewModelProvider(this, viewModelFactory)[DashboardViewModel::class.java]
 
         // 5. Build Content View via Jetpack Compose
+        // 5. Setup Constraint-Aware Periodic WorkManager Synchronization
+        val syncConstraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+
+        val periodicSyncRequest = PeriodicWorkRequestBuilder<SyncWorker>(15, TimeUnit.MINUTES)
+            .setConstraints(syncConstraints)
+            .build()
+
+        WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork(
+            "SelfEvoBackgroundSyncWork",
+            ExistingPeriodicWorkPolicy.KEEP,
+            periodicSyncRequest
+        )
+
+        // 6. Build Content View via Jetpack Compose
         setContent {
             DashboardScreen(viewModel = viewModel)
         }
