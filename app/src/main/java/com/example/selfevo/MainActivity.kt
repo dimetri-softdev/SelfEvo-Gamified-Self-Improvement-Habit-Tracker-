@@ -1,20 +1,90 @@
 package com.example.selfevo
 
 import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import com.example.selfevo.data.local.SelfEvoDatabase
+import com.example.selfevo.data.local.entity.HabitEntity
+import com.example.selfevo.data.model.PlayerCard
+import com.example.selfevo.data.remote.SelfEvoApiService
+import com.example.selfevo.data.remote.dto.AuthResponse
+import com.example.selfevo.data.remote.dto.HabitLogRequest
+import com.example.selfevo.data.remote.dto.HabitLogResponse
+import com.example.selfevo.data.remote.dto.LoginRequest
+import com.example.selfevo.data.remote.dto.NetworkHabitDto
+import com.example.selfevo.data.remote.dto.NetworkPlayerCardDto
+import com.example.selfevo.data.repository.HabitRepository
+import com.example.selfevo.ui.dashboard.DashboardScreen
+import com.example.selfevo.ui.dashboard.DashboardViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import retrofit2.Response
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContentView(R.layout.activity_main)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
+
+        // 1. Initialize local database DAOs
+        val database = SelfEvoDatabase.getDatabase(applicationContext)
+        val habitDao = database.habitDao()
+        val playerCardDao = database.playerCardDao()
+        val syncQueueDao = database.syncQueueDao()
+
+        // 2. SelfEvo API Placeholder Client Integration
+        val apiServicePlaceholder = object : SelfEvoApiService {
+            override suspend fun login(request: LoginRequest): Response<AuthResponse> {
+                return Response.success(AuthResponse("dummy-jwt-token", request.email, "Player"))
+            }
+
+            override suspend fun getHabits(): Response<List<NetworkHabitDto>> {
+                return Response.success(emptyList())
+            }
+
+            override suspend fun logHabit(request: HabitLogRequest): Response<HabitLogResponse> {
+                return Response.success(HabitLogResponse(true, "Logged successfully", null))
+            }
+
+            override suspend fun getPlayerCard(): Response<NetworkPlayerCardDto> {
+                return Response.success(NetworkPlayerCardDto("default_user", "Pro Tracker", 50, 50, 50, 50, 50, 50))
+            }
+        }
+
+        // 3. Construct unified data repository
+        val repository = HabitRepository(habitDao, playerCardDao, syncQueueDao, apiServicePlaceholder)
+
+        // Pre-populate dummy starter habits locally if the database is empty for easy testing
+        CoroutineScope(Dispatchers.IO).launch {
+            if (playerCardDao.getPlayerCard() == null) {
+                playerCardDao.insertPlayerCard(PlayerCard(playerName = "Dimetri Peters"))
+            }
+            if (habitDao.getAllHabits().isEmpty()) {
+                habitDao.insertHabits(
+                    listOf(
+                        HabitEntity("h1", "Morning Gym Workout", "Boost physical strength core stats", "PHYSICAL", false),
+                        HabitEntity("h2", "LeetCode Algorithmic Problem", "Increase tactical passing / skill level", "PASSING", false),
+                        HabitEntity("h3", "Sprint Interval Training", "Max out player pace speed limits", "PACE", false),
+                        HabitEntity("h4", "Precision Aim Practice", "Refine sharp focus and shooting accuracy", "SHOOTING", false)
+                    )
+                )
+            }
+        }
+
+        // 4. Construct ViewModel via inline provider factory
+        val viewModelFactory = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return DashboardViewModel(repository) as T
+            }
+        }
+        val viewModel = ViewModelProvider(this, viewModelFactory)[DashboardViewModel::class.java]
+
+        // 5. Build Content View via Jetpack Compose
+        setContent {
+            DashboardScreen(viewModel = viewModel)
         }
     }
 }
