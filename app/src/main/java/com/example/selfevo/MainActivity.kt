@@ -89,6 +89,7 @@ class MainActivity : ComponentActivity() {
         }
         val viewModel = ViewModelProvider(this, viewModelFactory)[DashboardViewModel::class.java]
 
+        // 5. Build Content View via Jetpack Compose
         // 5. Setup Constraint-Aware Periodic WorkManager Synchronization
         val syncConstraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
