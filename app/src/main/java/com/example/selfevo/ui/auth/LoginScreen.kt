@@ -1,145 +1,205 @@
 package com.example.selfevo.ui.auth
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.selfevo.R
-import com.example.selfevo.ui.component.SelfEvoButton
-import com.example.selfevo.ui.component.SelfEvoLogo
-import com.example.selfevo.ui.component.SelfEvoTextField
-import com.example.selfevo.ui.theme.Black
-import com.example.selfevo.ui.theme.Gold
-import com.example.selfevo.ui.theme.TextSecondary
-import com.example.selfevo.ui.theme.DarkGrey
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
-    onLoginSuccess: () -> Unit
+    onLoginSuccess: () -> Unit,
+    onSignUpClick: () -> Unit
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Black)
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+    val goldGradient = Brush.horizontalGradient(
+        colors = listOf(Color(0xFFFFD700), Color(0xFFFFA500))
+    )
+
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = Color.Black // AMOLED Black
     ) {
-        Spacer(modifier = Modifier.height(48.dp))
-
-        SelfEvoLogo(size = 120)
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Text(
-            text = "SELFEVO",
-            fontSize = 32.sp,
-            fontWeight = FontWeight.Black,
-            color = Gold,
-            letterSpacing = 2.sp
-        )
-
-        Text(
-            text = "EVOLVE YOUR DAILY STATS",
-            fontSize = 12.sp,
-            color = TextSecondary,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 1.sp
-        )
-
-        Spacer(modifier = Modifier.height(40.dp))
-
-        // Tabs placeholder
-        Row(
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(48.dp)
-                .background(DarkGrey, RoundedCornerShape(12.dp))
+                .fillMaxSize()
+                .padding(horizontal = 32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Box(
+            // High-fidelity Logo
+            Image(
+                painter = painterResource(id = R.drawable.app_logo),
+                contentDescription = "SelfEvo Logo",
                 modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-                    .background(Gold, androidx.compose.foundation.shape.RoundedCornerShape(12.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(stringResource(R.string.login_title), fontWeight = FontWeight.Bold, color = Black)
-            }
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(stringResource(R.string.signup_title), fontWeight = FontWeight.Bold, color = TextSecondary)
-            }
-        }
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        SelfEvoTextField(
-            value = email,
-            onValueChange = { email = it },
-            label = stringResource(R.string.email_label),
-            placeholder = "player@selfevo.app"
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        SelfEvoTextField(
-            value = password,
-            onValueChange = { password = it },
-            label = stringResource(R.string.password_label),
-            placeholder = "••••••••",
-            isPassword = true
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        SelfEvoButton(
-            text = stringResource(R.string.login_title),
-            onClick = onLoginSuccess
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            HorizontalDivider(modifier = Modifier.weight(1f), color = Color.DarkGray)
-            Text(
-                text = stringResource(R.string.or),
-                color = TextSecondary,
-                modifier = Modifier.padding(horizontal = 8.dp),
-                fontSize = 12.sp
+                    .size(160.dp)
+                    .padding(bottom = 16.dp),
+                contentScale = ContentScale.Fit
             )
-            HorizontalDivider(modifier = Modifier.weight(1f), color = Color.DarkGray)
-        }
 
-        Spacer(modifier = Modifier.height(24.dp))
+            Text(
+                text = "SELFEVO",
+                fontSize = 42.sp,
+                fontWeight = FontWeight.Black,
+                color = Color(0xFFFFD700),
+                letterSpacing = 4.sp
+            )
 
-        SelfEvoButton(
-            text = stringResource(R.string.google_sign_in),
-            onClick = {},
-            containerColor = DarkGrey,
-            contentColor = Color.White
-        )
+            Text(
+                text = "EVOLVE YOUR DAILY STATS",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White.copy(alpha = 0.7f),
+                modifier = Modifier.padding(bottom = 48.dp)
+            )
 
-        Spacer(modifier = Modifier.weight(1f))
+            // Login/Signup Tab switcher (Simplified UI version)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .background(Color(0xFF1A1A1A), RoundedCornerShape(12.dp))
+                    .padding(4.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .background(Color(0xFFFFD700), RoundedCornerShape(8.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("LOGIN", color = Color.Black, fontWeight = FontWeight.Bold)
+                }
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .clickable { onSignUpClick() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("SIGN UP", color = Color.Gray, fontWeight = FontWeight.Bold)
+                }
+            }
 
-        Row {
-            Text(stringResource(R.string.dont_have_account), color = TextSecondary, fontSize = 12.sp)
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(stringResource(R.string.signup_title), color = Gold, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Email Field
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text("EMAIL", color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Spacer(modifier = Modifier.height(8.dp))
+                TextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("player@selfevo.app", color = Color.DarkGray) },
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color(0xFF1A1A1A),
+                        unfocusedContainerColor = Color(0xFF1A1A1A),
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Password Field
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text("PASSWORD", color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Spacer(modifier = Modifier.height(8.dp))
+                TextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("••••••••", color = Color.DarkGray) },
+                    visualTransformation = PasswordVisualTransformation(),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color(0xFF1A1A1A),
+                        unfocusedContainerColor = Color(0xFF1A1A1A),
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(48.dp))
+
+            // Gradient Login Button
+            Button(
+                onClick = onLoginSuccess,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(64.dp)
+                    .background(goldGradient, RoundedCornerShape(12.dp)),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text("LOGIN", fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = Color.Black)
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "or",
+                color = Color.Gray,
+                fontSize = 14.sp
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Google SSO
+            OutlinedButton(
+                onClick = {},
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
+                border = BorderStroke(1.dp, Color.DarkGray)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    // Placeholder for G logo
+                    Text("G ", color = Color.Red, fontWeight = FontWeight.Black)
+                    Text("Sign in with Google", fontWeight = FontWeight.Bold)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Row {
+                Text("Don't have an account? ", color = Color.Gray, fontSize = 14.sp)
+                Text(
+                    "Sign Up",
+                    color = Color(0xFFFFD700),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.clickable { onSignUpClick() }
+                )
+            }
         }
     }
 }
