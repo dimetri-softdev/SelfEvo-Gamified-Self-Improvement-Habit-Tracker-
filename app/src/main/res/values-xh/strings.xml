@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">SelfEvo</string>
+    <string name="dashboard_title">SelfEvo Dashboard</string>
+    <string name="news_title">Iindaba zeSelfEvo</string>
+    <string name="admin_title">Ideshibhodi yoMlawuli</string>
+    <string name="habit_checklist">Uluhlu lokujonga ukukhula kwemihla ngemihla</string>
+    <string name="walkout_evolved">IKARDI YAKHO IKHULE!</string>
+    <string name="continue_journey">Qhubeka nohambo</string>
+    <string name="no_habits">Azikabikho iihabithi ezilandelwayo. Zidale ngesicwangciso sakho okanye ungqamaniso lwe-api backend!</string>
+</resources>
