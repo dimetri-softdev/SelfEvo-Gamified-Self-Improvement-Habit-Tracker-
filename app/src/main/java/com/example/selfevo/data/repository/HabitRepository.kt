@@ -54,25 +54,14 @@ class HabitRepository(
 
                 if (localCard == null) {
                     val card = PlayerCard(
-<<<<<<< Updated upstream
-                        id = dto.id.ifBlank { userId },
-                        playerName = dto.playerName,
-                        pace = dto.pace,
-                        shooting = dto.shooting,
-                        passing = dto.passing,
-                        dribbling = dto.dribbling,
-                        defending = dto.defending,
-                        physical = dto.physical
-=======
                         id = remoteDto.id.ifBlank { userId },
                         playerName = remoteDto.playerName,
                         pace = remoteDto.pace,
                         shooting = remoteDto.shooting,
                         passing = remoteDto.passing,
-                        skill = remoteDto.dribbling,
+                        dribbling = remoteDto.dribbling,
                         defending = remoteDto.defending,
                         physical = remoteDto.physical
->>>>>>> Stashed changes
                     )
                     playerCardDao.insertPlayerCard(card)
                 } else {
@@ -81,7 +70,7 @@ class HabitRepository(
                         pace = maxOf(localCard.pace, remoteDto.pace),
                         shooting = maxOf(localCard.shooting, remoteDto.shooting),
                         passing = maxOf(localCard.passing, remoteDto.passing),
-                        skill = maxOf(localCard.skill, remoteDto.dribbling),
+                        dribbling = maxOf(localCard.dribbling, remoteDto.dribbling),
                         defending = maxOf(localCard.defending, remoteDto.defending),
                         physical = maxOf(localCard.physical, remoteDto.physical)
                     )
@@ -92,7 +81,7 @@ class HabitRepository(
                     if (resolvedCard.pace > remoteDto.pace || 
                         resolvedCard.shooting > remoteDto.shooting ||
                         resolvedCard.passing > remoteDto.passing ||
-                        resolvedCard.skill > remoteDto.dribbling ||
+                        resolvedCard.dribbling > remoteDto.dribbling ||
                         resolvedCard.defending > remoteDto.defending ||
                         resolvedCard.physical > remoteDto.physical) {
                         
@@ -103,7 +92,7 @@ class HabitRepository(
                                 pace = resolvedCard.pace,
                                 shooting = resolvedCard.shooting,
                                 passing = resolvedCard.passing,
-                                dribbling = resolvedCard.skill,
+                                dribbling = resolvedCard.dribbling,
                                 defending = resolvedCard.defending,
                                 physical = resolvedCard.physical
                             )
@@ -130,7 +119,7 @@ class HabitRepository(
             "PACE" -> activeCard.copy(pace = (activeCard.pace + 1).coerceAtMost(99))
             "SHOOTING" -> activeCard.copy(shooting = (activeCard.shooting + 1).coerceAtMost(99))
             "PASSING" -> activeCard.copy(passing = (activeCard.passing + 1).coerceAtMost(99))
-            "DRIBBLING" -> activeCard.copy(dribbling = (activeCard.dribbling + 1).coerceAtMost(99))
+            "SKILL", "DRIBBLING" -> activeCard.copy(dribbling = (activeCard.dribbling + 1).coerceAtMost(99))
             "DEFENDING" -> activeCard.copy(defending = (activeCard.defending + 1).coerceAtMost(99))
             "PHYSICAL" -> activeCard.copy(physical = (activeCard.physical + 1).coerceAtMost(99))
             else -> activeCard
