@@ -1,28 +1,25 @@
 package com.example.selfevo.ui.component
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.selfevo.data.local.entity.HabitEntity
+import com.example.selfevo.ui.theme.*
 
 @Composable
 fun HabitItemRow(
@@ -30,62 +27,88 @@ fun HabitItemRow(
     onCompleteClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val attributeColor = when (habit.attributeType.uppercase()) {
+        "PACE" -> Cyan
+        "PHYSICAL" -> Gold
+        "SKILL" -> Color(0xFFE91E63)
+        "DEFENDING" -> Color(0xFF4CAF50)
+        else -> Gold
+    }
+
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
+            .padding(vertical = 6.dp)
+            .clickable(enabled = !habit.isCompletedToday) { onCompleteClick() },
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (habit.isCompletedToday) Color(0xFFE8F5E9) else Color.White
+            containerColor = SurfaceVariant
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        border = if (habit.isCompletedToday) null else null // Border if needed
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
+                .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = habit.title,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1C1C1C)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = habit.attributeType.uppercase(),
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White,
-                        modifier = Modifier
-                            .background(Color(0xFF1E88E5), RoundedCornerShape(4.dp))
-                            .padding(horizontal = 6.dp, vertical = 2.dp)
+            // Checkbox
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .clip(CircleShape)
+                    .background(if (habit.isCompletedToday) Gold else Color.Transparent)
+                    .border(2.dp, if (habit.isCompletedToday) Gold else Color.DarkGray, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                if (habit.isCompletedToday) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = null,
+                        tint = Black,
+                        modifier = Modifier.size(20.dp)
                     )
                 }
-                Text(
-                    text = habit.description,
-                    fontSize = 14.sp,
-                    color = Color.Gray,
-                    modifier = Modifier.padding(top = 4.dp)
-                )
             }
 
-            Button(
-                onClick = onCompleteClick,
-                enabled = !habit.isCompletedToday,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF4CAF50),
-                    disabledContainerColor = Color(0xFF81C784)
-                ),
-                shape = RoundedCornerShape(8.dp)
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = habit.title,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = if (habit.isCompletedToday) TextSecondary else TextPrimary,
+                    textDecoration = if (habit.isCompletedToday) TextDecoration.LineThrough else null
+                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(6.dp)
+                            .clip(CircleShape)
+                            .background(attributeColor)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = habit.attributeType,
+                        fontSize = 12.sp,
+                        color = TextSecondary
+                    )
+                }
+            }
+
+            // Points indicator
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(attributeColor.copy(alpha = 0.2f))
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
             ) {
                 Text(
-                    text = if (habit.isCompletedToday) "Done" else "Log",
+                    text = "+2", // Dummy points
+                    fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = attributeColor
                 )
             }
         }

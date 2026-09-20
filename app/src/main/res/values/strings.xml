@@ -1,3 +1,67 @@
 <resources>
     <string name="app_name">SelfEvo</string>
+    <string name="dashboard_title">SelfEvo Dashboard</string>
+    <string name="news_title">SelfEvo News</string>
+    <string name="admin_title">Admin Dashboard</string>
+    <string name="habit_checklist">Daily Growth Checklist</string>
+    <string name="walkout_evolved">YOUR CARD HAS EVOLVED!</string>
+    <string name="continue_journey">Continue Journey</string>
+    <string name="no_habits">No habits tracked yet. Create them via your plan or api backend sync initialization!</string>
+
+    <!-- Auth -->
+    <string name="login_title">LOGIN</string>
+    <string name="signup_title">SIGN UP</string>
+    <string name="email_label">EMAIL</string>
+    <string name="password_label">PASSWORD</string>
+    <string name="google_sign_in">Sign in with Google</string>
+    <string name="dont_have_account">Don\'t have an account?</string>
+    <string name="or">or</string>
+
+    <!-- Dashboard -->
+    <string name="good_morning">Good morning,</string>
+    <string name="daily_progress">DAILY PROGRESS</string>
+    <string name="todays_habits">TODAY\'S HABITS</string>
+    <string name="in_progress">IN PROGRESS</string>
+    <string name="streak_days">%1$d day</string>
+
+    <!-- Habits -->
+    <string name="new_habit">NEW HABIT</string>
+    <string name="habit_description_sub">Each completed habit upgrades your player card stats.</string>
+    <string name="habit_name_label">HABIT NAME</string>
+    <string name="habit_name_hint">e.g. Morning Run</string>
+    <string name="linked_attribute_label">LINKED ATTRIBUTE</string>
+    <string name="frequency_label">FREQUENCY</string>
+    <string name="reminder_time_label">REMINDER TIME</string>
+    <string name="add_to_selfevo">+ ADD TO SELFEVO</string>
+
+    <!-- Evolution -->
+    <string name="your_journey">YOUR JOURNEY</string>
+    <string name="evolution">EVOLUTION</string>
+    <string name="pathway_tier_progress">PATHWAY &amp; TIER PROGRESS</string>
+    <string name="tier_milestones">TIER MILESTONES</string>
+    <string name="card_preview">CARD PREVIEW</string>
+    <string name="overall_rating">%1$d Overall Rating</string>
+
+    <!-- Settings -->
+    <string name="configure">CONFIGURE</string>
+    <string name="settings">SETTINGS</string>
+    <string name="language_preference">LANGUAGE PREFERENCE</string>
+    <string name="appearance">APPEARANCE</string>
+    <string name="amoled_dark_mode">AMOLED Dark Mode</string>
+    <string name="amoled_dark_mode_sub">Pure pitch black — saves battery</string>
+    <string name="push_notifications">PUSH NOTIFICATIONS</string>
+    <string name="daily_reminders">Daily Reminders</string>
+    <string name="daily_reminders_sub">Get notified at your scheduled times</string>
+    <string name="streak_alerts">Streak Alerts</string>
+    <string name="streak_alerts_sub">Warning when streak is at risk</string>
+    <string name="data_cloud">DATA &amp; CLOUD</string>
+    <string name="sync_data_to_cloud">SYNC DATA TO CLOUD</string>
+    <string name="last_synced">Last synced: %1$s</string>
+    <string name="sign_out">Sign Out</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">HOME</string>
+    <string name="nav_habits">HABITS</string>
+    <string name="nav_evolutions">EVOLUTIONS</string>
+    <string name="nav_settings">SETTINGS</string>
 </resources>
