@@ -48,6 +48,66 @@ class HabitRepository(
     }
 
     suspend fun refreshPlayerCard(userId: String = "default_user") {
+        try {
+            val response = apiService.getPlayerCard()
+            if (response.isSuccessful) {
+                val remoteDto = response.body() ?: return
+                val localCard = playerCardDao.getPlayerCard()
+
+                if (localCard == null) {
+                    val card = PlayerCard(
+                        id = remoteDto.id.ifBlank { userId },
+                        playerName = remoteDto.playerName,
+                        pace = remoteDto.pace,
+                        shooting = remoteDto.shooting,
+                        passing = remoteDto.passing,
+                        dribbling = remoteDto.dribbling,
+                        defending = remoteDto.defending,
+                        physical = remoteDto.physical
+                        id = dto.id.ifBlank { userId },
+                        playerName = dto.playerName,
+                        pace = dto.pace,
+                        shooting = dto.shooting,
+                        passing = dto.passing,
+                        skill = dto.dribbling,
+                        defending = dto.defending,
+                        physical = dto.physical
+                    )
+                    playerCardDao.insertPlayerCard(card)
+                } else {
+                    // Conflict Resolution: Take the highest value for each stat (Progress-based merge)
+                    val resolvedCard = localCard.copy(
+                        pace = maxOf(localCard.pace, remoteDto.pace),
+                        shooting = maxOf(localCard.shooting, remoteDto.shooting),
+                        passing = maxOf(localCard.passing, remoteDto.passing),
+                        dribbling = maxOf(localCard.dribbling, remoteDto.dribbling),
+                        defending = maxOf(localCard.defending, remoteDto.defending),
+                        physical = maxOf(localCard.physical, remoteDto.physical)
+                    )
+                    
+                    playerCardDao.insertPlayerCard(resolvedCard)
+
+                    // If local had higher values, push the resolved card back to server
+                    if (resolvedCard.pace > remoteDto.pace || 
+                        resolvedCard.shooting > remoteDto.shooting ||
+                        resolvedCard.passing > remoteDto.passing ||
+                        resolvedCard.dribbling > remoteDto.dribbling ||
+                        resolvedCard.defending > remoteDto.defending ||
+                        resolvedCard.physical > remoteDto.physical) {
+                        
+                        apiService.syncPlayerCard(
+                            com.example.selfevo.data.remote.dto.NetworkPlayerCardDto(
+                                id = resolvedCard.id,
+                                playerName = resolvedCard.playerName,
+                                pace = resolvedCard.pace,
+                                shooting = resolvedCard.shooting,
+                                passing = resolvedCard.passing,
+                                dribbling = resolvedCard.dribbling,
+                                defending = resolvedCard.defending,
+                                physical = resolvedCard.physical
+                            )
+                        )
+                    }
     try {
         val response = apiService.getPlayerCard()
         if (response.isSuccessful) {
@@ -115,6 +175,30 @@ class HabitRepository(
 
         // 2. Increment active FUT stats locally based on attribute type
         val activeCard = playerCardDao.getPlayerCard() ?: PlayerCard(playerName = "User Player")
+            val updatedCard = when (habit.attributeType.uppercase()) {
+    "PACE" -> activeCard.copy(
+        pace = (activeCard.pace + 1).coerceAtMost(99)
+    )
+    "SHOOTING" -> activeCard.copy(
+        shooting = (activeCard.shooting + 1).coerceAtMost(99)
+    )
+    "PASSING" -> activeCard.copy(
+        passing = (activeCard.passing + 1).coerceAtMost(99)
+    )
+    "DRIBBLING" -> activeCard.copy(
+        dribbling = (activeCard.dribbling + 1).coerceAtMost(99)
+    )
+    "SKILL" -> activeCard.copy(
+        skill = (activeCard.skill + 1).coerceAtMost(99)
+    )
+    "DEFENDING" -> activeCard.copy(
+        defending = (activeCard.defending + 1).coerceAtMost(99)
+    )
+    "PHYSICAL" -> activeCard.copy(
+        physical = (activeCard.physical + 1).coerceAtMost(99)
+    )
+    else -> activeCard
+}
         val updatedCard = when (habit.attributeType.uppercase()) {
             "PACE" -> activeCard.copy(pace = (activeCard.pace + 1).coerceAtMost(99))
             "SHOOTING" -> activeCard.copy(shooting = (activeCard.shooting + 1).coerceAtMost(99))
