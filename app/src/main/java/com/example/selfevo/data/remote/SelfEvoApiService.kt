@@ -26,6 +26,11 @@ interface SelfEvoApiService {
         @Body request: HabitLogRequest
     ): Response<HabitLogResponse>
 
-    @GET("/api/card")
+    @GET("/api/sync/card")
     suspend fun getPlayerCard(): Response<NetworkPlayerCardDto>
+
+    @POST("/api/sync/card")
+    suspend fun syncPlayerCard(
+        @Body card: NetworkPlayerCardDto
+    ): Response<NetworkPlayerCardDto>
 }

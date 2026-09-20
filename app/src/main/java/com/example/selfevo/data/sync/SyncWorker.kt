@@ -40,6 +40,9 @@ class SyncWorker(
 
                 override suspend fun getPlayerCard(): Response<NetworkPlayerCardDto> =
                     Response.success(NetworkPlayerCardDto("default_user", "Pro Tracker", 50, 50, 50, 50, 50, 50))
+
+                override suspend fun syncPlayerCard(card: NetworkPlayerCardDto): Response<NetworkPlayerCardDto> =
+                    Response.success(card)
             }
 
             val repository = HabitRepository(habitDao, playerCardDao, syncQueueDao, apiServicePlaceholder)
