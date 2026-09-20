@@ -125,16 +125,30 @@ class HabitRepository(
 
         // 2. Increment active FUT stats locally based on attribute type
         val activeCard = playerCardDao.getPlayerCard() ?: PlayerCard(playerName = "User Player")
-        val updatedCard = when (habit.attributeType.uppercase()) {
-            "PACE" -> activeCard.copy(pace = (activeCard.pace + 1).coerceAtMost(99))
-            "SHOOTING" -> activeCard.copy(shooting = (activeCard.shooting + 1).coerceAtMost(99))
-            "PASSING" -> activeCard.copy(passing = (activeCard.passing + 1).coerceAtMost(99))
-            "SKILL", "DRIBBLING" -> activeCard.copy(dribbling = (activeCard.dribbling + 1).coerceAtMost(99))
-            "SKILL" -> activeCard.copy(skill = (activeCard.skill + 1).coerceAtMost(99))
-            "DEFENDING" -> activeCard.copy(defending = (activeCard.defending + 1).coerceAtMost(99))
-            "PHYSICAL" -> activeCard.copy(physical = (activeCard.physical + 1).coerceAtMost(99))
-            else -> activeCard
-        }
+            val updatedCard = when (habit.attributeType.uppercase()) {
+    "PACE" -> activeCard.copy(
+        pace = (activeCard.pace + 1).coerceAtMost(99)
+    )
+    "SHOOTING" -> activeCard.copy(
+        shooting = (activeCard.shooting + 1).coerceAtMost(99)
+    )
+    "PASSING" -> activeCard.copy(
+        passing = (activeCard.passing + 1).coerceAtMost(99)
+    )
+    "DRIBBLING" -> activeCard.copy(
+        dribbling = (activeCard.dribbling + 1).coerceAtMost(99)
+    )
+    "SKILL" -> activeCard.copy(
+        skill = (activeCard.skill + 1).coerceAtMost(99)
+    )
+    "DEFENDING" -> activeCard.copy(
+        defending = (activeCard.defending + 1).coerceAtMost(99)
+    )
+    "PHYSICAL" -> activeCard.copy(
+        physical = (activeCard.physical + 1).coerceAtMost(99)
+    )
+    else -> activeCard
+}
         playerCardDao.insertPlayerCard(updatedCard)
 
         // 3. Sync to remote or add to offline queue
