@@ -68,9 +68,9 @@ class HabitRepository(
         }
     }
 
-    suspend fun completeHabit(habitId: String) {
-        val habit = habitDao.getHabitById(habitId) ?: return
-        if (habit.isCompletedToday) return
+    suspend fun completeHabit(habitId: String): PlayerCard? {
+        val habit = habitDao.getHabitById(habitId) ?: return null
+        if (habit.isCompletedToday) return playerCardDao.getPlayerCard()
 
         // 1. Mark as completed locally
         val updatedHabit = habit.copy(isCompletedToday = true)
@@ -100,6 +100,8 @@ class HabitRepository(
             // Network is totally down, safely queue the operation offline
             syncQueueDao.addItemToQueue(SyncQueueEntity(habitId = habitId, operation = "LOG_COMPLETION"))
         }
+
+        return updatedCard
     }
 
     suspend fun syncPendingLogs() {
