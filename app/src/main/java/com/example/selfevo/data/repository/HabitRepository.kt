@@ -34,6 +34,8 @@ class HabitRepository(
                             description = dto.description,
                             attributeType = dto.attributeType,
                             isCompletedToday = dto.isCompletedToday,
+                            frequency = "Daily",
+                            reminderTime = "07:00",
                             syncStatus = "SYNCED"
                         )
                     }
@@ -62,6 +64,14 @@ class HabitRepository(
                         dribbling = remoteDto.dribbling,
                         defending = remoteDto.defending,
                         physical = remoteDto.physical
+                        id = dto.id.ifBlank { userId },
+                        playerName = dto.playerName,
+                        pace = dto.pace,
+                        shooting = dto.shooting,
+                        passing = dto.passing,
+                        skill = dto.dribbling,
+                        defending = dto.defending,
+                        physical = dto.physical
                     )
                     playerCardDao.insertPlayerCard(card)
                 } else {
@@ -120,6 +130,7 @@ class HabitRepository(
             "SHOOTING" -> activeCard.copy(shooting = (activeCard.shooting + 1).coerceAtMost(99))
             "PASSING" -> activeCard.copy(passing = (activeCard.passing + 1).coerceAtMost(99))
             "SKILL", "DRIBBLING" -> activeCard.copy(dribbling = (activeCard.dribbling + 1).coerceAtMost(99))
+            "SKILL" -> activeCard.copy(skill = (activeCard.skill + 1).coerceAtMost(99))
             "DEFENDING" -> activeCard.copy(defending = (activeCard.defending + 1).coerceAtMost(99))
             "PHYSICAL" -> activeCard.copy(physical = (activeCard.physical + 1).coerceAtMost(99))
             else -> activeCard

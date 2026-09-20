@@ -24,6 +24,7 @@ import com.example.selfevo.data.repository.HabitRepository
 import com.example.selfevo.data.sync.SyncWorker
 import com.example.selfevo.ui.dashboard.DashboardScreen
 import com.example.selfevo.ui.dashboard.DashboardViewModel
+import com.example.selfevo.ui.navigation.SelfEvoApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -75,10 +76,10 @@ class MainActivity : ComponentActivity() {
             if (habitDao.getAllHabits().isEmpty()) {
                 habitDao.insertHabits(
                     listOf(
-                        HabitEntity("h1", "Morning Gym Workout", "Boost physical strength core stats", "PHYSICAL", false),
-                        HabitEntity("h2", "LeetCode Algorithmic Problem", "Increase tactical passing / skill level", "PASSING", false),
-                        HabitEntity("h3", "Sprint Interval Training", "Max out player pace speed limits", "PACE", false),
-                        HabitEntity("h4", "Precision Aim Practice", "Refine sharp focus and shooting accuracy", "SHOOTING", false)
+                        HabitEntity("h1", "Morning Gym Workout", "Boost physical strength core stats", "PHYSICAL", false, "Daily", "07:00"),
+                        HabitEntity("h2", "LeetCode Algorithmic Problem", "Increase tactical passing / skill level", "SKILL", false, "Daily", "18:00"),
+                        HabitEntity("h3", "Sprint Interval Training", "Max out player pace speed limits", "PACE", false, "Daily", "08:00"),
+                        HabitEntity("h4", "Precision Aim Practice", "Refine sharp focus and shooting accuracy", "SHOOTING", false, "Daily", "10:00")
                     )
                 )
             }
@@ -111,7 +112,7 @@ class MainActivity : ComponentActivity() {
 
         // 6. Build Content View via Jetpack Compose
         setContent {
-            DashboardScreen(viewModel = viewModel)
+            SelfEvoApp(viewModel = viewModel)
         }
     }
 }
