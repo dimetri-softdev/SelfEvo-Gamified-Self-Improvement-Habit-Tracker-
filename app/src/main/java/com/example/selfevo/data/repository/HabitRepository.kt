@@ -118,17 +118,9 @@ class HabitRepository(
         val updatedHabit = habit.copy(isCompletedToday = true)
         habitDao.updateHabit(updatedHabit)
 
-        // 2. Increment active FUT stats locally based on attribute type
+        // 2. Increment active FUT stats locally based on attribute type (+2 pts per habit)
         val activeCard = playerCardDao.getPlayerCard() ?: PlayerCard(playerName = "User Player")
-        val updatedCard = when (habit.attributeType.uppercase()) {
-            "PACE" -> activeCard.copy(pace = (activeCard.pace + 1).coerceAtMost(99))
-            "SHOOTING" -> activeCard.copy(shooting = (activeCard.shooting + 1).coerceAtMost(99))
-            "PASSING" -> activeCard.copy(passing = (activeCard.passing + 1).coerceAtMost(99))
-            "SKILL", "DRIBBLING" -> activeCard.copy(skill = (activeCard.skill + 1).coerceAtMost(99))
-            "DEFENDING" -> activeCard.copy(defending = (activeCard.defending + 1).coerceAtMost(99))
-            "PHYSICAL" -> activeCard.copy(physical = (activeCard.physical + 1).coerceAtMost(99))
-            else -> activeCard
-        }
+        val updatedCard = activeCard.incrementStat(habit.attributeType)
         playerCardDao.insertPlayerCard(updatedCard)
 
         // 3. Sync to remote or add to offline queue

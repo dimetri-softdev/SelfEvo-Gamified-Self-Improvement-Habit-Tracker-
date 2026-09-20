@@ -73,8 +73,8 @@ class HabitRepositoryTest {
         val resultCard = repository.completeHabit(habitId)
 
         // Assert
-        assertEquals(51, resultCard?.pace)
-        assertEquals(51, playerCardDao.card?.pace)
+        assertEquals(52, resultCard?.pace)
+        assertEquals(52, playerCardDao.card?.pace)
     }
 
     @Test
@@ -88,8 +88,8 @@ class HabitRepositoryTest {
         val resultCard = repository.completeHabit(habitId)
 
         // Assert
-        assertEquals(61, resultCard?.shooting)
-        assertEquals(61, playerCardDao.card?.shooting)
+        assertEquals(62, resultCard?.shooting)
+        assertEquals(62, playerCardDao.card?.shooting)
     }
 
     @Test
