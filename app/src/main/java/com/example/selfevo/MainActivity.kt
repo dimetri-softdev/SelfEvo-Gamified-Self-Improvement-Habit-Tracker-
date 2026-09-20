@@ -58,6 +58,10 @@ class MainActivity : ComponentActivity() {
             override suspend fun getPlayerCard(): Response<NetworkPlayerCardDto> {
                 return Response.success(NetworkPlayerCardDto("default_user", "Pro Tracker", 50, 50, 50, 50, 50, 50))
             }
+
+            override suspend fun syncPlayerCard(card: NetworkPlayerCardDto): Response<NetworkPlayerCardDto> {
+                return Response.success(card)
+            }
         }
 
         // 3. Construct unified data repository

@@ -49,8 +49,12 @@ class HabitRepository(
         try {
             val response = apiService.getPlayerCard()
             if (response.isSuccessful) {
-                response.body()?.let { dto ->
+                val remoteDto = response.body() ?: return
+                val localCard = playerCardDao.getPlayerCard()
+
+                if (localCard == null) {
                     val card = PlayerCard(
+<<<<<<< Updated upstream
                         id = dto.id.ifBlank { userId },
                         playerName = dto.playerName,
                         pace = dto.pace,
@@ -59,8 +63,52 @@ class HabitRepository(
                         dribbling = dto.dribbling,
                         defending = dto.defending,
                         physical = dto.physical
+=======
+                        id = remoteDto.id.ifBlank { userId },
+                        playerName = remoteDto.playerName,
+                        pace = remoteDto.pace,
+                        shooting = remoteDto.shooting,
+                        passing = remoteDto.passing,
+                        skill = remoteDto.dribbling,
+                        defending = remoteDto.defending,
+                        physical = remoteDto.physical
+>>>>>>> Stashed changes
                     )
                     playerCardDao.insertPlayerCard(card)
+                } else {
+                    // Conflict Resolution: Take the highest value for each stat (Progress-based merge)
+                    val resolvedCard = localCard.copy(
+                        pace = maxOf(localCard.pace, remoteDto.pace),
+                        shooting = maxOf(localCard.shooting, remoteDto.shooting),
+                        passing = maxOf(localCard.passing, remoteDto.passing),
+                        skill = maxOf(localCard.skill, remoteDto.dribbling),
+                        defending = maxOf(localCard.defending, remoteDto.defending),
+                        physical = maxOf(localCard.physical, remoteDto.physical)
+                    )
+                    
+                    playerCardDao.insertPlayerCard(resolvedCard)
+
+                    // If local had higher values, push the resolved card back to server
+                    if (resolvedCard.pace > remoteDto.pace || 
+                        resolvedCard.shooting > remoteDto.shooting ||
+                        resolvedCard.passing > remoteDto.passing ||
+                        resolvedCard.skill > remoteDto.dribbling ||
+                        resolvedCard.defending > remoteDto.defending ||
+                        resolvedCard.physical > remoteDto.physical) {
+                        
+                        apiService.syncPlayerCard(
+                            com.example.selfevo.data.remote.dto.NetworkPlayerCardDto(
+                                id = resolvedCard.id,
+                                playerName = resolvedCard.playerName,
+                                pace = resolvedCard.pace,
+                                shooting = resolvedCard.shooting,
+                                passing = resolvedCard.passing,
+                                dribbling = resolvedCard.skill,
+                                defending = resolvedCard.defending,
+                                physical = resolvedCard.physical
+                            )
+                        )
+                    }
                 }
             }
         } catch (e: Exception) {
