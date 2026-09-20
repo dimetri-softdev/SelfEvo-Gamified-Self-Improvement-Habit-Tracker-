@@ -48,7 +48,7 @@ fun SelfEvoApp(viewModel: DashboardViewModel) {
 
     SelfEvoTheme {
         if (!isLoggedIn) {
-            LoginScreen(onLoginSuccess = { isLoggedIn = true })
+            LoginScreen(onLoginSuccess = { isLoggedIn = true }, onSignUpClick = {})
         } else {
             Scaffold(
                 bottomBar = {
@@ -108,12 +108,17 @@ fun SelfEvoApp(viewModel: DashboardViewModel) {
                     Modifier.padding(innerPadding)
                 ) {
                     composable(Screen.Home.route) { DashboardScreen(viewModel) }
-                    composable(Screen.Habits.route) { HabitsScreen(onAddHabit = { _, _, _, _ -> }) }
+                    composable(Screen.Habits.route) { HabitsScreen(onAddHabit = { _, _, _ -> }) }
                     composable(Screen.Evolutions.route) {
                         val playerCard by viewModel.playerCard.collectAsState()
                         EvolutionScreen(currentOvr = playerCard?.ovr ?: 50)
                     }
-                    composable(Screen.Settings.route) { SettingsScreen(onSignOut = { isLoggedIn = false }) }
+                    composable(Screen.Settings.route) {
+                        SettingsScreen(
+                            onSignOut = { isLoggedIn = false },
+                            onSyncClick = { viewModel.refreshData() }
+                        )
+                    }
                 }
             }
         }
