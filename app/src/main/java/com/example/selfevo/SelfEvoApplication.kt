@@ -14,7 +14,7 @@ class SelfEvoApplication : Application(), Configuration.Provider {
 
     override fun onCreate() {
         super.onCreate()
-        // Explicitly initialize WorkManager on startup to eliminate runtime initialization race conditions
+        // Initialize WorkManager manually since default initializer was removed in manifest
         WorkManager.initialize(this, workManagerConfiguration)
     }
 }

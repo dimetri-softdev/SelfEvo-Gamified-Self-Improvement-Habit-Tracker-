@@ -40,8 +40,8 @@ class DashboardViewModel(
     fun completeHabit(habitId: String) {
         viewModelScope.launch {
             val oldOvr = playerCard.value?.ovr ?: 0
-            repository.completeHabit(habitId)
-            val newOvr = playerCard.value?.ovr ?: 0
+            val updatedCard = repository.completeHabit(habitId)
+            val newOvr = updatedCard?.ovr ?: 0
 
             if (newOvr > oldOvr) {
                 _levelUpEvent.emit(newOvr)
