@@ -9,6 +9,9 @@ import com.example.selfevo.data.model.PlayerCard
 import com.example.selfevo.data.remote.SelfEvoApiService
 import com.example.selfevo.data.remote.dto.HabitLogRequest
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import java.time.LocalDate
+import java.util.UUID
 
 class HabitRepository(
     private val habitDao: HabitDao,
@@ -34,8 +37,8 @@ class HabitRepository(
                             description = dto.description,
                             attributeType = dto.attributeType,
                             isCompletedToday = dto.isCompletedToday,
-                            frequency = "Daily",
-                            reminderTime = "07:00",
+                            frequency = dto.frequency,
+                            reminderTime = dto.reminderTime,
                             syncStatus = "SYNCED"
                         )
                     }
@@ -61,17 +64,9 @@ class HabitRepository(
                         pace = remoteDto.pace,
                         shooting = remoteDto.shooting,
                         passing = remoteDto.passing,
-                        dribbling = remoteDto.dribbling,
+                        skill = remoteDto.dribbling,
                         defending = remoteDto.defending,
                         physical = remoteDto.physical
-                        id = dto.id.ifBlank { userId },
-                        playerName = dto.playerName,
-                        pace = dto.pace,
-                        shooting = dto.shooting,
-                        passing = dto.passing,
-                        skill = dto.dribbling,
-                        defending = dto.defending,
-                        physical = dto.physical
                     )
                     playerCardDao.insertPlayerCard(card)
                 } else {
@@ -80,7 +75,7 @@ class HabitRepository(
                         pace = maxOf(localCard.pace, remoteDto.pace),
                         shooting = maxOf(localCard.shooting, remoteDto.shooting),
                         passing = maxOf(localCard.passing, remoteDto.passing),
-                        dribbling = maxOf(localCard.dribbling, remoteDto.dribbling),
+                        skill = maxOf(localCard.skill, remoteDto.dribbling),
                         defending = maxOf(localCard.defending, remoteDto.defending),
                         physical = maxOf(localCard.physical, remoteDto.physical)
                     )
@@ -91,7 +86,7 @@ class HabitRepository(
                     if (resolvedCard.pace > remoteDto.pace || 
                         resolvedCard.shooting > remoteDto.shooting ||
                         resolvedCard.passing > remoteDto.passing ||
-                        resolvedCard.dribbling > remoteDto.dribbling ||
+                        resolvedCard.skill > remoteDto.dribbling ||
                         resolvedCard.defending > remoteDto.defending ||
                         resolvedCard.physical > remoteDto.physical) {
                         
@@ -102,7 +97,7 @@ class HabitRepository(
                                 pace = resolvedCard.pace,
                                 shooting = resolvedCard.shooting,
                                 passing = resolvedCard.passing,
-                                dribbling = resolvedCard.dribbling,
+                                dribbling = resolvedCard.skill,
                                 defending = resolvedCard.defending,
                                 physical = resolvedCard.physical
                             )
@@ -129,8 +124,7 @@ class HabitRepository(
             "PACE" -> activeCard.copy(pace = (activeCard.pace + 1).coerceAtMost(99))
             "SHOOTING" -> activeCard.copy(shooting = (activeCard.shooting + 1).coerceAtMost(99))
             "PASSING" -> activeCard.copy(passing = (activeCard.passing + 1).coerceAtMost(99))
-            "SKILL", "DRIBBLING" -> activeCard.copy(dribbling = (activeCard.dribbling + 1).coerceAtMost(99))
-            "SKILL" -> activeCard.copy(skill = (activeCard.skill + 1).coerceAtMost(99))
+            "SKILL", "DRIBBLING" -> activeCard.copy(skill = (activeCard.skill + 1).coerceAtMost(99))
             "DEFENDING" -> activeCard.copy(defending = (activeCard.defending + 1).coerceAtMost(99))
             "PHYSICAL" -> activeCard.copy(physical = (activeCard.physical + 1).coerceAtMost(99))
             else -> activeCard
@@ -162,6 +156,33 @@ class HabitRepository(
                 }
             } catch (e: Exception) {
                 break // Stop sync if network is still down
+            }
+        }
+    }
+
+    suspend fun addHabit(title: String, description: String, attributeType: String, frequency: String, reminderTime: String) {
+        val habit = HabitEntity(
+            id = UUID.randomUUID().toString(),
+            title = title,
+            description = description,
+            attributeType = attributeType,
+            frequency = frequency,
+            reminderTime = reminderTime,
+            syncStatus = "PENDING"
+        )
+        habitDao.insertHabit(habit)
+    }
+
+    fun getHabitsForTodayStream(): Flow<List<HabitEntity>> {
+        val today = LocalDate.now().dayOfWeek.name
+        return habitDao.getAllHabitsFlow().map { habits ->
+            habits.filter { habit ->
+                when (habit.frequency.uppercase()) {
+                    "DAILY" -> true
+                    "WEEKENDS" -> today == "SATURDAY" || today == "SUNDAY"
+                    "WEEKDAYS" -> today != "SATURDAY" && today != "SUNDAY"
+                    else -> habit.frequency.equals(today, ignoreCase = true)
+                }
             }
         }
     }

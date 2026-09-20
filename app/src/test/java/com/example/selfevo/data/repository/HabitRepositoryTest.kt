@@ -100,7 +100,7 @@ class HabitRepositoryTest {
         // All stats at 89, one more increase should bump OVR if it was rounding down or on the edge
         playerCardDao.card = PlayerCard(
             id = "user1", playerName = "Test Player",
-            pace = 89, shooting = 90, passing = 90, dribbling = 90, defending = 90, physical = 90
+            pace = 89, shooting = 90, passing = 90, skill = 90, defending = 90, physical = 90
         )
         // Initial OVR: (89+90+90+90+90+90)/6 = 539/6 = 89.83 -> 89
         
