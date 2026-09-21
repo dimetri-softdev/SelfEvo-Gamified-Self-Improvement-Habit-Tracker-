@@ -1,5 +1,6 @@
 package com.example.selfevo.ui.auth
 
+import android.util.Patterns
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -28,6 +29,12 @@ fun SignUpScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var playerName by remember { mutableStateOf("") }
+    var emailError by remember { mutableStateOf<String?>(null) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
+    var nameError by remember { mutableStateOf<String?>(null) }
+
+    val isFormValid = email.isNotBlank() && Patterns.EMAIL_ADDRESS.matcher(email).matches() &&
+                      password.length >= 6 && playerName.isNotBlank()
 
     val goldGradient = Brush.horizontalGradient(
         colors = listOf(Color(0xFFFFD700), Color(0xFFFFA500))
@@ -60,19 +67,27 @@ fun SignUpScreen(
                 Spacer(modifier = Modifier.height(8.dp))
                 TextField(
                     value = playerName,
-                    onValueChange = { playerName = it },
+                    onValueChange = {
+                        playerName = it
+                        nameError = if (it.isNotBlank()) null else "Player name is required"
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     placeholder = { Text("e.g. MAKHO", color = Color.DarkGray) },
+                    isError = nameError != null,
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = Color(0xFF1A1A1A),
                         unfocusedContainerColor = Color(0xFF1A1A1A),
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent,
                         focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White
+                        unfocusedTextColor = Color.White,
+                        errorContainerColor = Color(0xFF1A1A1A)
                     ),
                     shape = RoundedCornerShape(8.dp)
                 )
+                if (nameError != null) {
+                    Text(nameError!!, color = MaterialTheme.colorScheme.error, fontSize = 10.sp)
+                }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -83,19 +98,27 @@ fun SignUpScreen(
                 Spacer(modifier = Modifier.height(8.dp))
                 TextField(
                     value = email,
-                    onValueChange = { email = it },
+                    onValueChange = {
+                        email = it
+                        emailError = if (Patterns.EMAIL_ADDRESS.matcher(it).matches()) null else "Invalid email format"
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     placeholder = { Text("player@selfevo.app", color = Color.DarkGray) },
+                    isError = emailError != null,
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = Color(0xFF1A1A1A),
                         unfocusedContainerColor = Color(0xFF1A1A1A),
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent,
                         focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White
+                        unfocusedTextColor = Color.White,
+                        errorContainerColor = Color(0xFF1A1A1A)
                     ),
                     shape = RoundedCornerShape(8.dp)
                 )
+                if (emailError != null) {
+                    Text(emailError!!, color = MaterialTheme.colorScheme.error, fontSize = 10.sp)
+                }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -106,20 +129,28 @@ fun SignUpScreen(
                 Spacer(modifier = Modifier.height(8.dp))
                 TextField(
                     value = password,
-                    onValueChange = { password = it },
+                    onValueChange = {
+                        password = it
+                        passwordError = if (it.length >= 6) null else "Password must be at least 6 characters"
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     placeholder = { Text("••••••••", color = Color.DarkGray) },
                     visualTransformation = PasswordVisualTransformation(),
+                    isError = passwordError != null,
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = Color(0xFF1A1A1A),
                         unfocusedContainerColor = Color(0xFF1A1A1A),
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent,
                         focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White
+                        unfocusedTextColor = Color.White,
+                        errorContainerColor = Color(0xFF1A1A1A)
                     ),
                     shape = RoundedCornerShape(8.dp)
                 )
+                if (passwordError != null) {
+                    Text(passwordError!!, color = MaterialTheme.colorScheme.error, fontSize = 10.sp)
+                }
             }
 
             Spacer(modifier = Modifier.height(48.dp))
@@ -127,14 +158,21 @@ fun SignUpScreen(
             // Gradient Sign Up Button
             Button(
                 onClick = onSignUpSuccess,
+                enabled = isFormValid,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(64.dp)
-                    .background(goldGradient, RoundedCornerShape(12.dp)),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                    .background(
+                        if (isFormValid) goldGradient else Brush.linearGradient(listOf(Color.DarkGray, Color.Gray)),
+                        RoundedCornerShape(12.dp)
+                    ),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Transparent,
+                    disabledContainerColor = Color.Transparent
+                ),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text("SIGN UP", fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = Color.Black)
+                Text("SIGN UP", fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = if (isFormValid) Color.Black else Color.White.copy(alpha = 0.5f))
             }
 
             Spacer(modifier = Modifier.height(32.dp))
