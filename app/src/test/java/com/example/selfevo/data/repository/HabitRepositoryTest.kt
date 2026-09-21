@@ -23,7 +23,7 @@ import retrofit2.Response
 class HabitRepositoryTest {
 
     private lateinit var repository: HabitRepository
-    
+
     private val habitDao = object : HabitDao {
         var habit: HabitEntity? = null
         override suspend fun insertHabits(habits: List<HabitEntity>) {}
@@ -68,7 +68,7 @@ class HabitRepositoryTest {
         val habitId = "h3"
         habitDao.habit = HabitEntity(habitId, "Sprint", "Sprint training", "PACE", false)
         playerCardDao.card = PlayerCard(id = "user1", playerName = "Test Player", pace = 50)
-        
+
         // Act
         val resultCard = repository.completeHabit(habitId)
 
@@ -83,7 +83,7 @@ class HabitRepositoryTest {
         val habitId = "h4"
         habitDao.habit = HabitEntity(habitId, "Shooting", "Shooting practice", "SHOOTING", false)
         playerCardDao.card = PlayerCard(id = "user1", playerName = "Test Player", shooting = 60)
-        
+
         // Act
         val resultCard = repository.completeHabit(habitId)
 
@@ -103,7 +103,7 @@ class HabitRepositoryTest {
             pace = 89, shooting = 90, passing = 90, skill = 90, defending = 90, physical = 90
         )
         // Initial OVR: (89+90+90+90+90+90)/6 = 539/6 = 89.83 -> 89
-        
+
         // Act
         val resultCard = repository.completeHabit(habitId)
 

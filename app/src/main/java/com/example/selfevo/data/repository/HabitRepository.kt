@@ -8,6 +8,7 @@ import com.example.selfevo.data.local.entity.SyncQueueEntity
 import com.example.selfevo.data.model.PlayerCard
 import com.example.selfevo.data.remote.SelfEvoApiService
 import com.example.selfevo.data.remote.dto.HabitLogRequest
+import com.example.selfevo.data.remote.dto.NetworkPlayerCardDto
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.time.LocalDate
@@ -37,8 +38,8 @@ class HabitRepository(
                             description = dto.description,
                             attributeType = dto.attributeType,
                             isCompletedToday = dto.isCompletedToday,
-                            frequency = dto.frequency,
-                            reminderTime = dto.reminderTime,
+                            frequency = dto.frequency ?: "Daily",
+                            reminderTime = dto.reminderTime ?: "07:00",
                             syncStatus = "SYNCED"
                         )
                     }
@@ -79,19 +80,19 @@ class HabitRepository(
                         defending = maxOf(localCard.defending, remoteDto.defending),
                         physical = maxOf(localCard.physical, remoteDto.physical)
                     )
-                    
+
                     playerCardDao.insertPlayerCard(resolvedCard)
 
                     // If local had higher values, push the resolved card back to server
-                    if (resolvedCard.pace > remoteDto.pace || 
+                    if (resolvedCard.pace > remoteDto.pace ||
                         resolvedCard.shooting > remoteDto.shooting ||
                         resolvedCard.passing > remoteDto.passing ||
                         resolvedCard.skill > remoteDto.dribbling ||
                         resolvedCard.defending > remoteDto.defending ||
                         resolvedCard.physical > remoteDto.physical) {
-                        
+
                         apiService.syncPlayerCard(
-                            com.example.selfevo.data.remote.dto.NetworkPlayerCardDto(
+                            NetworkPlayerCardDto(
                                 id = resolvedCard.id,
                                 playerName = resolvedCard.playerName,
                                 pace = resolvedCard.pace,

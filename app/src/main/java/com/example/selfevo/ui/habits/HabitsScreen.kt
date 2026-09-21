@@ -7,209 +7,207 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.selfevo.R
-import com.example.selfevo.ui.component.SelfEvoButton
-import com.example.selfevo.ui.component.SelfEvoTextField
 import com.example.selfevo.ui.theme.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HabitsScreen(
-    onAddHabit: (String, String, String, String) -> Unit
+    onAddHabit: (String, String, String) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     var habitName by remember { mutableStateOf("") }
     var selectedAttribute by remember { mutableStateOf("PAC") }
-    var selectedFrequency by remember { mutableStateOf("Daily") }
-    var reminderTime by remember { mutableStateOf("07:00") }
 
-    val attributes = listOf("PAC", "PHY", "SKL", "DEF", "PAS", "SHO")
-    val frequencies = listOf("Daily", "Mon-Fri", "Mon/Wed/Fri", "Weekends", "Custom")
+    val attributes = listOf(
+        "PAC" to Color(0xFF00E5FF),
+        "PHY" to Color(0xFFFFA500),
+        "SKL" to Color(0xFFA020F0),
+        "DEF" to Color(0xFF00FF00),
+        "PAS" to Color(0xFFFFD700),
+        "SHO" to Color(0xFFFF4500)
+    )
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Black)
-            .padding(20.dp)
-            .verticalScroll(rememberScrollState())
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = Color.Black
     ) {
-        Text(
-            text = stringResource(R.string.new_habit),
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Black,
-            color = TextPrimary
-        )
-        Text(
-            text = stringResource(R.string.habit_description_sub),
-            fontSize = 12.sp,
-            color = TextSecondary
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        SelfEvoTextField(
-            value = habitName,
-            onValueChange = { habitName = it },
-            label = stringResource(R.string.habit_name_label),
-            placeholder = stringResource(R.string.habit_name_hint)
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Text(
-            text = stringResource(R.string.linked_attribute_label),
-            color = TextSecondary,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Bold
-        )
-        Spacer(modifier = Modifier.height(12.dp))
-
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(3),
-            modifier = Modifier.height(160.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            userScrollEnabled = false
-        ) {
-            items(attributes) { attr ->
-                val isSelected = selectedAttribute == attr
-                val color = when(attr) {
-                    "PAC" -> Cyan
-                    "PHY" -> Gold
-                    "SKL" -> Color(0xFFE91E63)
-                    else -> Cyan
-                }
-
-                Box(
-                    modifier = Modifier
-                        .height(70.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(if (isSelected) color.copy(alpha = 0.1f) else SurfaceVariant)
-                        .border(
-                            2.dp,
-                            if (isSelected) color else Color.Transparent,
-                            RoundedCornerShape(8.dp)
-                        )
-                        .clickable { selectedAttribute = attr },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = attr,
-                            fontWeight = FontWeight.Black,
-                            color = if (isSelected) color else TextPrimary,
-                            fontSize = 16.sp
-                        )
-                        Text(
-                            text = "+2 pts",
-                            fontSize = 10.sp,
-                            color = if (isSelected) color else TextSecondary
-                        )
-                    }
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Info pill
-        Box(
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(8.dp))
-                .background(Cyan.copy(alpha = 0.1f))
-                .padding(12.dp)
+                .fillMaxSize()
+                .padding(24.dp)
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(modifier = Modifier.size(6.dp).clip(CircleShape).background(Cyan))
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "$selectedAttribute — ${getAttributeFullName(selectedAttribute)}",
-                    color = Cyan,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
+            Text(
+                text = "NEW HABIT",
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Black,
+                color = Color.White
+            )
+            Text(
+                text = "Each completed habit upgrades your player card stats.",
+                fontSize = 14.sp,
+                color = Color.Gray,
+                modifier = Modifier.padding(top = 8.dp, bottom = 32.dp)
+            )
 
-        Spacer(modifier = Modifier.height(24.dp))
+            Text("HABIT NAME", color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.height(8.dp))
+            TextField(
+                value = habitName,
+                onValueChange = { habitName = it },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("e.g. Morning Run", color = Color.DarkGray) },
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color(0xFF1A1A1A),
+                    unfocusedContainerColor = Color(0xFF1A1A1A),
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    focusedTextColor = Color.White
+                ),
+                shape = RoundedCornerShape(12.dp)
+            )
 
-        Text(
-            text = stringResource(R.string.frequency_label),
-            color = TextSecondary,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Bold
-        )
-        Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            frequencies.take(4).forEach { freq ->
-                val isSelected = selectedFrequency == freq
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(if (isSelected) Gold.copy(alpha = 0.2f) else SurfaceVariant)
-                        .border(1.dp, if (isSelected) Gold else Color.DarkGray, RoundedCornerShape(12.dp))
-                        .clickable { selectedFrequency = freq }
-                        .padding(vertical = 8.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = freq,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = if (isSelected) Gold else TextPrimary
+            Text("LINKED ATTRIBUTE", color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.height(16.dp))
+
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(3),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                items(attributes) { (attr, color) ->
+                    val isSelected = selectedAttribute == attr
+                    AttributeItem(
+                        label = attr,
+                        color = color,
+                        isSelected = isSelected,
+                        onClick = { selectedAttribute = attr }
                     )
                 }
             }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Info bar for selected attribute
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFF1A1A1A), RoundedCornerShape(8.dp))
+                    .padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(modifier = Modifier.size(8.dp).background(attributes.find { it.first == selectedAttribute }?.second ?: Color.Cyan,
+                    CircleShape
+                ))
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = "$selectedAttribute — ${getAttributeFullName(selectedAttribute)}",
+                    color = Color.White,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Text("FREQUENCY", color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.height(16.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FrequencyChip("Daily", true)
+                FrequencyChip("Mon-Fri", false)
+                FrequencyChip("Weekends", false)
+            }
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            // Add Habit Button (Cyan Gradient as per design)
+            Button(
+                onClick = { onAddHabit(habitName, selectedAttribute, "Daily") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(64.dp)
+                    .background(
+                        brush = Brush.horizontalGradient(listOf(Color(0xFF00E5FF), Color(0xFF1DE9B6))),
+                        shape = RoundedCornerShape(12.dp)
+                    ),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text("+ ADD TO SELFEVO", fontSize = 18.sp, fontWeight = FontWeight.Black, color = Color.Black)
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
         }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        SelfEvoTextField(
-            value = reminderTime,
-            onValueChange = { reminderTime = it },
-            label = stringResource(R.string.reminder_time_label),
-            placeholder = "07:00"
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        SelfEvoButton(
-            text = stringResource(R.string.add_to_selfevo),
-            onClick = { onAddHabit(habitName, selectedAttribute, selectedFrequency, reminderTime) },
-            containerColor = Cyan,
-            contentColor = Black
-        )
-
-        Spacer(modifier = Modifier.height(100.dp))
     }
 }
 
-fun getAttributeFullName(attr: String): String = when(attr) {
+@Composable
+fun AttributeItem(
+    label: String,
+    color: Color,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .aspectRatio(1.2f)
+            .background(Color(0xFF1A1A1A), RoundedCornerShape(12.dp))
+            .border(
+                2.dp,
+                if (isSelected) color else Color.Transparent,
+                RoundedCornerShape(12.dp)
+            )
+            .clickable { onClick() }
+            .padding(12.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(label, fontWeight = FontWeight.Black, fontSize = 18.sp, color = if (isSelected) color else Color.White)
+            Text("+2 pts", fontSize = 10.sp, color = color, fontWeight = FontWeight.Bold)
+        }
+    }
+}
+
+@Composable
+fun FrequencyChip(text: String, isSelected: Boolean) {
+    Box(
+        modifier = Modifier
+            .background(
+                if (isSelected) Color(0xFF2C1F00) else Color(0xFF1A1A1A),
+                RoundedCornerShape(50.dp)
+            )
+            .border(
+                1.dp,
+                if (isSelected) Color(0xFFFFD700) else Color.Transparent,
+                RoundedCornerShape(50.dp)
+            )
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+    ) {
+        Text(text, color = if (isSelected) Color(0xFFFFD700) else Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+    }
+}
+
+fun getAttributeFullName(attr: String): String = when (attr) {
     "PAC" -> "Pace"
     "PHY" -> "Physical"
     "SKL" -> "Skill"
     "DEF" -> "Defending"
     "PAS" -> "Passing"
     "SHO" -> "Shooting"
-    else -> attr
+    else -> ""
 }
