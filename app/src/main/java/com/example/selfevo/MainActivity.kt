@@ -39,6 +39,7 @@ class MainActivity : ComponentActivity() {
         val apiService = RetrofitClient.apiService
 
         // 3. Construct unified data repository
+        val repository = HabitRepository(habitDao, playerCardDao, syncQueueDao, apiServicePlaceholder)
         val repository = HabitRepository(habitDao, playerCardDao, syncQueueDao, apiService)
 
         // 4. Construct ViewModel via inline provider factory
