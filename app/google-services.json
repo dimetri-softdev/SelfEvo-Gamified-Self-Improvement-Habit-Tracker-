@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "971279768876",
+    "project_id": "selfevo-68d9ae13",
+    "storage_bucket": "selfevo-68d9ae13.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:971279768876:android:9dabf022e3a388c3312089",
+        "android_client_info": {
+          "package_name": "com.example.selfevo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDpohg8KWs_96TnrkxNR8c8dSh8RT97muQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
