@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">SelfEvo</string>
+    <string name="dashboard_title">SelfEvo Dashboard</string>
+    <string name="news_title">SelfEvo Nuus</string>
+    <string name="admin_title">Admin Dashboard</string>
+    <string name="habit_checklist">Daaglikse Groei-kontrolelys</string>
+    <string name="walkout_evolved">JOU KAART HET ONTWIKKEL!</string>
+    <string name="continue_journey">Gaan Voort met Reis</string>
+    <string name="no_habits">Geen gewoontes nog nagespoor nie. Skep dit via jou plan of api backend sync inisialisering!</string>
+</resources>

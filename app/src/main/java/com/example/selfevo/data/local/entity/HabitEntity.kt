@@ -8,7 +8,10 @@ data class HabitEntity(
     @PrimaryKey val id: String,
     val title: String,
     val description: String,
-    val attributeType: String, // PACE, SHOOTING, PASSING, DRIBBLING, DEFENDING, PHYSICAL
+    val attributeType: String, // PACE, SHOOTING, PASSING, SKILL, DEFENDING, PHYSICAL
     val isCompletedToday: Boolean = false,
+    val lastCompletedDate: String? = null, // yyyy-MM-dd
+    val frequency: String = "Daily",
+    val reminderTime: String = "07:00",
     val syncStatus: String = "SYNCED" // SYNCED, PENDING
 )

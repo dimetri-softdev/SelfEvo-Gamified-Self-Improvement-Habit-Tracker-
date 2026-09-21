@@ -1,44 +1,30 @@
 package com.example.selfevo.ui.dashboard
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
+import androidx.compose.animation.*
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.selfevo.R
 import com.example.selfevo.data.model.PlayerCard
 import com.example.selfevo.ui.component.FutPlayerCard
 import com.example.selfevo.ui.component.HabitItemRow
@@ -61,21 +47,11 @@ fun DashboardScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("SelfEvo Dashboard", fontWeight = FontWeight.Bold, color = Color.White) },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF1A237E))
-            )
-        },
-        containerColor = Color(0xFFF5F5F5),
-        modifier = modifier
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = Color.Black // AMOLED Black
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
@@ -83,40 +59,51 @@ fun DashboardScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 item {
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
 
+                    // 1. MAKHO Header Section
+                    HeaderSection(playerName = playerCard?.playerName ?: "MAKHO")
+
+                    Spacer(modifier = Modifier.height(32.dp))
+
+                    // 2. Daily Progress Section
+                    ProgressSection(completedCount = habits.count { it.isCompletedToday }, totalCount = habits.size)
+
+                    Spacer(modifier = Modifier.height(32.dp))
+
+                    // 3. High-Fidelity FUT Card
                     playerCard?.let { card ->
                         FutPlayerCard(playerCard = card)
                     } ?: run {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(200.dp),
+                                .height(280.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            CircularProgressIndicator(color = Color(0xFF1A237E))
+                            CircularProgressIndicator(color = Color(0xFFFFD700))
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(48.dp))
 
                     Text(
-                        text = "Daily Growth Checklist",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = Color(0xFF1A237E),
+                        text = "TODAY'S HABITS",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Black,
+                        color = Color.White,
                         modifier = Modifier.fillMaxWidth(),
                         textAlign = TextAlign.Start
                     )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
 
                 if (habits.isEmpty()) {
                     item {
                         Text(
-                            text = "No habits tracked yet. Create them via your plan or api backend sync initialization!",
-                            color = Color.Gray,
+                            text = stringResource(R.string.no_habits),
+                            color = Color.DarkGray,
                             fontSize = 14.sp,
                             textAlign = TextAlign.Center,
                             modifier = Modifier.padding(top = 32.dp)
@@ -128,25 +115,26 @@ fun DashboardScreen(
                             habit = habit,
                             onCompleteClick = { viewModel.completeHabit(habit.id) }
                         )
+                        Spacer(modifier = Modifier.height(12.dp))
                     }
                 }
 
                 item {
-                    Spacer(modifier = Modifier.height(32.dp))
+                    Spacer(modifier = Modifier.height(48.dp))
                 }
             }
 
-            // High-Impact FIFA-Style Walkout Overlay
+            // High-Impact Walkout Overlay
             AnimatedVisibility(
                 visible = showWalkoutOvr != null,
-                enter = fadeIn(),
-                exit = fadeOut()
+                enter = fadeIn() + scaleIn(initialScale = 0.8f, animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy)),
+                exit = fadeOut() + scaleOut(targetScale = 1.2f)
             ) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(Color.Black.copy(alpha = 0.95f))
-                        .clickable(enabled = true) { /* Dismiss handle */ },
+                        .clickable(enabled = true) { showWalkoutOvr = null },
                     contentAlignment = Alignment.Center
                 ) {
                     Column(
@@ -163,7 +151,7 @@ fun DashboardScreen(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "YOUR CARD HAS EVOLVED!",
+                            text = stringResource(R.string.walkout_evolved),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White
@@ -191,11 +179,77 @@ fun DashboardScreen(
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700)),
                             shape = RoundedCornerShape(8.dp)
                         ) {
-                            Text("Continue Journey", color = Color.Black, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.continue_journey), color = Color.Black, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun HeaderSection(playerName: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .background(Color(0xFF1A1A1A), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(Icons.Default.Person, contentDescription = null, tint = Color(0xFFFFD700))
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Column {
+                Text("Good morning,", color = Color.Gray, fontSize = 12.sp)
+                Text(playerName.uppercase(), color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Black)
+            }
+        }
+
+        // Streak Flame
+        Row(
+            modifier = Modifier
+                .background(Color(0xFF1A1A1A), RoundedCornerShape(50.dp))
+                .padding(horizontal = 12.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text("🔥", fontSize = 14.sp)
+            Spacer(modifier = Modifier.width(4.dp))
+            Text("14 day", color = Color(0xFFFFD700), fontSize = 14.sp, fontWeight = FontWeight.Bold)
+        }
+    }
+}
+
+@Composable
+fun ProgressSection(completedCount: Int, totalCount: Int) {
+    val progress = if (totalCount > 0) completedCount.toFloat() / totalCount else 0f
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text("DAILY PROGRESS", color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            Text("$completedCount/$totalCount", color = Color(0xFFFFD700), fontSize = 12.sp, fontWeight = FontWeight.Black)
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(12.dp)
+                .background(Color(0xFF1A1A1A), RoundedCornerShape(50.dp))
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(progress)
+                    .fillMaxHeight()
+                    .background(
+                        brush = Brush.horizontalGradient(listOf(Color(0xFFFFA500), Color(0xFFFFD700))),
+                        shape = RoundedCornerShape(50.dp)
+                    )
+            )
         }
     }
 }
