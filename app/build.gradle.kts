@@ -74,7 +74,6 @@ dependencies {
     implementation(libs.activity.compose)
     implementation(libs.lifecycle.viewmodel.compose)
     implementation(libs.navigation.compose)
-    debugImplementation(libs.compose.ui.tooling)
 
     // WorkManager Async Background Engine
     implementation(libs.work.runtime.ktx)

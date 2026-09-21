@@ -7,5 +7,7 @@ data class NetworkHabitDto(
     @SerializedName("title") val title: String,
     @SerializedName("description") val description: String,
     @SerializedName("attributeType") val attributeType: String,
-    @SerializedName("isCompletedToday") val isCompletedToday: Boolean
+    @SerializedName("isCompletedToday") val isCompletedToday: Boolean,
+    @SerializedName("frequency") val frequency: String,
+    @SerializedName("reminderTime") val reminderTime: String
 )

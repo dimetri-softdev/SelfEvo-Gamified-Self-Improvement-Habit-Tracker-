@@ -24,4 +24,16 @@ data class PlayerCard(
             ovr >= 65 -> "Silver"
             else -> "Bronze"
         }
+
+    fun incrementStat(attributeType: String, amount: Int = 2): PlayerCard {
+        return when (attributeType.uppercase()) {
+            "PACE" -> copy(pace = (pace + amount).coerceAtMost(99))
+            "SHOOTING" -> copy(shooting = (shooting + amount).coerceAtMost(99))
+            "PASSING" -> copy(passing = (passing + amount).coerceAtMost(99))
+            "SKILL", "DRIBBLING" -> copy(skill = (skill + amount).coerceAtMost(99))
+            "DEFENDING" -> copy(defending = (defending + amount).coerceAtMost(99))
+            "PHYSICAL" -> copy(physical = (physical + amount).coerceAtMost(99))
+            else -> this
+        }
+    }
 }

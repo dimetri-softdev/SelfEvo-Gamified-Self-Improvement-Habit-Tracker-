@@ -10,7 +10,9 @@ import com.example.selfevo.data.remote.SelfEvoApiService
 import com.example.selfevo.data.remote.dto.HabitLogRequest
 import com.example.selfevo.data.remote.dto.NetworkPlayerCardDto
 import kotlinx.coroutines.flow.Flow
-import retrofit2.Response
+import kotlinx.coroutines.flow.map
+import java.time.LocalDate
+import java.util.UUID
 
 class HabitRepository(
     private val habitDao: HabitDao,
@@ -36,8 +38,8 @@ class HabitRepository(
                             description = dto.description,
                             attributeType = dto.attributeType,
                             isCompletedToday = dto.isCompletedToday,
-                            frequency = "Daily",
-                            reminderTime = "07:00",
+                            frequency = dto.frequency ?: "Daily",
+                            reminderTime = dto.reminderTime ?: "07:00",
                             syncStatus = "SYNCED"
                         )
                     }
@@ -117,17 +119,9 @@ class HabitRepository(
         val updatedHabit = habit.copy(isCompletedToday = true)
         habitDao.updateHabit(updatedHabit)
 
-        // 2. Increment active FUT stats locally based on attribute type
+        // 2. Increment active FUT stats locally based on attribute type (+2 pts per habit)
         val activeCard = playerCardDao.getPlayerCard() ?: PlayerCard(playerName = "User Player")
-        val updatedCard = when (habit.attributeType.uppercase()) {
-            "PACE" -> activeCard.copy(pace = (activeCard.pace + 1).coerceAtMost(99))
-            "SHOOTING" -> activeCard.copy(shooting = (activeCard.shooting + 1).coerceAtMost(99))
-            "PASSING" -> activeCard.copy(passing = (activeCard.passing + 1).coerceAtMost(99))
-            "SKILL", "DRIBBLING" -> activeCard.copy(skill = (activeCard.skill + 1).coerceAtMost(99))
-            "DEFENDING" -> activeCard.copy(defending = (activeCard.defending + 1).coerceAtMost(99))
-            "PHYSICAL" -> activeCard.copy(physical = (activeCard.physical + 1).coerceAtMost(99))
-            else -> activeCard
-        }
+        val updatedCard = activeCard.incrementStat(habit.attributeType)
         playerCardDao.insertPlayerCard(updatedCard)
 
         // 3. Sync to remote or add to offline queue
@@ -155,6 +149,33 @@ class HabitRepository(
                 }
             } catch (e: Exception) {
                 break // Stop sync if network is still down
+            }
+        }
+    }
+
+    suspend fun addHabit(title: String, description: String, attributeType: String, frequency: String, reminderTime: String) {
+        val habit = HabitEntity(
+            id = UUID.randomUUID().toString(),
+            title = title,
+            description = description,
+            attributeType = attributeType,
+            frequency = frequency,
+            reminderTime = reminderTime,
+            syncStatus = "PENDING"
+        )
+        habitDao.insertHabit(habit)
+    }
+
+    fun getHabitsForTodayStream(): Flow<List<HabitEntity>> {
+        val today = LocalDate.now().dayOfWeek.name
+        return habitDao.getAllHabitsFlow().map { habits ->
+            habits.filter { habit ->
+                when (habit.frequency.uppercase()) {
+                    "DAILY" -> true
+                    "WEEKENDS" -> today == "SATURDAY" || today == "SUNDAY"
+                    "WEEKDAYS" -> today != "SATURDAY" && today != "SUNDAY"
+                    else -> habit.frequency.equals(today, ignoreCase = true)
+                }
             }
         }
     }
