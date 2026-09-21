@@ -25,11 +25,13 @@ import com.example.selfevo.ui.theme.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HabitsScreen(
-    onAddHabit: (String, String, String) -> Unit,
+    onAddHabit: (String, String, String, String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var habitName by remember { mutableStateOf("") }
     var selectedAttribute by remember { mutableStateOf("PAC") }
+    var reminderTime by remember { mutableStateOf("07:00") }
+    var selectedFrequency by remember { mutableStateOf("Daily") }
 
     val attributes = listOf(
         "PAC" to Color(0xFF00E5FF),
@@ -74,12 +76,13 @@ fun HabitsScreen(
                     unfocusedContainerColor = Color(0xFF1A1A1A),
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
-                    focusedTextColor = Color.White
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White
                 ),
                 shape = RoundedCornerShape(12.dp)
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             Text("LINKED ATTRIBUTE", color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(16.dp))
@@ -123,21 +126,48 @@ fun HabitsScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             Text("FREQUENCY", color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(16.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                FrequencyChip("Daily", true)
-                FrequencyChip("Mon-Fri", false)
-                FrequencyChip("Weekends", false)
+                listOf("Daily", "Mon-Fri", "Weekends").forEach { freq ->
+                    FrequencyChip(
+                        text = freq,
+                        isSelected = selectedFrequency == freq,
+                        onClick = { selectedFrequency = freq }
+                    )
+                }
             }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text("REMINDER TIME", color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.height(8.dp))
+            TextField(
+                value = reminderTime,
+                onValueChange = { reminderTime = it },
+                modifier = Modifier.fillMaxWidth(),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color(0xFF1A1A1A),
+                    unfocusedContainerColor = Color(0xFF1A1A1A),
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White
+                ),
+                shape = RoundedCornerShape(12.dp)
+            )
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // Add Habit Button (Cyan Gradient as per design)
+            // Add Habit Button
             Button(
-                onClick = { onAddHabit(habitName, selectedAttribute, "Daily") },
+                onClick = {
+                    if (habitName.isNotBlank()) {
+                        onAddHabit(habitName, selectedAttribute, selectedFrequency, reminderTime)
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(64.dp)
@@ -184,7 +214,7 @@ fun AttributeItem(
 }
 
 @Composable
-fun FrequencyChip(text: String, isSelected: Boolean) {
+fun FrequencyChip(text: String, isSelected: Boolean, onClick: () -> Unit) {
     Box(
         modifier = Modifier
             .background(
@@ -196,6 +226,7 @@ fun FrequencyChip(text: String, isSelected: Boolean) {
                 if (isSelected) Color(0xFFFFD700) else Color.Transparent,
                 RoundedCornerShape(50.dp)
             )
+            .clickable { onClick() }
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
         Text(text, color = if (isSelected) Color(0xFFFFD700) else Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)

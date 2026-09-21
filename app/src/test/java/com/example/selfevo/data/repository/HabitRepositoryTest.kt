@@ -66,7 +66,7 @@ class HabitRepositoryTest {
     fun `completeHabit increments pace stat when attribute type is PACE`() = runBlocking {
         // Arrange
         val habitId = "h3"
-        habitDao.habit = HabitEntity(habitId, "Sprint", "Sprint training", "PACE", false)
+        habitDao.habit = HabitEntity(habitId, "Sprint", "Sprint training", "PACE", false, null)
         playerCardDao.card = PlayerCard(id = "user1", playerName = "Test Player", pace = 50)
 
         // Act
@@ -81,7 +81,7 @@ class HabitRepositoryTest {
     fun `completeHabit increments shooting stat when attribute type is SHOOTING`() = runBlocking {
         // Arrange
         val habitId = "h4"
-        habitDao.habit = HabitEntity(habitId, "Shooting", "Shooting practice", "SHOOTING", false)
+        habitDao.habit = HabitEntity(habitId, "Shooting", "Shooting practice", "SHOOTING", false, null)
         playerCardDao.card = PlayerCard(id = "user1", playerName = "Test Player", shooting = 60)
 
         // Act
@@ -96,7 +96,7 @@ class HabitRepositoryTest {
     fun `completeHabit triggers OVR increase when stats improve`() = runBlocking {
         // Arrange
         val habitId = "h3"
-        habitDao.habit = HabitEntity(habitId, "Sprint", "Sprint training", "PACE", false)
+        habitDao.habit = HabitEntity(habitId, "Sprint", "Sprint training", "PACE", false, null)
         // All stats at 89, one more increase should bump OVR if it was rounding down or on the edge
         playerCardDao.card = PlayerCard(
             id = "user1", playerName = "Test Player",

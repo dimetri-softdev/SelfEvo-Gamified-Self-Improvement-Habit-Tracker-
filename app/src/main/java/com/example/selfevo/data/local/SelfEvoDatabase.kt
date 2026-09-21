@@ -13,7 +13,7 @@ import com.example.selfevo.data.model.PlayerCard
 
 @Database(
     entities = [HabitEntity::class, SyncQueueEntity::class, PlayerCard::class],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class SelfEvoDatabase : RoomDatabase() {

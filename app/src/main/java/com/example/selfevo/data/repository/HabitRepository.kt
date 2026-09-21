@@ -28,6 +28,7 @@ class HabitRepository(
 
     suspend fun refreshHabits() {
         try {
+            val today = LocalDate.now().toString()
             val response = apiService.getHabits()
             if (response.isSuccessful) {
                 response.body()?.let { dtoList ->
@@ -38,6 +39,7 @@ class HabitRepository(
                             description = dto.description,
                             attributeType = dto.attributeType,
                             isCompletedToday = dto.isCompletedToday,
+                            lastCompletedDate = if (dto.isCompletedToday) today else null,
                             frequency = dto.frequency ?: "Daily",
                             reminderTime = dto.reminderTime ?: "07:00",
                             syncStatus = "SYNCED"
@@ -45,9 +47,24 @@ class HabitRepository(
                     }
                     habitDao.insertHabits(entities)
                 }
+            } else {
+                // If offline or API fails, ensure local flags are reset for new day
+                val localHabits = habitDao.getAllHabits()
+                localHabits.forEach { habit ->
+                    if (habit.lastCompletedDate != today) {
+                        habitDao.updateHabit(habit.copy(isCompletedToday = false))
+                    }
+                }
             }
         } catch (e: Exception) {
-            // Offline or network error; fall back to local Room database cache
+            // Offline fallback
+            val today = LocalDate.now().toString()
+            val localHabits = habitDao.getAllHabits()
+            localHabits.forEach { habit ->
+                if (habit.lastCompletedDate != today && habit.isCompletedToday) {
+                    habitDao.updateHabit(habit.copy(isCompletedToday = false))
+                }
+            }
         }
     }
 
@@ -71,7 +88,6 @@ class HabitRepository(
                     )
                     playerCardDao.insertPlayerCard(card)
                 } else {
-                    // Conflict Resolution: Take the highest value for each stat (Progress-based merge)
                     val resolvedCard = localCard.copy(
                         pace = maxOf(localCard.pace, remoteDto.pace),
                         shooting = maxOf(localCard.shooting, remoteDto.shooting),
@@ -83,7 +99,6 @@ class HabitRepository(
 
                     playerCardDao.insertPlayerCard(resolvedCard)
 
-                    // If local had higher values, push the resolved card back to server
                     if (resolvedCard.pace > remoteDto.pace ||
                         resolvedCard.shooting > remoteDto.shooting ||
                         resolvedCard.passing > remoteDto.passing ||
@@ -115,24 +130,27 @@ class HabitRepository(
         val habit = habitDao.getHabitById(habitId) ?: return null
         if (habit.isCompletedToday) return playerCardDao.getPlayerCard()
 
+        val today = LocalDate.now().toString()
+
         // 1. Mark as completed locally
-        val updatedHabit = habit.copy(isCompletedToday = true)
+        val updatedHabit = habit.copy(
+            isCompletedToday = true,
+            lastCompletedDate = today
+        )
         habitDao.updateHabit(updatedHabit)
 
-        // 2. Increment active FUT stats locally based on attribute type (+2 pts per habit)
+        // 2. Increment active FUT stats locally (+2 pts)
         val activeCard = playerCardDao.getPlayerCard() ?: PlayerCard(playerName = "User Player")
         val updatedCard = activeCard.incrementStat(habit.attributeType)
         playerCardDao.insertPlayerCard(updatedCard)
 
-        // 3. Sync to remote or add to offline queue
+        // 3. Sync to remote
         try {
             val response = apiService.logHabit(HabitLogRequest(habitId = habitId))
             if (!response.isSuccessful) {
-                // If endpoint fails but network is alive, add to offline queue
                 syncQueueDao.addItemToQueue(SyncQueueEntity(habitId = habitId, operation = "LOG_COMPLETION"))
             }
         } catch (e: Exception) {
-            // Network is totally down, safely queue the operation offline
             syncQueueDao.addItemToQueue(SyncQueueEntity(habitId = habitId, operation = "LOG_COMPLETION"))
         }
 
@@ -148,7 +166,7 @@ class HabitRepository(
                     syncQueueDao.deleteItemFromQueue(item)
                 }
             } catch (e: Exception) {
-                break // Stop sync if network is still down
+                break
             }
         }
     }
@@ -167,14 +185,26 @@ class HabitRepository(
     }
 
     fun getHabitsForTodayStream(): Flow<List<HabitEntity>> {
-        val today = LocalDate.now().dayOfWeek.name
+        val todayName = LocalDate.now().dayOfWeek.name
+        val todayDate = LocalDate.now().toString()
+
         return habitDao.getAllHabitsFlow().map { habits ->
             habits.filter { habit ->
-                when (habit.frequency.uppercase()) {
+                // Filter by frequency
+                val matchesFrequency = when (habit.frequency.uppercase()) {
                     "DAILY" -> true
-                    "WEEKENDS" -> today == "SATURDAY" || today == "SUNDAY"
-                    "WEEKDAYS" -> today != "SATURDAY" && today != "SUNDAY"
-                    else -> habit.frequency.equals(today, ignoreCase = true)
+                    "WEEKENDS" -> todayName == "SATURDAY" || todayName == "SUNDAY"
+                    "WEEKDAYS" -> todayName != "SATURDAY" && todayName != "SUNDAY"
+                    else -> habit.frequency.equals(todayName, ignoreCase = true)
+                }
+
+                matchesFrequency
+            }.map { habit ->
+                // Dynamic reset if date changed
+                if (habit.lastCompletedDate != todayDate && habit.isCompletedToday) {
+                    habit.copy(isCompletedToday = false)
+                } else {
+                    habit
                 }
             }
         }

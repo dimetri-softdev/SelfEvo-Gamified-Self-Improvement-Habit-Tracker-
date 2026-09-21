@@ -19,7 +19,7 @@ class DashboardViewModel(
     val playerCard: StateFlow<PlayerCard?> = repository.getPlayerCardStream()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
-    val habits: StateFlow<List<HabitEntity>> = repository.getHabitsStream()
+    val habits: StateFlow<List<HabitEntity>> = repository.getHabitsForTodayStream()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     private val _levelUpEvent = MutableSharedFlow<Int>()
@@ -46,6 +46,13 @@ class DashboardViewModel(
             if (newOvr > oldOvr) {
                 _levelUpEvent.emit(newOvr)
             }
+        }
+    }
+
+    fun addHabit(title: String, attribute: String, frequency: String, reminder: String) {
+        viewModelScope.launch {
+            repository.addHabit(title, "Custom Habit", attribute, frequency, reminder)
+            // No need to refresh habits manually if we are collecting from a Flow
         }
     }
 }
