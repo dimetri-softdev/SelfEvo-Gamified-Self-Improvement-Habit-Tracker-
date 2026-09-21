@@ -13,13 +13,7 @@ import androidx.work.WorkManager
 import com.example.selfevo.data.local.SelfEvoDatabase
 import com.example.selfevo.data.local.entity.HabitEntity
 import com.example.selfevo.data.model.PlayerCard
-import com.example.selfevo.data.remote.SelfEvoApiService
-import com.example.selfevo.data.remote.dto.AuthResponse
-import com.example.selfevo.data.remote.dto.HabitLogRequest
-import com.example.selfevo.data.remote.dto.HabitLogResponse
-import com.example.selfevo.data.remote.dto.LoginRequest
-import com.example.selfevo.data.remote.dto.NetworkHabitDto
-import com.example.selfevo.data.remote.dto.NetworkPlayerCardDto
+import com.example.selfevo.data.remote.RetrofitClient
 import com.example.selfevo.data.repository.HabitRepository
 import com.example.selfevo.data.sync.SyncWorker
 import com.example.selfevo.ui.dashboard.DashboardScreen
@@ -28,7 +22,6 @@ import com.example.selfevo.ui.navigation.SelfEvoApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import retrofit2.Response
 import java.util.concurrent.TimeUnit
 
 class MainActivity : ComponentActivity() {
@@ -42,31 +35,11 @@ class MainActivity : ComponentActivity() {
         val playerCardDao = database.playerCardDao()
         val syncQueueDao = database.syncQueueDao()
 
-        // 2. SelfEvo API Placeholder Client Integration
-        val apiServicePlaceholder = object : SelfEvoApiService {
-            override suspend fun login(request: LoginRequest): Response<AuthResponse> {
-                return Response.success(AuthResponse("dummy-jwt-token", request.email, "Player"))
-            }
-
-            override suspend fun getHabits(): Response<List<NetworkHabitDto>> {
-                return Response.success(emptyList())
-            }
-
-            override suspend fun logHabit(request: HabitLogRequest): Response<HabitLogResponse> {
-                return Response.success(HabitLogResponse(true, "Logged successfully", null))
-            }
-
-            override suspend fun getPlayerCard(): Response<NetworkPlayerCardDto> {
-                return Response.success(NetworkPlayerCardDto("default_user", "Pro Tracker", 50, 50, 50, 50, 50, 50))
-            }
-
-            override suspend fun syncPlayerCard(card: NetworkPlayerCardDto): Response<NetworkPlayerCardDto> {
-                return Response.success(card)
-            }
-        }
+        // 2. Real SelfEvo API Client Integration
+        val apiService = RetrofitClient.apiService
 
         // 3. Construct unified data repository
-        val repository = HabitRepository(habitDao, playerCardDao, syncQueueDao, apiServicePlaceholder)
+        val repository = HabitRepository(habitDao, playerCardDao, syncQueueDao, apiService)
 
         // Pre-populate dummy starter habits locally if the database is empty for easy testing
         CoroutineScope(Dispatchers.IO).launch {
