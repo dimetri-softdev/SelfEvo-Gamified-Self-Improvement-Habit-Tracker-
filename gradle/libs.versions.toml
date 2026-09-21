@@ -25,7 +25,7 @@ biometric = "1.1.0"
 googleServices = "4.4.1"
 mockk = "1.14.11"
 coroutinesTest = "1.7.3"
-navigationCompose = "2.7.7"
+
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -63,7 +63,7 @@ firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics
 androidx-biometric = { group = "androidx.biometric", name = "biometric", version.ref = "biometric" }
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutinesTest" }
-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
