@@ -165,7 +165,20 @@ fun HabitsScreen(
             Button(
                 onClick = {
                     if (habitName.isNotBlank()) {
-                        onAddHabit(habitName, selectedAttribute, selectedFrequency, reminderTime)
+                        val mappedAttribute = when (selectedAttribute) {
+                            "PAC" -> "PACE"
+                            "PHY" -> "PHYSICAL"
+                            "SKL" -> "SKILL"
+                            "DEF" -> "DEFENDING"
+                            "PAS" -> "PASSING"
+                            "SHO" -> "SHOOTING"
+                            else -> selectedAttribute
+                        }
+                        val mappedFrequency = when (selectedFrequency) {
+                            "Mon-Fri" -> "WEEKDAYS"
+                            else -> selectedFrequency
+                        }
+                        onAddHabit(habitName, mappedAttribute, mappedFrequency, reminderTime)
                     }
                 },
                 modifier = Modifier

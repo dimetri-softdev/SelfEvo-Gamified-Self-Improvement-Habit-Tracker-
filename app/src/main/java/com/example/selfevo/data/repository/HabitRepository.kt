@@ -28,6 +28,7 @@ class HabitRepository(
 
     suspend fun refreshHabits() {
         try {
+            resetDailyHabits()
             val today = LocalDate.now().toString()
             val response = apiService.getHabits()
             if (response.isSuccessful) {
@@ -186,27 +187,26 @@ class HabitRepository(
 
     fun getHabitsForTodayStream(): Flow<List<HabitEntity>> {
         val todayName = LocalDate.now().dayOfWeek.name
-        val todayDate = LocalDate.now().toString()
 
         return habitDao.getAllHabitsFlow().map { habits ->
             habits.filter { habit ->
                 // Filter by frequency
-                val matchesFrequency = when (habit.frequency.uppercase()) {
+                when (habit.frequency.uppercase()) {
                     "DAILY" -> true
                     "WEEKENDS" -> todayName == "SATURDAY" || todayName == "SUNDAY"
                     "WEEKDAYS" -> todayName != "SATURDAY" && todayName != "SUNDAY"
                     else -> habit.frequency.equals(todayName, ignoreCase = true)
                 }
-
-                matchesFrequency
-            }.map { habit ->
-                // Dynamic reset if date changed
-                if (habit.lastCompletedDate != todayDate && habit.isCompletedToday) {
-                    habit.copy(isCompletedToday = false)
-                } else {
-                    habit
-                }
             }
+        }
+    }
+
+    private suspend fun resetDailyHabits() {
+        val today = LocalDate.now().toString()
+        val localHabits = habitDao.getAllHabits()
+        val toUpdate = localHabits.filter { it.isCompletedToday && it.lastCompletedDate != today }
+        if (toUpdate.isNotEmpty()) {
+            habitDao.insertHabits(toUpdate.map { it.copy(isCompletedToday = false) })
         }
     }
 }
