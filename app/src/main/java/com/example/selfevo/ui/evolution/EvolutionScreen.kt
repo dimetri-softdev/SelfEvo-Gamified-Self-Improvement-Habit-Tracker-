@@ -40,7 +40,21 @@ fun EvolutionScreen(currentOvr: Int) {
                 Spacer(modifier = Modifier.height(48.dp))
 
                 // Current Tier Progress
-                CurrentProgressCard(ovr = currentOvr, targetTier = "WALKOUT", progress = (currentOvr - 50) / 35f)
+                val (nextTier, nextThreshold) = when {
+                    currentOvr < 65 -> "SILVER" to 65
+                    currentOvr < 75 -> "GOLD" to 75
+                    else -> "WALKOUT" to 85
+                }
+                val progress = if (currentOvr < 85) {
+                    val currentBase = when {
+                        currentOvr < 65 -> 50
+                        currentOvr < 75 -> 65
+                        else -> 75
+                    }
+                    (currentOvr - currentBase).toFloat() / (nextThreshold - currentBase)
+                } else 1.0f
+
+                CurrentProgressCard(ovr = currentOvr, targetTier = nextTier, progress = progress)
 
                 Spacer(modifier = Modifier.height(48.dp))
 
