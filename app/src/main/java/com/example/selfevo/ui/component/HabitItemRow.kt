@@ -18,7 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.selfevo.data.local.entity.HabitEntity
+import com.example.selfevo.data.db.entity.HabitEntity
 
 @Composable
 fun HabitItemRow(

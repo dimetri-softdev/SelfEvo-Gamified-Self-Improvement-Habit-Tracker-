@@ -53,32 +53,21 @@ fun SelfEvoApp(viewModel: DashboardViewModel, authRepository: AuthRepository) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    var isLoggedIn by remember { mutableStateOf(authRepository.currentUser != null) }
-
-    LaunchedEffect(isLoggedIn) {
-        if (isLoggedIn) {
-            navController.navigate(Screen.Home.route) {
-                popUpTo(Screen.Login.route) { inclusive = true }
-                popUpTo(Screen.SignUp.route) { inclusive = true }
-            }
-        }
-    }
+    val currentUser by authRepository.currentUserFlow.collectAsState()
 
     SelfEvoTheme {
         NavHost(
             navController = navController,
-            startDestination = Screen.Login.route
+            startDestination = if (currentUser != null) Screen.Home.route else Screen.Login.route
         ) {
             composable(Screen.Login.route) {
                 LoginScreen(
                     onLoginSuccess = { email, password ->
                         val result = authRepository.login(email, password)
-                        if (result.isSuccess) {
-                            isLoggedIn = true
-                            viewModel.refreshData()
-                        } else {
+                        if (result.isFailure) {
                             Toast.makeText(context, "Login Failed: ${result.exceptionOrNull()?.message}", Toast.LENGTH_SHORT).show()
                         }
+                        // LaunchedEffect will handle navigation on currentUser update
                     },
                     onSignUpClick = { navController.navigate(Screen.SignUp.route) }
                 )
@@ -88,7 +77,11 @@ fun SelfEvoApp(viewModel: DashboardViewModel, authRepository: AuthRepository) {
                     onSignUpSuccess = { email, password, name ->
                         val result = authRepository.signUp(email, password)
                         if (result.isSuccess) {
-                            isLoggedIn = true
+                            viewModel.updatePlayerName(name)
+                            navController.navigate(Screen.Home.route) {
+                                popUpTo(Screen.SignUp.route) { inclusive = true }
+                                popUpTo(Screen.Login.route) { inclusive = true }
+                            }
                             viewModel.refreshData()
                         } else {
                             Toast.makeText(context, "SignUp Failed: ${result.exceptionOrNull()?.message}", Toast.LENGTH_SHORT).show()
@@ -122,11 +115,16 @@ fun SelfEvoApp(viewModel: DashboardViewModel, authRepository: AuthRepository) {
             }
             composable(Screen.Settings.route) {
                 MainScaffold(navController, currentDestination) {
+                    val playerCard by viewModel.playerCard.collectAsState()
                     SettingsScreen(
                         viewModel = viewModel,
+                        playerName = playerCard?.playerName ?: "Player",
+                        email = authRepository.currentUser?.email ?: "Unknown",
                         onSignOut = {
                             authRepository.signOut()
-                            isLoggedIn = false
+                            navController.navigate(Screen.Login.route) {
+                                popUpTo(0) { inclusive = true }
+                            }
                         },
                         onSyncClick = { viewModel.refreshData() }
                     )

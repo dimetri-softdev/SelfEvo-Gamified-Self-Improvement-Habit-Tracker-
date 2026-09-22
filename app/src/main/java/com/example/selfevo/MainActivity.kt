@@ -10,7 +10,7 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
-import com.example.selfevo.data.local.SelfEvoDatabase
+import com.example.selfevo.data.db.SelfEvoDatabase
 import com.example.selfevo.data.remote.RetrofitClient
 import com.example.selfevo.data.repository.HabitRepository
 import com.example.selfevo.data.sync.SyncWorker

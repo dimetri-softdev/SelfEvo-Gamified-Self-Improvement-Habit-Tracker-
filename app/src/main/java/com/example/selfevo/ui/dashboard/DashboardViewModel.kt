@@ -3,7 +3,7 @@ package com.example.selfevo.ui.dashboard
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.selfevo.data.auth.AuthRepository
-import com.example.selfevo.data.local.entity.HabitEntity
+import com.example.selfevo.data.db.entity.HabitEntity
 import com.example.selfevo.data.model.PlayerCard
 import com.example.selfevo.data.repository.HabitRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -75,6 +77,15 @@ class DashboardViewModel(
     fun addHabit(title: String, attribute: String, frequency: String, reminder: String) {
         viewModelScope.launch {
             repository.addHabit(currentUserId, title, "Custom Habit", attribute, frequency, reminder)
+            // Explicitly refresh to ensure it shows up immediately
+            refreshData()
+        }
+    }
+
+    fun updatePlayerName(name: String) {
+        viewModelScope.launch {
+            val userId = currentUserId
+            repository.updatePlayerName(userId, name)
         }
     }
 }

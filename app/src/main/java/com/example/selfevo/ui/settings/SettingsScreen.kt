@@ -16,10 +16,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.res.stringResource
 import com.example.selfevo.R
 import com.example.selfevo.ui.dashboard.DashboardViewModel
 import com.example.selfevo.util.lang.LocaleHelper
@@ -28,6 +28,8 @@ import com.example.selfevo.util.theme.ThemeManager
 @Composable
 fun SettingsScreen(
     viewModel: DashboardViewModel,
+    playerName: String,
+    email: String,
     onSignOut: () -> Unit,
     onSyncClick: () -> Unit
 ) {
@@ -141,15 +143,8 @@ fun SettingsScreen(
                         }
                         Spacer(modifier = Modifier.width(16.dp))
                         Column(modifier = Modifier.weight(1f)) {
-                            Text("MAKHO", color = Color.White, fontWeight = FontWeight.Black)
-                            Text("makho@selfevo.app", color = Color.Gray, fontSize = 12.sp)
-                        }
-                        Box(
-                            modifier = Modifier
-                                .border(1.dp, Color(0xFFFFD700), RoundedCornerShape(4.dp))
-                                .padding(horizontal = 8.dp, vertical = 2.dp)
-                        ) {
-                            Text("GOLD", color = Color(0xFFFFD700), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                            Text(playerName.uppercase(), color = Color.White, fontWeight = FontWeight.Black)
+                            Text(email, color = Color.Gray, fontSize = 12.sp)
                         }
                     }
                 }

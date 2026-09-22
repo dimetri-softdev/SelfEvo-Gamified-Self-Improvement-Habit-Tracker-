@@ -1,4 +1,4 @@
-package com.example.selfevo.data.local.entity
+package com.example.selfevo.data.db.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

@@ -1,4 +1,4 @@
-package com.example.selfevo.data.local.dao
+package com.example.selfevo.data.db.dao
 
 import androidx.room.Dao
 import androidx.room.Insert

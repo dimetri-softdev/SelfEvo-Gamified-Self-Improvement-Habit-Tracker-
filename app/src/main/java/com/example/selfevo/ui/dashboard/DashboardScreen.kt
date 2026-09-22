@@ -2,7 +2,13 @@ package com.example.selfevo.ui.dashboard
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -16,6 +22,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -61,8 +68,8 @@ fun DashboardScreen(
                 item {
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // 1. MAKHO Header Section
-                    HeaderSection(playerName = playerCard?.playerName ?: "MAKHO")
+                    // 1. Personalized Header Section
+                    HeaderSection(playerName = playerCard?.playerName ?: "Player")
 
                     Spacer(modifier = Modifier.height(32.dp))
 
@@ -71,18 +78,11 @@ fun DashboardScreen(
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    // 3. High-Fidelity FUT Card
-                    playerCard?.let { card ->
-                        FutPlayerCard(playerCard = card)
-                    } ?: run {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(280.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator(color = Color(0xFFFFD700))
-                        }
+                    // 3. Creative Card Placeholder
+                    if (playerCard != null) {
+                        FutPlayerCard(playerCard = playerCard!!)
+                    } else {
+                        SkeletonCard()
                     }
 
                     Spacer(modifier = Modifier.height(48.dp))
@@ -184,6 +184,37 @@ fun DashboardScreen(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun SkeletonCard() {
+    val infiniteTransition = rememberInfiniteTransition()
+    val alpha by infiniteTransition.animateFloat(
+        initialValue = 0.3f,
+        targetValue = 0.6f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(280.dp)
+            .alpha(alpha)
+            .background(Color(0xFF1A1A1A), RoundedCornerShape(20.dp))
+            .clip(RoundedCornerShape(20.dp)),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Box(modifier = Modifier.size(100.dp).background(Color(0xFF2C2C2C), CircleShape))
+            Spacer(modifier = Modifier.height(16.dp))
+            Box(modifier = Modifier.width(150.dp).height(20.dp).background(Color(0xFF2C2C2C)))
+            Spacer(modifier = Modifier.height(8.dp))
+            Box(modifier = Modifier.width(100.dp).height(10.dp).background(Color(0xFF2C2C2C)))
         }
     }
 }

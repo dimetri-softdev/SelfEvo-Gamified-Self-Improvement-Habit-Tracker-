@@ -1,10 +1,10 @@
 package com.example.selfevo.data.repository
 
-import com.example.selfevo.data.local.dao.HabitDao
-import com.example.selfevo.data.local.dao.PlayerCardDao
-import com.example.selfevo.data.local.dao.SyncQueueDao
-import com.example.selfevo.data.local.entity.HabitEntity
-import com.example.selfevo.data.local.entity.SyncQueueEntity
+import com.example.selfevo.data.db.dao.HabitDao
+import com.example.selfevo.data.db.dao.PlayerCardDao
+import com.example.selfevo.data.db.dao.SyncQueueDao
+import com.example.selfevo.data.db.entity.HabitEntity
+import com.example.selfevo.data.db.entity.SyncQueueEntity
 import com.example.selfevo.data.model.PlayerCard
 import com.example.selfevo.data.remote.SelfEvoApiService
 import com.example.selfevo.data.remote.dto.HabitLogRequest
@@ -210,5 +210,10 @@ class HabitRepository(
         if (toUpdate.isNotEmpty()) {
             habitDao.insertHabits(toUpdate.map { it.copy(isCompletedToday = false) })
         }
+    }
+
+    suspend fun updatePlayerName(userId: String, name: String) {
+        val currentCard = playerCardDao.getPlayerCard(userId) ?: PlayerCard(id = userId, playerName = name)
+        playerCardDao.insertPlayerCard(currentCard.copy(playerName = name))
     }
 }

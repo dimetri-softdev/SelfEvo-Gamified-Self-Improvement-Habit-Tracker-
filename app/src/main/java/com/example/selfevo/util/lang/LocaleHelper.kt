@@ -1,11 +1,8 @@
 package com.example.selfevo.util.lang
 
 import android.content.Context
-import android.os.Build
-import android.os.LocaleList
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
-import java.util.Locale
 
 object LocaleHelper {
 
@@ -20,6 +17,11 @@ object LocaleHelper {
 
     fun getLocale(context: Context): String {
         val prefs = context.getSharedPreferences("settings_prefs", Context.MODE_PRIVATE)
+        if (!prefs.contains("selected_lang")) {
+            // First time user detection: Force English
+            prefs.edit().putString("selected_lang", "en").apply()
+            return "en"
+        }
         return prefs.getString("selected_lang", "en") ?: "en"
     }
 

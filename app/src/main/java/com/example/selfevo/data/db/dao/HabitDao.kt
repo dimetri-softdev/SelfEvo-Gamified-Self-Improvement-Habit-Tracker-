@@ -1,11 +1,11 @@
-package com.example.selfevo.data.local.dao
+package com.example.selfevo.data.db.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.example.selfevo.data.local.entity.HabitEntity
+import com.example.selfevo.data.db.entity.HabitEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
