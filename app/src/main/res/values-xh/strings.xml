@@ -1,10 +1,67 @@
 <resources>
     <string name="app_name">SelfEvo</string>
-    <string name="dashboard_title">SelfEvo Dashboard</string>
+    <string name="dashboard_title">Ideshibhodi yeSelfEvo</string>
     <string name="news_title">Iindaba zeSelfEvo</string>
     <string name="admin_title">Ideshibhodi yoMlawuli</string>
     <string name="habit_checklist">Uluhlu lokujonga ukukhula kwemihla ngemihla</string>
     <string name="walkout_evolved">IKARDI YAKHO IKHULE!</string>
     <string name="continue_journey">Qhubeka nohambo</string>
-    <string name="no_habits">Azikabikho iihabithi ezilandelwayo. Zidale ngesicwangciso sakho okanye ungqamaniso lwe-api backend!</string>
+    <string name="no_habits">Azikabikho iihabithi ezilandelwayo. Zidale ngesicwangciso sakho!</string>
+
+    <!-- Auth -->
+    <string name="login_title">NGENA</string>
+    <string name="signup_title">BHALISA</string>
+    <string name="email_label">IMEVI</string>
+    <string name="password_label">IPASSWORD</string>
+    <string name="google_sign_in">Ngena nge-Google</string>
+    <string name="dont_have_account">Awunayo i-akhawunti?</string>
+    <string name="or">okanye</string>
+
+    <!-- Dashboard -->
+    <string name="good_morning">Molo,</string>
+    <string name="daily_progress">INKQUBELA YEMIHLA NGEMIHLA</string>
+    <string name="todays_habits">IIHABITHI ZANAMHLANJE</string>
+    <string name="in_progress">IYAQHUBEKA</string>
+    <string name="streak_days">Usuku lwe-%1$d</string>
+
+    <!-- Habits -->
+    <string name="new_habit">IHABITHI ENTSHA</string>
+    <string name="habit_description_sub">Ihabithi nganye egqityiweyo iphucula amanani ekhadi lakho lomdlali.</string>
+    <string name="habit_name_label">IGAMA LEHABITHI</string>
+    <string name="habit_name_hint">umz. Ukubaleka kusasa</string>
+    <string name="linked_attribute_label">I-ATTRIBUTE ENXULUMENE NAYO</string>
+    <string name="frequency_label">UKUPHINDAPHINDA</string>
+    <string name="reminder_time_label">IXESHA LESIKHUMBUZO</string>
+    <string name="add_to_selfevo">+ YONGEZA KUSELFEVO</string>
+
+    <!-- Evolution -->
+    <string name="your_journey">UHAMBO LWAKHO</string>
+    <string name="evolution">INKQUBELA (EVOLUTION)</string>
+    <string name="pathway_tier_progress">INKQUBELA YENKQUBO NE-TIER</string>
+    <string name="tier_milestones">AMANYATHELO ABALULEKILEYO</string>
+    <string name="card_preview">UKUJONGWA KWEKHARDI</string>
+    <string name="overall_rating">I-Rating ye-%1$d iyonke</string>
+
+    <!-- Settings -->
+    <string name="configure">QWALASELA</string>
+    <string name="settings">IZICWANGCISO</string>
+    <string name="language_preference">UKUKHETHA ULWIMI</string>
+    <string name="appearance">IMBONAKALO</string>
+    <string name="amoled_dark_mode">AMOLED I-Dark Mode</string>
+    <string name="amoled_dark_mode_sub">Umnyama ococekileyo — ugcina ibhetri</string>
+    <string name="push_notifications">IZAZISO</string>
+    <string name="daily_reminders">Izikhumbuzo zemihla ngemihla</string>
+    <string name="daily_reminders_sub">Fumana izaziso ngamaxesha akho acwangcisiweyo</string>
+    <string name="streak_alerts">Izaziso ze-Streak</string>
+    <string name="streak_alerts_sub">Isilumkiso xa i-streak isengozini</string>
+    <string name="data_cloud">IDATHA NE-CLOUD</string>
+    <string name="sync_data_to_cloud">SINKRONA IDATHA KWI-CLOUD</string>
+    <string name="last_synced">Igqityelwe ukungqamaniswa: %1$s</string>
+    <string name="sign_out">Phuma</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">EKHAYA</string>
+    <string name="nav_habits">IIHABITHI</string>
+    <string name="nav_evolutions">II-EVOLUTION</string>
+    <string name="nav_settings">IZICWANGCISO</string>
 </resources>

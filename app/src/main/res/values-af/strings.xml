@@ -1,10 +1,67 @@
 <resources>
     <string name="app_name">SelfEvo</string>
-    <string name="dashboard_title">SelfEvo Dashboard</string>
-    <string name="news_title">SelfEvo Nuus</string>
-    <string name="admin_title">Admin Dashboard</string>
-    <string name="habit_checklist">Daaglikse Groei-kontrolelys</string>
+    <string name="dashboard_title">SelfEvo-kontroleskerm</string>
+    <string name="news_title">SelfEvo-nuus</string>
+    <string name="admin_title">Admin-kontroleskerm</string>
+    <string name="habit_checklist">Daaglikse groei-kontrolelys</string>
     <string name="walkout_evolved">JOU KAART HET ONTWIKKEL!</string>
-    <string name="continue_journey">Gaan Voort met Reis</string>
-    <string name="no_habits">Geen gewoontes nog nagespoor nie. Skep dit via jou plan of api backend sync inisialisering!</string>
+    <string name="continue_journey">Gaan voort met reis</string>
+    <string name="no_habits">Geen gewoontes nog nagespoor nie. Skep hulle via jou plan!</string>
+
+    <!-- Auth -->
+    <string name="login_title">TEKEN IN</string>
+    <string name="signup_title">TEKEN OP</string>
+    <string name="email_label">EPOS</string>
+    <string name="password_label">WAGWOORD</string>
+    <string name="google_sign_in">Meld aan met Google</string>
+    <string name="dont_have_account">Het jy nie \'n rekening nie?</string>
+    <string name="or">of</string>
+
+    <!-- Dashboard -->
+    <string name="good_morning">Goeiemôre,</string>
+    <string name="daily_progress">DAAGLIKSE VORDERING</string>
+    <string name="todays_habits">VANDAG SE GEWOONTES</string>
+    <string name="in_progress">IN VORDERING</string>
+    <string name="streak_days">%1$d dag</string>
+
+    <!-- Habits -->
+    <string name="new_habit">NUWE GEWOONTE</string>
+    <string name="habit_description_sub">Elke voltooide gewoonte gradeer jou spelerkaartstatistieke op.</string>
+    <string name="habit_name_label">GEWOONTE NAAM</string>
+    <string name="habit_name_hint">bv. Oggendhardloop</string>
+    <string name="linked_attribute_label">GEKOPPELDE EIENSKAP</string>
+    <string name="frequency_label">FREKWENSIE</string>
+    <string name="reminder_time_label">HERINNERINGSTYD</string>
+    <string name="add_to_selfevo">+ VOEG BY SELFEVO</string>
+
+    <!-- Evolution -->
+    <string name="your_journey">JOU REIS</string>
+    <string name="evolution">EVOLUSIE</string>
+    <string name="pathway_tier_progress">PADWEG &amp; VLAK VORDERING</string>
+    <string name="tier_milestones">VLAK MYLPALE</string>
+    <string name="card_preview">KAART VOORSKOU</string>
+    <string name="overall_rating">%1$d Algehele Gradering</string>
+
+    <!-- Settings -->
+    <string name="configure">KONFIGUREER</string>
+    <string name="settings">INSTELLINGS</string>
+    <string name="language_preference">TAALVOORKEUR</string>
+    <string name="appearance">VOORKOMS</string>
+    <string name="amoled_dark_mode">AMOLED Donker Modus</string>
+    <string name="amoled_dark_mode_sub">Suiwer pikswart — spaar battery</string>
+    <string name="push_notifications">STUURKENNISGEWINGS</string>
+    <string name="daily_reminders">Daaglikse herinneringe</string>
+    <string name="daily_reminders_sub">Word in kennis gestel op jou geskeduleerde tye</string>
+    <string name="streak_alerts">Reeks-waarskuwings</string>
+    <string name="streak_alerts_sub">Waarskuwing wanneer reeks in gevaar is</string>
+    <string name="data_cloud">DATA &amp; WOLK</string>
+    <string name="sync_data_to_cloud">SINKRONISEER DATA NA WOLK</string>
+    <string name="last_synced">Laas gesinkroniseer: %1$s</string>
+    <string name="sign_out">Teken uit</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">TUIS</string>
+    <string name="nav_habits">GEWOONTES</string>
+    <string name="nav_evolutions">EVOLUSIES</string>
+    <string name="nav_settings">INSTELLINGS</string>
 </resources>
