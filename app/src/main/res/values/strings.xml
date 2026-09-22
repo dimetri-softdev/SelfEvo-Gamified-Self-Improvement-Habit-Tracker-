@@ -6,7 +6,7 @@
     <string name="habit_checklist">Daily Growth Checklist</string>
     <string name="walkout_evolved">YOUR CARD HAS EVOLVED!</string>
     <string name="continue_journey">Continue Journey</string>
-    <string name="no_habits">No habits tracked yet. Create them via your plan or api backend sync initialization!</string>
+    <string name="no_habits">No habits tracked yet. Create them via your plan!</string>
 
     <!-- Auth -->
     <string name="login_title">LOGIN</string>
