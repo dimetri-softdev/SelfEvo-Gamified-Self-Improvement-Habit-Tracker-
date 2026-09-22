@@ -19,6 +19,8 @@ import com.example.selfevo.data.sync.SyncWorker
 import com.example.selfevo.ui.dashboard.DashboardScreen
 import com.example.selfevo.ui.dashboard.DashboardViewModel
 import com.example.selfevo.ui.navigation.SelfEvoApp
+import com.example.selfevo.util.lang.LocaleHelper
+import com.example.selfevo.util.theme.ThemeManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -28,6 +30,10 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Initialize Settings
+        ThemeManager.init(this)
+        LocaleHelper.applyLocale(this)
 
         // 1. Initialize local database DAOs
         val database = SelfEvoDatabase.getDatabase(applicationContext)

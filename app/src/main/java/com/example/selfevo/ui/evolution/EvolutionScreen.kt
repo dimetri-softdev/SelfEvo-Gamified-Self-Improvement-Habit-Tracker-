@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.sp
 fun EvolutionScreen(currentOvr: Int) {
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = Color.Black
+        color = MaterialTheme.colorScheme.background
     ) {
         LazyColumn(
             modifier = Modifier
