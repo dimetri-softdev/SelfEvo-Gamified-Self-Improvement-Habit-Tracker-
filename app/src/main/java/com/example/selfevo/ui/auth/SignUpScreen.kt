@@ -20,11 +20,12 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.selfevo.R
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignUpScreen(
-    onSignUpSuccess: (String, String, String) -> Unit,
+    onSignUpSuccess: suspend (String, String, String) -> Unit,
     onLoginClick: () -> Unit
 ) {
     var email by remember { mutableStateOf("") }
@@ -33,6 +34,8 @@ fun SignUpScreen(
     var emailError by remember { mutableStateOf<String?>(null) }
     var passwordError by remember { mutableStateOf<String?>(null) }
     var nameError by remember { mutableStateOf<String?>(null) }
+    var isLoading by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
 
     val isFormValid = email.isNotBlank() && Patterns.EMAIL_ADDRESS.matcher(email).matches() &&
                       password.length >= 8 &&
@@ -171,13 +174,19 @@ fun SignUpScreen(
 
             // Gradient Sign Up Button
             Button(
-                onClick = { onSignUpSuccess(email, password, playerName) },
-                enabled = isFormValid,
+                onClick = {
+                    coroutineScope.launch {
+                        isLoading = true
+                        onSignUpSuccess(email, password, playerName)
+                        isLoading = false
+                    }
+                },
+                enabled = isFormValid && !isLoading,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(64.dp)
                     .background(
-                        if (isFormValid) goldGradient else Brush.linearGradient(listOf(Color.DarkGray, Color.Gray)),
+                        if (isFormValid && !isLoading) goldGradient else Brush.linearGradient(listOf(Color.DarkGray, Color.Gray)),
                         RoundedCornerShape(12.dp)
                     ),
                 colors = ButtonDefaults.buttonColors(
@@ -186,7 +195,11 @@ fun SignUpScreen(
                 ),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text(stringResource(R.string.signup_title), fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = if (isFormValid) Color.Black else Color.White.copy(alpha = 0.5f))
+                if (isLoading) {
+                    CircularProgressIndicator(color = Color.Black, modifier = Modifier.size(24.dp))
+                } else {
+                    Text(stringResource(R.string.signup_title), fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = if (isFormValid) Color.Black else Color.White.copy(alpha = 0.5f))
+                }
             }
 
             Spacer(modifier = Modifier.height(32.dp))

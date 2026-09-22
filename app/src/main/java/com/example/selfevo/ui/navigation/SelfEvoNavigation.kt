@@ -1,5 +1,6 @@
 package com.example.selfevo.ui.navigation
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -10,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -34,7 +36,6 @@ import com.example.selfevo.ui.settings.SettingsScreen
 import com.example.selfevo.ui.theme.Black
 import com.example.selfevo.ui.theme.Gold
 import com.example.selfevo.ui.theme.SelfEvoTheme
-import kotlinx.coroutines.launch
 
 sealed class Screen(val route: String, val resourceId: Int, val icon: ImageVector) {
     object Login : Screen("login", R.string.login_title, Icons.Default.Lock)
@@ -47,30 +48,36 @@ sealed class Screen(val route: String, val resourceId: Int, val icon: ImageVecto
 
 @Composable
 fun SelfEvoApp(viewModel: DashboardViewModel, authRepository: AuthRepository) {
+    val context = LocalContext.current
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
-    val coroutineScope = rememberCoroutineScope()
 
     var isLoggedIn by remember { mutableStateOf(authRepository.currentUser != null) }
+
+    LaunchedEffect(isLoggedIn) {
+        if (isLoggedIn) {
+            navController.navigate(Screen.Home.route) {
+                popUpTo(Screen.Login.route) { inclusive = true }
+                popUpTo(Screen.SignUp.route) { inclusive = true }
+            }
+        }
+    }
 
     SelfEvoTheme {
         NavHost(
             navController = navController,
-            startDestination = if (isLoggedIn) Screen.Home.route else Screen.Login.route
+            startDestination = Screen.Login.route
         ) {
             composable(Screen.Login.route) {
                 LoginScreen(
                     onLoginSuccess = { email, password ->
-                        coroutineScope.launch {
-                            val result = authRepository.login(email, password)
-                            if (result.isSuccess) {
-                                isLoggedIn = true
-                                viewModel.refreshData()
-                            } else {
-                                // Show error (e.g. via Snackbar or Toast)
-                                // For now, just logging or relying on validation
-                            }
+                        val result = authRepository.login(email, password)
+                        if (result.isSuccess) {
+                            isLoggedIn = true
+                            viewModel.refreshData()
+                        } else {
+                            Toast.makeText(context, "Login Failed: ${result.exceptionOrNull()?.message}", Toast.LENGTH_SHORT).show()
                         }
                     },
                     onSignUpClick = { navController.navigate(Screen.SignUp.route) }
@@ -79,13 +86,12 @@ fun SelfEvoApp(viewModel: DashboardViewModel, authRepository: AuthRepository) {
             composable(Screen.SignUp.route) {
                 SignUpScreen(
                     onSignUpSuccess = { email, password, name ->
-                        coroutineScope.launch {
-                            val result = authRepository.signUp(email, password)
-                            if (result.isSuccess) {
-                                // Potentially save player name to firestore or local db
-                                isLoggedIn = true
-                                viewModel.refreshData()
-                            }
+                        val result = authRepository.signUp(email, password)
+                        if (result.isSuccess) {
+                            isLoggedIn = true
+                            viewModel.refreshData()
+                        } else {
+                            Toast.makeText(context, "SignUp Failed: ${result.exceptionOrNull()?.message}", Toast.LENGTH_SHORT).show()
                         }
                     },
                     onLoginClick = { navController.navigate(Screen.Login.route) }
