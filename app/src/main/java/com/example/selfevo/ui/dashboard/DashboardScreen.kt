@@ -1,15 +1,10 @@
 package com.example.selfevo.ui.dashboard
 
 import androidx.compose.animation.*
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -68,17 +63,17 @@ fun DashboardScreen(
                 item {
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // 1. Personalized Header Section
+                    // 1. Personalized Header Section with dynamic greeting
                     HeaderSection(playerName = playerCard?.playerName ?: "Player")
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    // 2. Daily Progress Section
+                    // 2. Daily Progress Section with high-fidelity bar
                     ProgressSection(completedCount = habits.count { it.isCompletedToday }, totalCount = habits.size)
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    // 3. Creative Card Placeholder
+                    // 3. Creative Card Placeholder or real card
                     if (playerCard != null) {
                         FutPlayerCard(playerCard = playerCard!!)
                     } else {
@@ -101,13 +96,33 @@ fun DashboardScreen(
 
                 if (habits.isEmpty()) {
                     item {
-                        Text(
-                            text = stringResource(R.string.no_habits),
-                            color = Color.DarkGray,
-                            fontSize = 14.sp,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(top = 32.dp)
-                        )
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 32.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFF1A1A1A)),
+                            shape = RoundedCornerShape(16.dp),
+                            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(24.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    text = "NO ACTIVE HABITS",
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.Gray,
+                                    fontSize = 12.sp
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = stringResource(R.string.no_habits),
+                                    color = Color.DarkGray,
+                                    fontSize = 14.sp,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
                     }
                 } else {
                     items(habits, key = { it.id }) { habit ->
@@ -259,6 +274,7 @@ fun HeaderSection(playerName: String) {
 @Composable
 fun ProgressSection(completedCount: Int, totalCount: Int) {
     val progress = if (totalCount > 0) completedCount.toFloat() / totalCount else 0f
+    val animatedProgress by animateFloatAsState(targetValue = progress, animationSpec = tween(1000))
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -274,7 +290,7 @@ fun ProgressSection(completedCount: Int, totalCount: Int) {
         ) {
             Box(
                 modifier = Modifier
-                    .fillMaxWidth(progress)
+                    .fillMaxWidth(animatedProgress)
                     .fillMaxHeight()
                     .background(
                         brush = Brush.horizontalGradient(listOf(Color(0xFFFFA500), Color(0xFFFFD700))),
