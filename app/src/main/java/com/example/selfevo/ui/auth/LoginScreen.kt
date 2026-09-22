@@ -25,7 +25,7 @@ import com.example.selfevo.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
-    onLoginSuccess: () -> Unit,
+    onLoginSuccess: (String, String) -> Unit,
     onSignUpClick: () -> Unit
 ) {
     var email by remember { mutableStateOf("") }
@@ -171,7 +171,7 @@ fun LoginScreen(
 
             // Gradient Login Button
             Button(
-                onClick = onLoginSuccess,
+                onClick = { onLoginSuccess(email, password) },
                 enabled = isFormValid,
                 modifier = Modifier
                     .fillMaxWidth()

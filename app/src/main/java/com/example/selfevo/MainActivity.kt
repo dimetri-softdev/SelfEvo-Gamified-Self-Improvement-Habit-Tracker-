@@ -11,19 +11,14 @@ import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.example.selfevo.data.local.SelfEvoDatabase
-import com.example.selfevo.data.local.entity.HabitEntity
-import com.example.selfevo.data.model.PlayerCard
 import com.example.selfevo.data.remote.RetrofitClient
 import com.example.selfevo.data.repository.HabitRepository
 import com.example.selfevo.data.sync.SyncWorker
-import com.example.selfevo.ui.dashboard.DashboardScreen
 import com.example.selfevo.ui.dashboard.DashboardViewModel
 import com.example.selfevo.ui.navigation.SelfEvoApp
 import com.example.selfevo.util.lang.LocaleHelper
 import com.example.selfevo.util.theme.ThemeManager
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import com.example.selfevo.data.auth.AuthRepository
 import java.util.concurrent.TimeUnit
 
 class MainActivity : ComponentActivity() {
@@ -43,6 +38,7 @@ class MainActivity : ComponentActivity() {
 
         // 2. Real SelfEvo API Client Integration
         val apiService = RetrofitClient.apiService
+        val authRepository = AuthRepository()
 
         // 3. Construct unified data repository
         val repository = HabitRepository(habitDao, playerCardDao, syncQueueDao, apiService)
@@ -51,12 +47,11 @@ class MainActivity : ComponentActivity() {
         val viewModelFactory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return DashboardViewModel(repository) as T
+                return DashboardViewModel(repository, authRepository) as T
             }
         }
         val viewModel = ViewModelProvider(this, viewModelFactory)[DashboardViewModel::class.java]
 
-        // 5. Build Content View via Jetpack Compose
         // 5. Setup Constraint-Aware Periodic WorkManager Synchronization
         val syncConstraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
@@ -74,7 +69,7 @@ class MainActivity : ComponentActivity() {
 
         // 6. Build Content View via Jetpack Compose
         setContent {
-            SelfEvoApp(viewModel = viewModel)
+            SelfEvoApp(viewModel = viewModel, authRepository = authRepository)
         }
     }
 }

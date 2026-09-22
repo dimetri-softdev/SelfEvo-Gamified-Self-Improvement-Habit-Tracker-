@@ -23,6 +23,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.selfevo.R
+import com.example.selfevo.data.auth.AuthRepository
 import com.example.selfevo.ui.auth.LoginScreen
 import com.example.selfevo.ui.auth.SignUpScreen
 import com.example.selfevo.ui.dashboard.DashboardScreen
@@ -33,6 +34,7 @@ import com.example.selfevo.ui.settings.SettingsScreen
 import com.example.selfevo.ui.theme.Black
 import com.example.selfevo.ui.theme.Gold
 import com.example.selfevo.ui.theme.SelfEvoTheme
+import kotlinx.coroutines.launch
 
 sealed class Screen(val route: String, val resourceId: Int, val icon: ImageVector) {
     object Login : Screen("login", R.string.login_title, Icons.Default.Lock)
@@ -44,12 +46,13 @@ sealed class Screen(val route: String, val resourceId: Int, val icon: ImageVecto
 }
 
 @Composable
-fun SelfEvoApp(viewModel: DashboardViewModel) {
+fun SelfEvoApp(viewModel: DashboardViewModel, authRepository: AuthRepository) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
+    val coroutineScope = rememberCoroutineScope()
 
-    var isLoggedIn by remember { mutableStateOf(false) }
+    var isLoggedIn by remember { mutableStateOf(authRepository.currentUser != null) }
 
     SelfEvoTheme {
         NavHost(
@@ -58,13 +61,33 @@ fun SelfEvoApp(viewModel: DashboardViewModel) {
         ) {
             composable(Screen.Login.route) {
                 LoginScreen(
-                    onLoginSuccess = { isLoggedIn = true },
+                    onLoginSuccess = { email, password ->
+                        coroutineScope.launch {
+                            val result = authRepository.login(email, password)
+                            if (result.isSuccess) {
+                                isLoggedIn = true
+                                viewModel.refreshData()
+                            } else {
+                                // Show error (e.g. via Snackbar or Toast)
+                                // For now, just logging or relying on validation
+                            }
+                        }
+                    },
                     onSignUpClick = { navController.navigate(Screen.SignUp.route) }
                 )
             }
             composable(Screen.SignUp.route) {
                 SignUpScreen(
-                    onSignUpSuccess = { isLoggedIn = true },
+                    onSignUpSuccess = { email, password, name ->
+                        coroutineScope.launch {
+                            val result = authRepository.signUp(email, password)
+                            if (result.isSuccess) {
+                                // Potentially save player name to firestore or local db
+                                isLoggedIn = true
+                                viewModel.refreshData()
+                            }
+                        }
+                    },
                     onLoginClick = { navController.navigate(Screen.Login.route) }
                 )
             }
@@ -94,7 +117,10 @@ fun SelfEvoApp(viewModel: DashboardViewModel) {
             composable(Screen.Settings.route) {
                 MainScaffold(navController, currentDestination) {
                     SettingsScreen(
-                        onSignOut = { isLoggedIn = false },
+                        onSignOut = {
+                            authRepository.signOut()
+                            isLoggedIn = false
+                        },
                         onSyncClick = { viewModel.refreshData() }
                     )
                 }

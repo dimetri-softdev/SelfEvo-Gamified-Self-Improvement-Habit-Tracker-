@@ -23,7 +23,7 @@ import com.example.selfevo.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignUpScreen(
-    onSignUpSuccess: () -> Unit,
+    onSignUpSuccess: (String, String, String) -> Unit,
     onLoginClick: () -> Unit
 ) {
     var email by remember { mutableStateOf("") }
@@ -34,7 +34,11 @@ fun SignUpScreen(
     var nameError by remember { mutableStateOf<String?>(null) }
 
     val isFormValid = email.isNotBlank() && Patterns.EMAIL_ADDRESS.matcher(email).matches() &&
-                      password.length >= 6 && playerName.isNotBlank()
+                      password.length >= 8 &&
+                      password.any { it.isDigit() } &&
+                      password.any { !it.isLetterOrDigit() } &&
+                      password.count { it.isLetter() } >= 6 &&
+                      playerName.isNotBlank()
 
     val goldGradient = Brush.horizontalGradient(
         colors = listOf(Color(0xFFFFD700), Color(0xFFFFA500))
@@ -131,7 +135,16 @@ fun SignUpScreen(
                     value = password,
                     onValueChange = {
                         password = it
-                        passwordError = if (it.length >= 6) null else "Password must be at least 6 characters"
+                        val hasLetter = it.count { c -> c.isLetter() } >= 6
+                        val hasDigit = it.any { c -> c.isDigit() }
+                        val hasSymbol = it.any { c -> !c.isLetterOrDigit() }
+                        passwordError = when {
+                            it.length < 8 -> "At least 8 characters"
+                            !hasLetter -> "At least 6 letters"
+                            !hasDigit -> "At least one number"
+                            !hasSymbol -> "At least one symbol"
+                            else -> null
+                        }
                     },
                     modifier = Modifier.fillMaxWidth(),
                     placeholder = { Text("••••••••", color = Color.DarkGray) },
@@ -157,7 +170,7 @@ fun SignUpScreen(
 
             // Gradient Sign Up Button
             Button(
-                onClick = onSignUpSuccess,
+                onClick = { onSignUpSuccess(email, password, playerName) },
                 enabled = isFormValid,
                 modifier = Modifier
                     .fillMaxWidth()

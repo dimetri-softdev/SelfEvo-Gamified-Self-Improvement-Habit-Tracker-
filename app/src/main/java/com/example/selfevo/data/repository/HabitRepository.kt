@@ -21,13 +21,15 @@ class HabitRepository(
     private val apiService: SelfEvoApiService
 ) {
 
-    fun getHabitsStream(): Flow<List<HabitEntity>> = habitDao.getAllHabitsFlow()
+    fun getHabitsStream(userId: String = "default_user"): Flow<List<HabitEntity>> =
+        habitDao.getAllHabitsFlow(userId)
 
     fun getPlayerCardStream(userId: String = "default_user"): Flow<PlayerCard?> =
         playerCardDao.getPlayerCardFlow(userId)
 
-    suspend fun refreshHabits() {
+    suspend fun refreshHabits(userId: String = "default_user") {
         try {
+            resetDailyHabits(userId)
             val today = LocalDate.now().toString()
             val response = apiService.getHabits()
             if (response.isSuccessful) {
@@ -35,6 +37,7 @@ class HabitRepository(
                     val entities = dtoList.map { dto ->
                         HabitEntity(
                             id = dto.id,
+                            userId = userId,
                             title = dto.title,
                             description = dto.description,
                             attributeType = dto.attributeType,
@@ -49,7 +52,7 @@ class HabitRepository(
                 }
             } else {
                 // If offline or API fails, ensure local flags are reset for new day
-                val localHabits = habitDao.getAllHabits()
+                val localHabits = habitDao.getAllHabits(userId)
                 localHabits.forEach { habit ->
                     if (habit.lastCompletedDate != today) {
                         habitDao.updateHabit(habit.copy(isCompletedToday = false))
@@ -59,7 +62,7 @@ class HabitRepository(
         } catch (e: Exception) {
             // Offline fallback
             val today = LocalDate.now().toString()
-            val localHabits = habitDao.getAllHabits()
+            val localHabits = habitDao.getAllHabits(userId)
             localHabits.forEach { habit ->
                 if (habit.lastCompletedDate != today && habit.isCompletedToday) {
                     habitDao.updateHabit(habit.copy(isCompletedToday = false))
@@ -126,9 +129,9 @@ class HabitRepository(
         }
     }
 
-    suspend fun completeHabit(habitId: String): PlayerCard? {
+    suspend fun completeHabit(habitId: String, userId: String = "default_user"): PlayerCard? {
         val habit = habitDao.getHabitById(habitId) ?: return null
-        if (habit.isCompletedToday) return playerCardDao.getPlayerCard()
+        if (habit.isCompletedToday) return playerCardDao.getPlayerCard(userId)
 
         val today = LocalDate.now().toString()
 
@@ -140,7 +143,7 @@ class HabitRepository(
         habitDao.updateHabit(updatedHabit)
 
         // 2. Increment active FUT stats locally (+2 pts)
-        val activeCard = playerCardDao.getPlayerCard() ?: PlayerCard(playerName = "User Player")
+        val activeCard = playerCardDao.getPlayerCard(userId) ?: PlayerCard(id = userId, playerName = "User Player")
         val updatedCard = activeCard.incrementStat(habit.attributeType)
         playerCardDao.insertPlayerCard(updatedCard)
 
@@ -171,9 +174,10 @@ class HabitRepository(
         }
     }
 
-    suspend fun addHabit(title: String, description: String, attributeType: String, frequency: String, reminderTime: String) {
+    suspend fun addHabit(userId: String, title: String, description: String, attributeType: String, frequency: String, reminderTime: String) {
         val habit = HabitEntity(
             id = UUID.randomUUID().toString(),
+            userId = userId,
             title = title,
             description = description,
             attributeType = attributeType,
@@ -184,29 +188,27 @@ class HabitRepository(
         habitDao.insertHabit(habit)
     }
 
-    fun getHabitsForTodayStream(): Flow<List<HabitEntity>> {
-        val todayName = LocalDate.now().dayOfWeek.name
-        val todayDate = LocalDate.now().toString()
-
-        return habitDao.getAllHabitsFlow().map { habits ->
+    fun getHabitsForTodayStream(userId: String = "default_user"): Flow<List<HabitEntity>> {
+        return habitDao.getAllHabitsFlow(userId).map { habits ->
+            val todayName = LocalDate.now().dayOfWeek.name
             habits.filter { habit ->
                 // Filter by frequency
-                val matchesFrequency = when (habit.frequency.uppercase()) {
+                when (habit.frequency.uppercase()) {
                     "DAILY" -> true
                     "WEEKENDS" -> todayName == "SATURDAY" || todayName == "SUNDAY"
                     "WEEKDAYS" -> todayName != "SATURDAY" && todayName != "SUNDAY"
                     else -> habit.frequency.equals(todayName, ignoreCase = true)
                 }
-
-                matchesFrequency
-            }.map { habit ->
-                // Dynamic reset if date changed
-                if (habit.lastCompletedDate != todayDate && habit.isCompletedToday) {
-                    habit.copy(isCompletedToday = false)
-                } else {
-                    habit
-                }
             }
+        }
+    }
+
+    private suspend fun resetDailyHabits(userId: String) {
+        val today = LocalDate.now().toString()
+        val localHabits = habitDao.getAllHabits(userId)
+        val toUpdate = localHabits.filter { it.isCompletedToday && it.lastCompletedDate != today }
+        if (toUpdate.isNotEmpty()) {
+            habitDao.insertHabits(toUpdate.map { it.copy(isCompletedToday = false) })
         }
     }
 }

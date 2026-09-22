@@ -10,11 +10,11 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface HabitDao {
-    @Query("SELECT * FROM habits")
-    fun getAllHabitsFlow(): Flow<List<HabitEntity>>
+    @Query("SELECT * FROM habits WHERE userId = :userId")
+    fun getAllHabitsFlow(userId: String): Flow<List<HabitEntity>>
 
-    @Query("SELECT * FROM habits")
-    suspend fun getAllHabits(): List<HabitEntity>
+    @Query("SELECT * FROM habits WHERE userId = :userId")
+    suspend fun getAllHabits(userId: String): List<HabitEntity>
 
     @Query("SELECT * FROM habits WHERE id = :habitId")
     suspend fun getHabitById(habitId: String): HabitEntity?
