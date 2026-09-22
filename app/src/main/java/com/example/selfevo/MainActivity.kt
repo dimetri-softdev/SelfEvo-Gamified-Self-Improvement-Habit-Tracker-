@@ -68,23 +68,6 @@ class MainActivity : ComponentActivity() {
         // 3. Construct unified data repository
         val repository = HabitRepository(habitDao, playerCardDao, syncQueueDao, apiServicePlaceholder)
 
-        // Pre-populate dummy starter habits locally if the database is empty for easy testing
-        CoroutineScope(Dispatchers.IO).launch {
-            if (playerCardDao.getPlayerCard() == null) {
-                playerCardDao.insertPlayerCard(PlayerCard(playerName = "Dimetri Peters"))
-            }
-            if (habitDao.getAllHabits().isEmpty()) {
-                habitDao.insertHabits(
-                    listOf(
-                        HabitEntity("h1", "Morning Gym Workout", "Boost physical strength core stats", "PHYSICAL", false, "Daily", "07:00"),
-                        HabitEntity("h2", "LeetCode Algorithmic Problem", "Increase tactical passing / skill level", "SKILL", false, "Daily", "18:00"),
-                        HabitEntity("h3", "Sprint Interval Training", "Max out player pace speed limits", "PACE", false, "Daily", "08:00"),
-                        HabitEntity("h4", "Precision Aim Practice", "Refine sharp focus and shooting accuracy", "SHOOTING", false, "Daily", "10:00")
-                    )
-                )
-            }
-        }
-
         // 4. Construct ViewModel via inline provider factory
         val viewModelFactory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")

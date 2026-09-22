@@ -186,9 +186,8 @@ class HabitRepository(
     }
 
     fun getHabitsForTodayStream(): Flow<List<HabitEntity>> {
-        val todayName = LocalDate.now().dayOfWeek.name
-
         return habitDao.getAllHabitsFlow().map { habits ->
+            val todayName = LocalDate.now().dayOfWeek.name
             habits.filter { habit ->
                 // Filter by frequency
                 when (habit.frequency.uppercase()) {
