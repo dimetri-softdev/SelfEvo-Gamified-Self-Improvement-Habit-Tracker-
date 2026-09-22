@@ -1,80 +1,88 @@
 # SelfEvo – Gamified Self-Improvement & Habit Tracker
 
-**Course Module:** OPSC6321 / POE Part 1  
-**Target Platform:** Android  
-**Tech Stack:** ASP.NET Core REST API, Azure SQL, Android Native (Room DB, Jetpack Compose)
+**Course Module:** OPSC6321 - Mobile Development POE (Part 2)
+**Target Platform:** Android (Native)
+**Tech Stack:** Jetpack Compose, Room DB, WorkManager, Firebase, Retrofit, ASP.NET Core API
 
 ---
 
-## 👥 Team Members
-* Dimetri Peters
-* Garren Gabron
-* Nelson De Vos
-* Silindokuhle Gqukani
+## 🚀 Overview
+**SelfEvo** is a high-fidelity habit tracker that turns personal growth into a competitive card collection experience. Inspired by FIFA’s Ultimate Team (FUT) mechanics, SelfEvo allows users to "evolve" their real-life stats—Pace, Physical, Shooting, Passing, Defending, and Skill—by completing daily habits.
 
----
-
-## 🚀 About SelfEvo
-**SelfEvo** is a gamified habit-tracking application inspired by FIFA card collection mechanics [cite: 2]. Instead of traditional check-lists, completing daily real-world habits increases your player attributes (Pace, Physical, Skill, etc.) [cite: 2]. Increasing your attributes raises your overall rating (OVR) and unlocks card tiers from Bronze to Special Walkout cards [cite: 2].
+As stats increase, the user's **Overall Rating (OVR)** grows, triggering "Walkout" animations and promoting the user through Bronze, Silver, and Gold tiers to reach Legendary status.
 
 ---
 
 ## ✨ Key Features
-* **Authentication & Google SSO:** Encrypted password authentication and Google Single Sign-On [cite: 2].
-* **FUT-Style Card Progression:** Dynamic overall rating (OVR) calculations across Bronze, Silver, Gold, and Walkout tiers [cite: 2].
-* **Offline-First Sync:** Habit logging works offline via Room Database and automatically syncs to the REST API when online [cite: 2].
-* **Push Notifications:** Firebase Cloud Messaging (FCM) integration for daily habit reminders and level-up alerts [cite: 2].
-* **Multi-Language Support:** Localized UI for English, isiXhosa, and Afrikaans [cite: 2].
+
+### 🔐 Secure Identity & Access
+*   **Firebase Authentication**: Robust Email/Password registration and login.
+*   **Strict Security Rules**: Registration requires a secure password (8+ chars, number, symbol, and 6 letters).
+*   **Biometric Integration**: Support for Fingerprint and Face ID authentication.
+*   **Show/Hide Password**: Intuitive UI for secure credential entry.
+
+### ⚽ Gamified Evolution Logic
+*   **FUT-Style Stats**: Habits are linked to specific player attributes.
+*   **Instant Stat Growth**: Every logged habit grants a `+2` increase to the linked stat.
+*   **Dynamic OVR & Tiers**: Real-time calculation of player rating and tier assignment.
+*   **Walkout Animations**: High-impact, animated overlays triggered when reaching key OVR milestones.
+
+### 📱 Premium UX & Design
+*   **AMOLED Theme**: A true pitch-black design optimized for battery savings and high-contrast visuals.
+*   **Skeleton Shimmers**: Professional loading states that mirror the final UI layout.
+*   **Reactive Dashboard**: Instant updates to habit lists and card visuals without manual refreshing.
+*   **High-Fidelity Animations**: Smooth transitions and bouncy spring animations throughout the app.
+
+### 🌐 Globalisation & Offline-First
+*   **Multi-Language Support**: Fully localized UI for **English (Default)**, **isiXhosa**, and **Afrikaans**.
+*   **Offline Persistence**: Powered by Room DB (v4) to ensure the app works perfectly without an internet connection.
+*   **WorkManager Sync**: Background engine that automatically synchronizes local data with the remote REST API when connectivity returns.
 
 ---
 
 ## 🛠 Tech Stack & Architecture
 
-* **Mobile Client:** Android Native, Jetpack Compose / UI Views, Room DB, WorkManager, Firebase SDK [cite: 2].
-* **Backend:** ASP.NET Core REST API (Azure App Service / SmarterASP) [cite: 2].
-* **Database:** Azure SQL Database (Cloud) & Room Database (Local Client) [cite: 2].
+*   **UI Framework**: Jetpack Compose (100% Declarative UI)
+*   **Language**: Kotlin (Modern Android Standards)
+*   **Persistence**: Room Database (SQLite abstraction)
+*   **Background Tasks**: WorkManager
+*   **Networking**: Retrofit 2 & OkHttp
+*   **Backend Interface**: ASP.NET Core REST API
+*   **Cloud Services**: Firebase (Auth, Cloud Messaging)
+*   **Architecture Pattern**: MVVM (Model-View-ViewModel) + Repository Pattern
 
 ---
 
-## 📡 Core API Endpoints
-
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `POST` | `/api/auth/register` | Register new user account [cite: 2] |
-| `POST` | `/api/auth/login` | Authenticate credentials & return JWT access token [cite: 2] |
-| `POST` | `/api/auth/sso` | Validate Google OAuth token [cite: 2] |
-| `GET` | `/api/habits` | Fetch user habits and completion flags [cite: 2] |
-| `POST` | `/api/habits/log` | Submit habit completion & calculate stat increases [cite: 2] |
-| `GET` | `/api/card` | Retrieve active player card stats & OVR rating [cite: 2] |
-| `POST` | `/api/sync` | Sync offline local database queue with cloud storage [cite: 2] |
+## 👥 Team Members
+*   **Dimetri Peters** (Lead UI/UX & Gamification Logic)
+*   **Silindokuhle Gqukani** (Infrastructure, Firebase & Localization)
+*   **Nelson De Vos** (Data Persistence & Repository Architecture)
+*   **Garren Gabron** (API Integration & Cloud Synchronization)
 
 ---
 
-## 📅 Project Timeline
+## 🛠 Setup & Installation
 
-```mermaid
-gantt
-    title SelfEvo Development Timeline (2026)
-    dateFormat  YYYY-MM-DD
-    axisFormat  %b %d
+1.  **Clone the Repository**:
+    ```bash
+    git clone https://github.com/dimetri-softdev/SelfEvo-Gamified-Self-Improvement-Habit-Tracker-.git
+    ```
+2.  **Firebase Configuration**:
+    *   Ensure your `google-services.json` is placed in the `app/` directory.
+    *   **CRITICAL**: Enable "Email/Password" authentication in your Firebase Console.
+3.  **Build the Project**:
+    *   Open the project in Android Studio (Ladybug or newer).
+    *   Sync Gradle and run the `:app:assembleDebug` task.
+4.  **Language Settings**:
+    *   The app defaults to English. To change languages, navigate to **Settings** within the app.
 
-    section Requirements & Design
-    Requirements & UML Diagrams           :done, a1, 2026-08-25, 2026-09-01
+---
 
-    section Backend & Database
-    ASP.NET Core REST API & Azure SQL     :active, a2, 2026-08-25, 2026-09-08
-    JWT Auth Controller & Google SSO      :a3, 2026-09-01, 2026-09-08
+## 🧪 Testing & CI
+*   **Unit Tests**: Core repository and stat math are verified in `HabitRepositoryTest.kt`.
+*   **GitHub Actions**: Automated CI workflow checks every push for build stability and test passes.
 
-    section Android Development
-    UI Layouts & FUT Player Card Views    :a4, 2026-09-01, 2026-09-15
-    Room DB & Local Persistence Engine    :a5, 2026-09-08, 2026-09-22
+---
 
-    section Cloud Sync & Services
-    Background WorkManager Sync Engine    :a6, 2026-09-15, 2026-09-29
-    Firebase Cloud Messaging & Push Alerts:a7, 2026-09-15, 2026-09-25
-    Multi-Language Support (EN/XHO/AFR)   :a8, 2026-09-22, 2026-09-29
-
-    section Testing & Release
-    Unit Testing & Offline Edge Cases     :a9, 2026-09-22, 2026-10-06
-    Walkout Animations & Final POE Submit :a10, 2026-09-29, 2026-10-06
-```
+## 📄 License
+This project was developed for academic purposes as part of the OPSC6321 module. All rights reserved.
