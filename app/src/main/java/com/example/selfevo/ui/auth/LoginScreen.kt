@@ -36,7 +36,7 @@ fun LoginScreen(
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = Color.Black // AMOLED Black
+        color = MaterialTheme.colorScheme.background
     ) {
         Column(
             modifier = Modifier

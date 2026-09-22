@@ -35,7 +35,7 @@ fun SignUpScreen(
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = Color.Black
+        color = MaterialTheme.colorScheme.background
     ) {
         Column(
             modifier = Modifier

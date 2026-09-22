@@ -49,7 +49,7 @@ fun DashboardScreen(
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = Color.Black // AMOLED Black
+        color = MaterialTheme.colorScheme.background
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             LazyColumn(

@@ -3,6 +3,7 @@ package com.example.selfevo.ui.settings
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -14,18 +15,25 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.selfevo.util.lang.LocaleHelper
+import com.example.selfevo.util.theme.ThemeManager
 
 @Composable
 fun SettingsScreen(
     onSignOut: () -> Unit,
     onSyncClick: () -> Unit
 ) {
+    val context = LocalContext.current
+    val currentLang = remember { mutableStateOf(LocaleHelper.getLocale(context)) }
+    val isAmoled = ThemeManager.isAmoledMode.value
+
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = Color.Black
+        color = MaterialTheme.colorScheme.background
     ) {
         LazyColumn(
             modifier = Modifier
@@ -41,24 +49,39 @@ fun SettingsScreen(
             // Language Preference
             item {
                 SettingsSection(title = "LANGUAGE PREFERENCE") {
-                    LanguageItem("English", "Default system language", true)
-                    LanguageItem("isiXhosa", "Xhosa — South Africa", false)
-                    LanguageItem("Afrikaans", "Afrikaans — South Africa", false)
+                    LanguageItem("English", "Default system language", currentLang.value == "en") {
+                        LocaleHelper.setLocale(context, "en")
+                        currentLang.value = "en"
+                    }
+                    LanguageItem("isiXhosa", "Xhosa — South Africa", currentLang.value == "xh") {
+                        LocaleHelper.setLocale(context, "xh")
+                        currentLang.value = "xh"
+                    }
+                    LanguageItem("Afrikaans", "Afrikaans — South Africa", currentLang.value == "af") {
+                        LocaleHelper.setLocale(context, "af")
+                        currentLang.value = "af"
+                    }
                 }
             }
 
             // Appearance
             item {
                 SettingsSection(title = "APPEARANCE") {
-                    ToggleItem("AMOLED Dark Mode", "Pure pitch black — saves battery", true)
+                    ToggleItem(
+                        name = "AMOLED Dark Mode",
+                        description = "Pure pitch black — saves battery",
+                        isEnabled = isAmoled
+                    ) { enabled ->
+                        ThemeManager.setAmoledMode(context, enabled)
+                    }
                 }
             }
 
             // Push Notifications
             item {
                 SettingsSection(title = "PUSH NOTIFICATIONS") {
-                    ToggleItem("Daily Reminders", "Get notified at your scheduled times", true)
-                    ToggleItem("Streak Alerts", "Warning when streak is at risk", true)
+                    ToggleItem("Daily Reminders", "Get notified at your scheduled times", true) {}
+                    ToggleItem("Streak Alerts", "Warning when streak is at risk", true) {}
                 }
             }
 
@@ -163,11 +186,12 @@ fun SettingsSection(title: String, content: @Composable ColumnScope.() -> Unit) 
 }
 
 @Composable
-fun LanguageItem(name: String, description: String, isSelected: Boolean) {
+fun LanguageItem(name: String, description: String, isSelected: Boolean, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(16.dp)
+            .clickable { onClick() },
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -175,21 +199,19 @@ fun LanguageItem(name: String, description: String, isSelected: Boolean) {
             Text(name, color = if (isSelected) Color(0xFFFFD700) else Color.White, fontWeight = FontWeight.Bold)
             Text(description, color = Color.Gray, fontSize = 12.sp)
         }
-        Switch(
-            checked = isSelected,
-            onCheckedChange = {},
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = Color.Black,
-                checkedTrackColor = Color(0xFFFFD700),
-                uncheckedThumbColor = Color.Gray,
-                uncheckedTrackColor = Color(0xFF0A0A0A)
+        RadioButton(
+            selected = isSelected,
+            onClick = onClick,
+            colors = RadioButtonDefaults.colors(
+                selectedColor = Color(0xFFFFD700),
+                unselectedColor = Color.Gray
             )
         )
     }
 }
 
 @Composable
-fun ToggleItem(name: String, description: String, isEnabled: Boolean) {
+fun ToggleItem(name: String, description: String, isEnabled: Boolean, onToggle: (Boolean) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -203,7 +225,7 @@ fun ToggleItem(name: String, description: String, isEnabled: Boolean) {
         }
         Switch(
             checked = isEnabled,
-            onCheckedChange = {},
+            onCheckedChange = onToggle,
             colors = SwitchDefaults.colors(
                 checkedThumbColor = Color.Black,
                 checkedTrackColor = Color(0xFFFFD700),
