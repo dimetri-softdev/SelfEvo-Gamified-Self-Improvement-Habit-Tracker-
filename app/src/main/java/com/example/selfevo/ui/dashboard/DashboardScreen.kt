@@ -49,7 +49,7 @@ fun DashboardScreen(
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = Color.Black // AMOLED Black
+        color = MaterialTheme.colorScheme.background
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             LazyColumn(
@@ -206,7 +206,7 @@ fun HeaderSection(playerName: String) {
             }
             Spacer(modifier = Modifier.width(16.dp))
             Column {
-                Text("Good morning,", color = Color.Gray, fontSize = 12.sp)
+                Text(stringResource(R.string.good_morning), color = Color.Gray, fontSize = 12.sp)
                 Text(playerName.uppercase(), color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Black)
             }
         }

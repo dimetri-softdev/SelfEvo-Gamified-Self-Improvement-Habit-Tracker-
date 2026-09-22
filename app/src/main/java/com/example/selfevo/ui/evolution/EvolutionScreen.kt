@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.sp
 fun EvolutionScreen(currentOvr: Int) {
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = Color.Black
+        color = MaterialTheme.colorScheme.background
     ) {
         LazyColumn(
             modifier = Modifier
@@ -52,8 +52,8 @@ fun EvolutionScreen(currentOvr: Int) {
                 EvolutionMilestone(
                     tier = "BRONZE",
                     range = "50-64 OVR",
-                    isUnlocked = true,
-                    isCurrent = false
+                    isUnlocked = currentOvr >= 50,
+                    isCurrent = currentOvr in 50..64
                 )
             }
             item { Spacer(modifier = Modifier.height(16.dp)) }
@@ -61,8 +61,8 @@ fun EvolutionScreen(currentOvr: Int) {
                 EvolutionMilestone(
                     tier = "SILVER",
                     range = "65-74 OVR",
-                    isUnlocked = true,
-                    isCurrent = false
+                    isUnlocked = currentOvr >= 65,
+                    isCurrent = currentOvr in 65..74
                 )
             }
             item { Spacer(modifier = Modifier.height(16.dp)) }
@@ -70,8 +70,8 @@ fun EvolutionScreen(currentOvr: Int) {
                 EvolutionMilestone(
                     tier = "GOLD",
                     range = "75-84 OVR",
-                    isUnlocked = true,
-                    isCurrent = true
+                    isUnlocked = currentOvr >= 75,
+                    isCurrent = currentOvr in 75..84
                 )
             }
             item { Spacer(modifier = Modifier.height(16.dp)) }
@@ -79,8 +79,8 @@ fun EvolutionScreen(currentOvr: Int) {
                 EvolutionMilestone(
                     tier = "WALKOUT",
                     range = "85+ OVR",
-                    isUnlocked = false,
-                    isCurrent = false
+                    isUnlocked = currentOvr >= 85,
+                    isCurrent = currentOvr >= 85
                 )
             }
 
@@ -106,6 +106,27 @@ fun EvolutionScreen(currentOvr: Int) {
 
 @Composable
 fun CurrentProgressCard(ovr: Int, targetTier: String, progress: Float) {
+    val currentTierName = when {
+        ovr >= 85 -> "WALKOUT TIER"
+        ovr >= 75 -> "GOLD TIER"
+        ovr >= 65 -> "SILVER TIER"
+        else -> "BRONZE TIER"
+    }
+
+    val ratingsToNext = when {
+        ovr < 65 -> 65 - ovr
+        ovr < 75 -> 75 - ovr
+        ovr < 85 -> 85 - ovr
+        else -> 0
+    }
+
+    val displayTargetTier = when {
+        ovr < 65 -> "SILVER"
+        ovr < 75 -> "GOLD"
+        ovr < 85 -> "WALKOUT"
+        else -> "MAX"
+    }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -128,8 +149,12 @@ fun CurrentProgressCard(ovr: Int, targetTier: String, progress: Float) {
         Spacer(modifier = Modifier.width(20.dp))
 
         Column(modifier = Modifier.weight(1f)) {
-            Text("GOLD TIER", color = Color(0xFFFFD700), fontSize = 16.sp, fontWeight = FontWeight.Black)
-            Text("3 ratings to $targetTier", color = Color.White, fontSize = 14.sp)
+            Text(currentTierName, color = Color(0xFFFFD700), fontSize = 16.sp, fontWeight = FontWeight.Black)
+            if (ratingsToNext > 0) {
+                Text("$ratingsToNext ratings to $displayTargetTier", color = Color.White, fontSize = 14.sp)
+            } else {
+                Text("LEGENDARY STATUS REACHED", color = Color.White, fontSize = 14.sp)
+            }
             Spacer(modifier = Modifier.height(12.dp))
             LinearProgressIndicator(
                 progress = { progress },

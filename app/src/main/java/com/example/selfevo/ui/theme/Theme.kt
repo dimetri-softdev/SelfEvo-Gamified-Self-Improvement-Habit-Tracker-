@@ -5,12 +5,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 
+import com.example.selfevo.util.theme.ThemeManager
+
 private val DarkColorScheme = darkColorScheme(
     primary = Gold,
     onPrimary = Black,
     secondary = Cyan,
     onSecondary = Black,
-    background = Black,
+    background = Black, // This will be overridden
     onBackground = TextPrimary,
     surface = DarkGrey,
     onSurface = TextPrimary,
@@ -24,8 +26,15 @@ private val DarkColorScheme = darkColorScheme(
 fun SelfEvoTheme(
     content: @Composable () -> Unit
 ) {
+    val isAmoled = ThemeManager.isAmoledMode.value
+    val colorScheme = if (isAmoled) {
+        DarkColorScheme.copy(background = Black, surface = Black)
+    } else {
+        DarkColorScheme.copy(background = DarkGrey, surface = DarkGrey)
+    }
+
     MaterialTheme(
-        colorScheme = DarkColorScheme,
+        colorScheme = colorScheme,
         content = content
     )
 }

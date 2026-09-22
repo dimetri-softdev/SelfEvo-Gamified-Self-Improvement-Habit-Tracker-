@@ -1,5 +1,6 @@
 package com.example.selfevo.ui.auth
 
+import android.util.Patterns
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -24,11 +25,15 @@ import com.example.selfevo.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
-    onLoginSuccess: () -> Unit,
+    onLoginSuccess: (String, String) -> Unit,
     onSignUpClick: () -> Unit
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var emailError by remember { mutableStateOf<String?>(null) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
+
+    val isFormValid = email.isNotBlank() && Patterns.EMAIL_ADDRESS.matcher(email).matches() && password.length >= 6
 
     val goldGradient = Brush.horizontalGradient(
         colors = listOf(Color(0xFFFFD700), Color(0xFFFFA500))
@@ -36,7 +41,7 @@ fun LoginScreen(
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = Color.Black // AMOLED Black
+        color = MaterialTheme.colorScheme.background
     ) {
         Column(
             modifier = Modifier
@@ -107,19 +112,27 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(8.dp))
                 TextField(
                     value = email,
-                    onValueChange = { email = it },
+                    onValueChange = {
+                        email = it
+                        emailError = if (Patterns.EMAIL_ADDRESS.matcher(it).matches()) null else "Invalid email format"
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     placeholder = { Text("player@selfevo.app", color = Color.DarkGray) },
+                    isError = emailError != null,
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = Color(0xFF1A1A1A),
                         unfocusedContainerColor = Color(0xFF1A1A1A),
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent,
                         focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White
+                        unfocusedTextColor = Color.White,
+                        errorContainerColor = Color(0xFF1A1A1A)
                     ),
                     shape = RoundedCornerShape(8.dp)
                 )
+                if (emailError != null) {
+                    Text(emailError!!, color = MaterialTheme.colorScheme.error, fontSize = 10.sp)
+                }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -130,35 +143,50 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(8.dp))
                 TextField(
                     value = password,
-                    onValueChange = { password = it },
+                    onValueChange = {
+                        password = it
+                        passwordError = if (it.length >= 6) null else "Password must be at least 6 characters"
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     placeholder = { Text("••••••••", color = Color.DarkGray) },
                     visualTransformation = PasswordVisualTransformation(),
+                    isError = passwordError != null,
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = Color(0xFF1A1A1A),
                         unfocusedContainerColor = Color(0xFF1A1A1A),
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent,
                         focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White
+                        unfocusedTextColor = Color.White,
+                        errorContainerColor = Color(0xFF1A1A1A)
                     ),
                     shape = RoundedCornerShape(8.dp)
                 )
+                if (passwordError != null) {
+                    Text(passwordError!!, color = MaterialTheme.colorScheme.error, fontSize = 10.sp)
+                }
             }
 
             Spacer(modifier = Modifier.height(48.dp))
 
             // Gradient Login Button
             Button(
-                onClick = onLoginSuccess,
+                onClick = { onLoginSuccess(email, password) },
+                enabled = isFormValid,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(64.dp)
-                    .background(goldGradient, RoundedCornerShape(12.dp)),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                    .background(
+                        if (isFormValid) goldGradient else Brush.linearGradient(listOf(Color.DarkGray, Color.Gray)),
+                        RoundedCornerShape(12.dp)
+                    ),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Transparent,
+                    disabledContainerColor = Color.Transparent
+                ),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text("LOGIN", fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = Color.Black)
+                Text("LOGIN", fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = if (isFormValid) Color.Black else Color.White.copy(alpha = 0.5f))
             }
 
             Spacer(modifier = Modifier.height(16.dp))

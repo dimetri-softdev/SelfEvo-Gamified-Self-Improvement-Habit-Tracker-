@@ -11,24 +11,14 @@ import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.example.selfevo.data.local.SelfEvoDatabase
-import com.example.selfevo.data.local.entity.HabitEntity
-import com.example.selfevo.data.model.PlayerCard
-import com.example.selfevo.data.remote.SelfEvoApiService
-import com.example.selfevo.data.remote.dto.AuthResponse
-import com.example.selfevo.data.remote.dto.HabitLogRequest
-import com.example.selfevo.data.remote.dto.HabitLogResponse
-import com.example.selfevo.data.remote.dto.LoginRequest
-import com.example.selfevo.data.remote.dto.NetworkHabitDto
-import com.example.selfevo.data.remote.dto.NetworkPlayerCardDto
+import com.example.selfevo.data.remote.RetrofitClient
 import com.example.selfevo.data.repository.HabitRepository
 import com.example.selfevo.data.sync.SyncWorker
-import com.example.selfevo.ui.dashboard.DashboardScreen
 import com.example.selfevo.ui.dashboard.DashboardViewModel
 import com.example.selfevo.ui.navigation.SelfEvoApp
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import retrofit2.Response
+import com.example.selfevo.util.lang.LocaleHelper
+import com.example.selfevo.util.theme.ThemeManager
+import com.example.selfevo.data.auth.AuthRepository
 import java.util.concurrent.TimeUnit
 
 class MainActivity : ComponentActivity() {
@@ -36,48 +26,32 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Initialize Settings
+        ThemeManager.init(this)
+        LocaleHelper.applyLocale(this)
+
         // 1. Initialize local database DAOs
         val database = SelfEvoDatabase.getDatabase(applicationContext)
         val habitDao = database.habitDao()
         val playerCardDao = database.playerCardDao()
         val syncQueueDao = database.syncQueueDao()
 
-        // 2. SelfEvo API Placeholder Client Integration
-        val apiServicePlaceholder = object : SelfEvoApiService {
-            override suspend fun login(request: LoginRequest): Response<AuthResponse> {
-                return Response.success(AuthResponse("dummy-jwt-token", request.email, "Player"))
-            }
-
-            override suspend fun getHabits(): Response<List<NetworkHabitDto>> {
-                return Response.success(emptyList())
-            }
-
-            override suspend fun logHabit(request: HabitLogRequest): Response<HabitLogResponse> {
-                return Response.success(HabitLogResponse(true, "Logged successfully", null))
-            }
-
-            override suspend fun getPlayerCard(): Response<NetworkPlayerCardDto> {
-                return Response.success(NetworkPlayerCardDto("default_user", "Pro Tracker", 50, 50, 50, 50, 50, 50))
-            }
-
-            override suspend fun syncPlayerCard(card: NetworkPlayerCardDto): Response<NetworkPlayerCardDto> {
-                return Response.success(card)
-            }
-        }
+        // 2. Real SelfEvo API Client Integration
+        val apiService = RetrofitClient.apiService
+        val authRepository = AuthRepository()
 
         // 3. Construct unified data repository
-        val repository = HabitRepository(habitDao, playerCardDao, syncQueueDao, apiServicePlaceholder)
+        val repository = HabitRepository(habitDao, playerCardDao, syncQueueDao, apiService)
 
         // 4. Construct ViewModel via inline provider factory
         val viewModelFactory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return DashboardViewModel(repository) as T
+                return DashboardViewModel(repository, authRepository) as T
             }
         }
         val viewModel = ViewModelProvider(this, viewModelFactory)[DashboardViewModel::class.java]
 
-        // 5. Build Content View via Jetpack Compose
         // 5. Setup Constraint-Aware Periodic WorkManager Synchronization
         val syncConstraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
@@ -95,7 +69,7 @@ class MainActivity : ComponentActivity() {
 
         // 6. Build Content View via Jetpack Compose
         setContent {
-            SelfEvoApp(viewModel = viewModel)
+            SelfEvoApp(viewModel = viewModel, authRepository = authRepository)
         }
     }
 }
