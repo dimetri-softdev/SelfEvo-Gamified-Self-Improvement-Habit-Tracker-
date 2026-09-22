@@ -90,7 +90,7 @@ This project utilized AI tools for architectural guidance and debugging. Detaile
 ---
 
 ## 🎥 Demo Video
-[Link to Feature Showcase Video (YouTube/Unlisted)]
+[Feature Showcase Video - YouTube](https://youtu.be/WUvA8PJY7ps?si=BaWI-J-e8OGw4zy4)
 
 ---
 
