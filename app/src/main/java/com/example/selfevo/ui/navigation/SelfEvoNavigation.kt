@@ -117,6 +117,7 @@ fun SelfEvoApp(viewModel: DashboardViewModel, authRepository: AuthRepository) {
             composable(Screen.Settings.route) {
                 MainScaffold(navController, currentDestination) {
                     SettingsScreen(
+                        viewModel = viewModel,
                         onSignOut = {
                             authRepository.signOut()
                             isLoggedIn = false

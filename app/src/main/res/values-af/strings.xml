@@ -11,10 +11,14 @@
     <!-- Auth -->
     <string name="login_title">TEKEN IN</string>
     <string name="signup_title">TEKEN OP</string>
+    <string name="player_name_label">SPELER NAAM</string>
     <string name="email_label">EPOS</string>
     <string name="password_label">WAGWOORD</string>
     <string name="google_sign_in">Meld aan met Google</string>
     <string name="dont_have_account">Het jy nie \'n rekening nie?</string>
+    <string name="already_have_account">Het jy reeds \'n rekening?</string>
+    <string name="join_selfevo">SLUIT AAN BY SELFEVO</string>
+    <string name="evolve_stats">ONTWIKKEL JOU DAAGLIKSE STATISTIEKE</string>
     <string name="or">of</string>
 
     <!-- Dashboard -->
@@ -41,6 +45,9 @@
     <string name="tier_milestones">VLAK MYLPALE</string>
     <string name="card_preview">KAART VOORSKOU</string>
     <string name="overall_rating">%1$d Algehele Gradering</string>
+    <string name="unlocked">ONTSLUIT</string>
+    <string name="locked">GESLUIT</string>
+    <string name="current">HUIDIG</string>
 
     <!-- Settings -->
     <string name="configure">KONFIGUREER</string>

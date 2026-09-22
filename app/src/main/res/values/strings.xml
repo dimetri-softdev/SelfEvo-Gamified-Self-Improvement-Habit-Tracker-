@@ -11,10 +11,14 @@
     <!-- Auth -->
     <string name="login_title">LOGIN</string>
     <string name="signup_title">SIGN UP</string>
+    <string name="player_name_label">PLAYER NAME</string>
     <string name="email_label">EMAIL</string>
     <string name="password_label">PASSWORD</string>
     <string name="google_sign_in">Sign in with Google</string>
     <string name="dont_have_account">Don\'t have an account?</string>
+    <string name="already_have_account">Already have an account?</string>
+    <string name="join_selfevo">JOIN SELFEVO</string>
+    <string name="evolve_stats">EVOLVE YOUR DAILY STATS</string>
     <string name="or">or</string>
 
     <!-- Dashboard -->
@@ -41,6 +45,9 @@
     <string name="tier_milestones">TIER MILESTONES</string>
     <string name="card_preview">CARD PREVIEW</string>
     <string name="overall_rating">%1$d Overall Rating</string>
+    <string name="unlocked">UNLOCKED</string>
+    <string name="locked">LOCKED</string>
+    <string name="current">CURRENT</string>
 
     <!-- Settings -->
     <string name="configure">CONFIGURE</string>

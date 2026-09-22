@@ -88,7 +88,7 @@ fun DashboardScreen(
                     Spacer(modifier = Modifier.height(48.dp))
 
                     Text(
-                        text = "TODAY'S HABITS",
+                        text = stringResource(R.string.todays_habits),
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Black,
                         color = Color.White,
@@ -231,7 +231,7 @@ fun ProgressSection(completedCount: Int, totalCount: Int) {
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text("DAILY PROGRESS", color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.daily_progress), color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
             Text("$completedCount/$totalCount", color = Color(0xFFFFD700), fontSize = 12.sp, fontWeight = FontWeight.Black)
         }
         Spacer(modifier = Modifier.height(12.dp))

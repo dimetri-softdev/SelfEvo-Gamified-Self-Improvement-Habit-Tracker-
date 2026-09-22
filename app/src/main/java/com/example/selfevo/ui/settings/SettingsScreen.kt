@@ -19,17 +19,22 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.example.selfevo.R
+import com.example.selfevo.ui.dashboard.DashboardViewModel
 import com.example.selfevo.util.lang.LocaleHelper
 import com.example.selfevo.util.theme.ThemeManager
 
 @Composable
 fun SettingsScreen(
+    viewModel: DashboardViewModel,
     onSignOut: () -> Unit,
     onSyncClick: () -> Unit
 ) {
     val context = LocalContext.current
     val currentLang = remember { mutableStateOf(LocaleHelper.getLocale(context)) }
     val isAmoled = ThemeManager.isAmoledMode.value
+    val lastSync by viewModel.lastSyncTime.collectAsState()
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -42,13 +47,13 @@ fun SettingsScreen(
             verticalArrangement = Arrangement.spacedBy(32.dp)
         ) {
             item {
-                Text("CONFIGURE", color = Color(0xFFFFA500), fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                Text("SETTINGS", fontSize = 32.sp, fontWeight = FontWeight.Black, color = Color.White)
+                Text(stringResource(R.string.configure), color = Color(0xFFFFA500), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.settings), fontSize = 32.sp, fontWeight = FontWeight.Black, color = Color.White)
             }
 
             // Language Preference
             item {
-                SettingsSection(title = "LANGUAGE PREFERENCE") {
+                SettingsSection(title = stringResource(R.string.language_preference)) {
                     LanguageItem("English", "Default system language", currentLang.value == "en") {
                         LocaleHelper.setLocale(context, "en")
                         currentLang.value = "en"
@@ -66,10 +71,10 @@ fun SettingsScreen(
 
             // Appearance
             item {
-                SettingsSection(title = "APPEARANCE") {
+                SettingsSection(title = stringResource(R.string.appearance)) {
                     ToggleItem(
-                        name = "AMOLED Dark Mode",
-                        description = "Pure pitch black — saves battery",
+                        name = stringResource(R.string.amoled_dark_mode),
+                        description = stringResource(R.string.amoled_dark_mode_sub),
                         isEnabled = isAmoled
                     ) { enabled ->
                         ThemeManager.setAmoledMode(context, enabled)
@@ -79,16 +84,16 @@ fun SettingsScreen(
 
             // Push Notifications
             item {
-                SettingsSection(title = "PUSH NOTIFICATIONS") {
-                    ToggleItem("Daily Reminders", "Get notified at your scheduled times", true) {}
-                    ToggleItem("Streak Alerts", "Warning when streak is at risk", true) {}
+                SettingsSection(title = stringResource(R.string.push_notifications)) {
+                    ToggleItem(stringResource(R.string.daily_reminders), stringResource(R.string.daily_reminders_sub), true) {}
+                    ToggleItem(stringResource(R.string.streak_alerts), stringResource(R.string.streak_alerts_sub), true) {}
                 }
             }
 
             // Data & Cloud
             item {
                 Column {
-                    Text("DATA & CLOUD", color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.data_cloud), color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(
                         onClick = onSyncClick,
@@ -102,12 +107,12 @@ fun SettingsScreen(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF00E5FF))
                             Spacer(modifier = Modifier.width(12.dp))
-                            Text("SYNC DATA TO CLOUD", color = Color(0xFF00E5FF), fontWeight = FontWeight.Black)
+                            Text(stringResource(R.string.sync_data_to_cloud), color = Color(0xFF00E5FF), fontWeight = FontWeight.Black)
                         }
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        "Last synced: Today, 08:42 AM",
+                        stringResource(R.string.last_synced, lastSync),
                         color = Color.DarkGray,
                         fontSize = 11.sp,
                         modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -161,7 +166,7 @@ fun SettingsScreen(
                     shape = RoundedCornerShape(12.dp),
                     border = BorderStroke(1.dp, Color.Red.copy(alpha = 0.2f))
                 ) {
-                    Text("Sign Out", color = Color.Red, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.sign_out), color = Color.Red, fontWeight = FontWeight.Bold)
                 }
                 Spacer(modifier = Modifier.height(48.dp))
             }

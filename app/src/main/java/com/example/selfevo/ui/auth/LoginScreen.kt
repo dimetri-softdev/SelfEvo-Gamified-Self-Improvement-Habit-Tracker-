@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
@@ -33,7 +34,7 @@ fun LoginScreen(
     var emailError by remember { mutableStateOf<String?>(null) }
     var passwordError by remember { mutableStateOf<String?>(null) }
 
-    val isFormValid = email.isNotBlank() && Patterns.EMAIL_ADDRESS.matcher(email).matches() && password.length >= 6
+    val isFormValid = email.isNotBlank() && Patterns.EMAIL_ADDRESS.matcher(email).matches() && password.length >= 8
 
     val goldGradient = Brush.horizontalGradient(
         colors = listOf(Color(0xFFFFD700), Color(0xFFFFA500))
@@ -69,14 +70,14 @@ fun LoginScreen(
             )
 
             Text(
-                text = "EVOLVE YOUR DAILY STATS",
+                text = stringResource(R.string.evolve_stats),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White.copy(alpha = 0.7f),
                 modifier = Modifier.padding(bottom = 48.dp)
             )
 
-            // Login/Signup Tab switcher (Simplified UI version)
+            // Login/Signup Tab switcher
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -91,7 +92,7 @@ fun LoginScreen(
                         .background(Color(0xFFFFD700), RoundedCornerShape(8.dp)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("LOGIN", color = Color.Black, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.login_title), color = Color.Black, fontWeight = FontWeight.Bold)
                 }
                 Box(
                     modifier = Modifier
@@ -100,7 +101,7 @@ fun LoginScreen(
                         .clickable { onSignUpClick() },
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("SIGN UP", color = Color.Gray, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.signup_title), color = Color.Gray, fontWeight = FontWeight.Bold)
                 }
             }
 
@@ -108,7 +109,7 @@ fun LoginScreen(
 
             // Email Field
             Column(modifier = Modifier.fillMaxWidth()) {
-                Text("EMAIL", color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.email_label), color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(8.dp))
                 TextField(
                     value = email,
@@ -139,13 +140,13 @@ fun LoginScreen(
 
             // Password Field
             Column(modifier = Modifier.fillMaxWidth()) {
-                Text("PASSWORD", color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.password_label), color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(8.dp))
                 TextField(
                     value = password,
                     onValueChange = {
                         password = it
-                        passwordError = if (it.length >= 6) null else "Password must be at least 6 characters"
+                        passwordError = if (it.length >= 8) null else "Password must be at least 8 characters"
                     },
                     modifier = Modifier.fillMaxWidth(),
                     placeholder = { Text("••••••••", color = Color.DarkGray) },
@@ -186,16 +187,12 @@ fun LoginScreen(
                 ),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text("LOGIN", fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = if (isFormValid) Color.Black else Color.White.copy(alpha = 0.5f))
+                Text(stringResource(R.string.login_title), fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = if (isFormValid) Color.Black else Color.White.copy(alpha = 0.5f))
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text(
-                text = "or",
-                color = Color.Gray,
-                fontSize = 14.sp
-            )
+            Text(text = stringResource(R.string.or), color = Color.Gray, fontSize = 14.sp)
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -210,18 +207,17 @@ fun LoginScreen(
                 border = BorderStroke(1.dp, Color.DarkGray)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    // Placeholder for G logo
                     Text("G ", color = Color.Red, fontWeight = FontWeight.Black)
-                    Text("Sign in with Google", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.google_sign_in), fontWeight = FontWeight.Bold)
                 }
             }
 
             Spacer(modifier = Modifier.height(32.dp))
 
             Row {
-                Text("Don't have an account? ", color = Color.Gray, fontSize = 14.sp)
+                Text(stringResource(R.string.dont_have_account) + " ", color = Color.Gray, fontSize = 14.sp)
                 Text(
-                    "Sign Up",
+                    stringResource(R.string.signup_title),
                     color = Color(0xFFFFD700),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,

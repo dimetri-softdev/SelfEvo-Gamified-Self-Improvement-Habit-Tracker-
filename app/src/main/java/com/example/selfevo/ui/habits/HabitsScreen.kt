@@ -20,6 +20,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.example.selfevo.R
 import com.example.selfevo.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -52,25 +54,25 @@ fun HabitsScreen(
                 .padding(24.dp)
         ) {
             Text(
-                text = "NEW HABIT",
+                text = stringResource(R.string.new_habit),
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Black,
                 color = Color.White
             )
             Text(
-                text = "Each completed habit upgrades your player card stats.",
+                text = stringResource(R.string.habit_description_sub),
                 fontSize = 14.sp,
                 color = Color.Gray,
                 modifier = Modifier.padding(top = 8.dp, bottom = 32.dp)
             )
 
-            Text("HABIT NAME", color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.habit_name_label), color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(8.dp))
             TextField(
                 value = habitName,
                 onValueChange = { habitName = it },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("e.g. Morning Run", color = Color.DarkGray) },
+                placeholder = { Text(stringResource(R.string.habit_name_hint), color = Color.DarkGray) },
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color(0xFF1A1A1A),
                     unfocusedContainerColor = Color(0xFF1A1A1A),
@@ -84,7 +86,7 @@ fun HabitsScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Text("LINKED ATTRIBUTE", color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.linked_attribute_label), color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(16.dp))
 
             LazyVerticalGrid(
@@ -128,7 +130,7 @@ fun HabitsScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Text("FREQUENCY", color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.frequency_label), color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(16.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf("Daily", "Mon-Fri", "Weekends").forEach { freq ->
@@ -142,7 +144,7 @@ fun HabitsScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Text("REMINDER TIME", color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.reminder_time_label), color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(8.dp))
             TextField(
                 value = reminderTime,
@@ -191,7 +193,7 @@ fun HabitsScreen(
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text("+ ADD TO SELFEVO", fontSize = 18.sp, fontWeight = FontWeight.Black, color = Color.Black)
+                Text(stringResource(R.string.add_to_selfevo), fontSize = 18.sp, fontWeight = FontWeight.Black, color = Color.Black)
             }
 
             Spacer(modifier = Modifier.height(16.dp))

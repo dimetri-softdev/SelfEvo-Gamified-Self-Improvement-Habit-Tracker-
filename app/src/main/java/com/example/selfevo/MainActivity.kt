@@ -20,8 +20,9 @@ import com.example.selfevo.util.lang.LocaleHelper
 import com.example.selfevo.util.theme.ThemeManager
 import com.example.selfevo.data.auth.AuthRepository
 import java.util.concurrent.TimeUnit
+import androidx.appcompat.app.AppCompatActivity
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

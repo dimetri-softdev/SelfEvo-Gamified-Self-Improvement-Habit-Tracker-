@@ -21,6 +21,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+import androidx.compose.ui.res.stringResource
+import com.example.selfevo.R
+
 @Composable
 fun EvolutionScreen(currentOvr: Int) {
     Surface(
@@ -33,9 +36,9 @@ fun EvolutionScreen(currentOvr: Int) {
                 .padding(24.dp)
         ) {
             item {
-                Text("YOUR JOURNEY", color = Color(0xFFFFA500), fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                Text("EVOLUTION", fontSize = 32.sp, fontWeight = FontWeight.Black, color = Color.White)
-                Text("PATHWAY & TIER PROGRESS", fontSize = 14.sp, color = Color.Gray, modifier = Modifier.padding(top = 4.dp))
+                Text(stringResource(R.string.your_journey), color = Color(0xFFFFA500), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.evolution), fontSize = 32.sp, fontWeight = FontWeight.Black, color = Color.White)
+                Text(stringResource(R.string.pathway_tier_progress), fontSize = 14.sp, color = Color.Gray, modifier = Modifier.padding(top = 4.dp))
 
                 Spacer(modifier = Modifier.height(48.dp))
 
@@ -58,7 +61,7 @@ fun EvolutionScreen(currentOvr: Int) {
 
                 Spacer(modifier = Modifier.height(48.dp))
 
-                Text("TIER MILESTONES", color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.tier_milestones), color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
@@ -100,7 +103,7 @@ fun EvolutionScreen(currentOvr: Int) {
 
             item {
                 Spacer(modifier = Modifier.height(48.dp))
-                Text("CARD PREVIEW — GOLD", color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.card_preview), color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(16.dp))
                 Box(
                     modifier = Modifier
@@ -228,7 +231,7 @@ fun EvolutionMilestone(tier: String, range: String, isUnlocked: Boolean, isCurre
                                     .background(Color(0xFFFFD700), RoundedCornerShape(4.dp))
                                     .padding(horizontal = 4.dp, vertical = 2.dp)
                             ) {
-                                Text("CURRENT", color = Color.Black, fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                                Text(stringResource(R.string.current), color = Color.Black, fontSize = 8.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -239,7 +242,12 @@ fun EvolutionMilestone(tier: String, range: String, isUnlocked: Boolean, isCurre
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(modifier = Modifier.size(8.dp).background(if (isUnlocked) Color(0xFFFFA500) else Color.Gray, CircleShape))
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(if (isUnlocked) "UNLOCKED" else "LOCKED", color = if (isUnlocked) Color(0xFFFFA500) else Color.Gray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                Text(
+                    text = if (isUnlocked) stringResource(R.string.unlocked) else stringResource(R.string.locked),
+                    color = if (isUnlocked) Color(0xFFFFA500) else Color.Gray,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }

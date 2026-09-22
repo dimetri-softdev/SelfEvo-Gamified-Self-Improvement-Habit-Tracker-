@@ -11,10 +11,14 @@
     <!-- Auth -->
     <string name="login_title">NGENA</string>
     <string name="signup_title">BHALISA</string>
+    <string name="player_name_label">IGAMA LOMDLALI</string>
     <string name="email_label">IMEVI</string>
     <string name="password_label">IPASSWORD</string>
     <string name="google_sign_in">Ngena nge-Google</string>
     <string name="dont_have_account">Awunayo i-akhawunti?</string>
+    <string name="already_have_account">Seliukhona i-akhawunti?</string>
+    <string name="join_selfevo">YIBA YINXALENYE YESELFEVO</string>
+    <string name="evolve_stats">PHUCULA AMANANI AKHO EMIHLA NGEMIHLA</string>
     <string name="or">okanye</string>
 
     <!-- Dashboard -->
@@ -41,6 +45,9 @@
     <string name="tier_milestones">AMANYATHELO ABALULEKILEYO</string>
     <string name="card_preview">UKUJONGWA KWEKHARDI</string>
     <string name="overall_rating">I-Rating ye-%1$d iyonke</string>
+    <string name="unlocked">IVULIWE</string>
+    <string name="locked">IVALIWE</string>
+    <string name="current">EYESIGIGABA</string>
 
     <!-- Settings -->
     <string name="configure">QWALASELA</string>

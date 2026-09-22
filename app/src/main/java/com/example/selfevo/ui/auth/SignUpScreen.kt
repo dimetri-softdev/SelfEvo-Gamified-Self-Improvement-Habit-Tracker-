@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -56,7 +57,7 @@ fun SignUpScreen(
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = "JOIN SELFEVO",
+                text = stringResource(R.string.join_selfevo),
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Black,
                 color = Color(0xFFFFD700),
@@ -67,7 +68,7 @@ fun SignUpScreen(
 
             // Player Name Field
             Column(modifier = Modifier.fillMaxWidth()) {
-                Text("PLAYER NAME", color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.player_name_label), color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(8.dp))
                 TextField(
                     value = playerName,
@@ -98,7 +99,7 @@ fun SignUpScreen(
 
             // Email Field
             Column(modifier = Modifier.fillMaxWidth()) {
-                Text("EMAIL", color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.email_label), color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(8.dp))
                 TextField(
                     value = email,
@@ -129,7 +130,7 @@ fun SignUpScreen(
 
             // Password Field
             Column(modifier = Modifier.fillMaxWidth()) {
-                Text("PASSWORD", color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.password_label), color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(8.dp))
                 TextField(
                     value = password,
@@ -185,15 +186,15 @@ fun SignUpScreen(
                 ),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text("SIGN UP", fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = if (isFormValid) Color.Black else Color.White.copy(alpha = 0.5f))
+                Text(stringResource(R.string.signup_title), fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = if (isFormValid) Color.Black else Color.White.copy(alpha = 0.5f))
             }
 
             Spacer(modifier = Modifier.height(32.dp))
 
             Row {
-                Text("Already have an account? ", color = Color.Gray, fontSize = 14.sp)
+                Text(stringResource(R.string.already_have_account) + " ", color = Color.Gray, fontSize = 14.sp)
                 Text(
-                    "Login",
+                    stringResource(R.string.login_title),
                     color = Color(0xFFFFD700),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
