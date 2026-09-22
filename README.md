@@ -84,5 +84,15 @@ As stats increase, the user's **Overall Rating (OVR)** grows, triggering "Walkou
 
 ---
 
+## 🤖 AI Usage
+This project utilized AI tools for architectural guidance and debugging. Detailed documentation of AI usage can be found in the [AI_USAGE.md](./AI_USAGE.md) file.
+
+---
+
+## 🎥 Demo Video
+[Link to Feature Showcase Video (YouTube/Unlisted)]
+
+---
+
 ## 📄 License
 This project was developed for academic purposes as part of the OPSC6321 module. All rights reserved.

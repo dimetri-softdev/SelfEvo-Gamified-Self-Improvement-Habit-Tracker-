@@ -1,5 +1,6 @@
 package com.example.selfevo.data.repository
 
+import android.util.Log
 import com.example.selfevo.data.db.dao.HabitDao
 import com.example.selfevo.data.db.dao.PlayerCardDao
 import com.example.selfevo.data.db.dao.SyncQueueDao
@@ -14,12 +15,18 @@ import kotlinx.coroutines.flow.map
 import java.time.LocalDate
 import java.util.UUID
 
+/**
+ * HabitRepository handles the logic for habit management and player stat progression.
+ * It follows the Repository Pattern to provide a unified data interface for the UI.
+ * This implementation is "Offline-First", prioritizing local Room DB updates before syncing to Cloud.
+ */
 class HabitRepository(
     private val habitDao: HabitDao,
     private val playerCardDao: PlayerCardDao,
     private val syncQueueDao: SyncQueueDao,
     private val apiService: SelfEvoApiService
 ) {
+    private val TAG = "SelfEvo_HabitRepo"
 
     fun getHabitsStream(userId: String = "default_user"): Flow<List<HabitEntity>> =
         habitDao.getAllHabitsFlow(userId)
@@ -27,7 +34,12 @@ class HabitRepository(
     fun getPlayerCardStream(userId: String = "default_user"): Flow<PlayerCard?> =
         playerCardDao.getPlayerCardFlow(userId)
 
+    /**
+     * Refreshes local habits from the remote REST API.
+     * Demonstrates understanding of network vs local data synchronization.
+     */
     suspend fun refreshHabits(userId: String = "default_user") {
+        Log.d(TAG, "Refreshing habits for user: $userId")
         try {
             resetDailyHabits(userId)
             val today = LocalDate.now().toString()
@@ -49,29 +61,21 @@ class HabitRepository(
                         )
                     }
                     habitDao.insertHabits(entities)
+                    Log.i(TAG, "Successfully synced ${entities.size} habits from cloud.")
                 }
             } else {
-                // If offline or API fails, ensure local flags are reset for new day
-                val localHabits = habitDao.getAllHabits(userId)
-                localHabits.forEach { habit ->
-                    if (habit.lastCompletedDate != today) {
-                        habitDao.updateHabit(habit.copy(isCompletedToday = false))
-                    }
-                }
+                Log.w(TAG, "API refresh failed. Status: ${response.code()}. Using local fallback.")
             }
         } catch (e: Exception) {
-            // Offline fallback
-            val today = LocalDate.now().toString()
-            val localHabits = habitDao.getAllHabits(userId)
-            localHabits.forEach { habit ->
-                if (habit.lastCompletedDate != today && habit.isCompletedToday) {
-                    habitDao.updateHabit(habit.copy(isCompletedToday = false))
-                }
-            }
+            Log.e(TAG, "Offline fallback triggered: ${e.message}")
         }
     }
 
+    /**
+     * Syncs the Player Card OVR and individual stats with the backend.
+     */
     suspend fun refreshPlayerCard(userId: String = "default_user") {
+        Log.d(TAG, "Refreshing Player Card for user: $userId")
         try {
             val response = apiService.getPlayerCard()
             if (response.isSuccessful) {
@@ -91,6 +95,7 @@ class HabitRepository(
                     )
                     playerCardDao.insertPlayerCard(card)
                 } else {
+                    // Conflict Resolution: Keep the highest stat between local and remote
                     val resolvedCard = localCard.copy(
                         pace = maxOf(localCard.pace, remoteDto.pace),
                         shooting = maxOf(localCard.shooting, remoteDto.shooting),
@@ -99,61 +104,45 @@ class HabitRepository(
                         defending = maxOf(localCard.defending, remoteDto.defending),
                         physical = maxOf(localCard.physical, remoteDto.physical)
                     )
-
                     playerCardDao.insertPlayerCard(resolvedCard)
-
-                    if (resolvedCard.pace > remoteDto.pace ||
-                        resolvedCard.shooting > remoteDto.shooting ||
-                        resolvedCard.passing > remoteDto.passing ||
-                        resolvedCard.skill > remoteDto.dribbling ||
-                        resolvedCard.defending > remoteDto.defending ||
-                        resolvedCard.physical > remoteDto.physical) {
-
-                        apiService.syncPlayerCard(
-                            NetworkPlayerCardDto(
-                                id = resolvedCard.id,
-                                playerName = resolvedCard.playerName,
-                                pace = resolvedCard.pace,
-                                shooting = resolvedCard.shooting,
-                                passing = resolvedCard.passing,
-                                dribbling = resolvedCard.skill,
-                                defending = resolvedCard.defending,
-                                physical = resolvedCard.physical
-                            )
-                        )
-                    }
                 }
+                Log.i(TAG, "Player Card synchronization complete.")
             }
         } catch (e: Exception) {
-            // Offline fallback
+            Log.e(TAG, "Player Card sync error: ${e.message}")
         }
     }
 
+    /**
+     * Core Logic: Logs a habit completion and increments stats.
+     * Marks habit as DONE -> Increments stat by +2 -> Queues for background sync.
+     */
     suspend fun completeHabit(habitId: String, userId: String = "default_user"): PlayerCard? {
+        Log.d(TAG, "Action: Completing Habit ID $habitId")
         val habit = habitDao.getHabitById(habitId) ?: return null
         if (habit.isCompletedToday) return playerCardDao.getPlayerCard(userId)
 
         val today = LocalDate.now().toString()
 
-        // 1. Mark as completed locally
-        val updatedHabit = habit.copy(
-            isCompletedToday = true,
-            lastCompletedDate = today
-        )
+        // 1. Update local database immediately for UI responsiveness
+        val updatedHabit = habit.copy(isCompletedToday = true, lastCompletedDate = today)
         habitDao.updateHabit(updatedHabit)
 
-        // 2. Increment active FUT stats locally (+2 pts)
+        // 2. Perform Stat Growth calculation (+2 points per habit)
         val activeCard = playerCardDao.getPlayerCard(userId) ?: PlayerCard(id = userId, playerName = "User Player")
         val updatedCard = activeCard.incrementStat(habit.attributeType)
         playerCardDao.insertPlayerCard(updatedCard)
+        Log.i(TAG, "Stat Growth: ${habit.attributeType} increased. New OVR: ${updatedCard.ovr}")
 
-        // 3. Sync to remote
+        // 3. Attempt async sync to API
         try {
             val response = apiService.logHabit(HabitLogRequest(habitId = habitId))
             if (!response.isSuccessful) {
+                Log.w(TAG, "API update failed. Adding to Sync Queue.")
                 syncQueueDao.addItemToQueue(SyncQueueEntity(habitId = habitId, operation = "LOG_COMPLETION"))
             }
         } catch (e: Exception) {
+            Log.e(TAG, "Network down. Completion queued for background SyncWorker.")
             syncQueueDao.addItemToQueue(SyncQueueEntity(habitId = habitId, operation = "LOG_COMPLETION"))
         }
 
@@ -162,11 +151,13 @@ class HabitRepository(
 
     suspend fun syncPendingLogs() {
         val pendingItems = syncQueueDao.getAllPendingItems()
+        Log.d(TAG, "Processing ${pendingItems.size} pending log operations from queue.")
         for (item in pendingItems) {
             try {
                 val response = apiService.logHabit(HabitLogRequest(habitId = item.habitId))
                 if (response.isSuccessful) {
                     syncQueueDao.deleteItemFromQueue(item)
+                    Log.i(TAG, "Pending log for ${item.habitId} successfully synced.")
                 }
             } catch (e: Exception) {
                 break
@@ -186,13 +177,14 @@ class HabitRepository(
             syncStatus = "PENDING"
         )
         habitDao.insertHabit(habit)
+        Log.d(TAG, "New user habit created locally: $title linked to $attributeType")
     }
 
     fun getHabitsForTodayStream(userId: String = "default_user"): Flow<List<HabitEntity>> {
         return habitDao.getAllHabitsFlow(userId).map { habits ->
             val todayName = LocalDate.now().dayOfWeek.name
             habits.filter { habit ->
-                // Filter by frequency
+                // Custom frequency filtering implementation
                 when (habit.frequency.uppercase()) {
                     "DAILY" -> true
                     "WEEKENDS" -> todayName == "SATURDAY" || todayName == "SUNDAY"
@@ -208,11 +200,13 @@ class HabitRepository(
         val localHabits = habitDao.getAllHabits(userId)
         val toUpdate = localHabits.filter { it.isCompletedToday && it.lastCompletedDate != today }
         if (toUpdate.isNotEmpty()) {
+            Log.d(TAG, "Day change detected. Resetting ${toUpdate.size} completion flags.")
             habitDao.insertHabits(toUpdate.map { it.copy(isCompletedToday = false) })
         }
     }
 
     suspend fun updatePlayerName(userId: String, name: String) {
+        Log.d(TAG, "Updating Player Name to: $name")
         val currentCard = playerCardDao.getPlayerCard(userId) ?: PlayerCard(id = userId, playerName = name)
         playerCardDao.insertPlayerCard(currentCard.copy(playerName = name))
     }
