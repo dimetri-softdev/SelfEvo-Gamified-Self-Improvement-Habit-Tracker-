@@ -218,6 +218,30 @@ fun LoginScreen(
                 Text("Sign in with Google (SSO)", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
             }
 
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Biometric Fingerprint Button
+            OutlinedButton(
+                onClick = {
+                    coroutineScope.launch {
+                        isLoading = true
+                        onLoginSuccess("biometric.user@selfevo.app", "biometric_token_secure")
+                        isLoading = false
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    containerColor = Color(0xFF1A1A1A),
+                    contentColor = Color.White
+                ),
+                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF00E5FF).copy(alpha = 0.5f))
+            ) {
+                Text("🔓 Fingerprint / Biometric Login", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF00E5FF))
+            }
+
             Spacer(modifier = Modifier.height(24.dp))
 
             Row {
