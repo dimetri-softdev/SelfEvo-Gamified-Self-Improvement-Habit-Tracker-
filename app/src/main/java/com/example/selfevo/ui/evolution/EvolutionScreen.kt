@@ -20,7 +20,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
 import androidx.compose.ui.res.stringResource
 import com.example.selfevo.R
 
@@ -40,7 +39,7 @@ fun EvolutionScreen(currentOvr: Int) {
                 Text(stringResource(R.string.evolution), fontSize = 32.sp, fontWeight = FontWeight.Black, color = Color.White)
                 Text(stringResource(R.string.pathway_tier_progress), fontSize = 14.sp, color = Color.Gray, modifier = Modifier.padding(top = 4.dp))
 
-                Spacer(modifier = Modifier.height(48.dp))
+                Spacer(modifier = Modifier.height(32.dp))
 
                 // Current Tier Progress
                 val (nextTier, nextThreshold) = when {
@@ -59,7 +58,12 @@ fun EvolutionScreen(currentOvr: Int) {
 
                 CurrentProgressCard(ovr = currentOvr, targetTier = nextTier, progress = progress)
 
-                Spacer(modifier = Modifier.height(48.dp))
+                Spacer(modifier = Modifier.height(32.dp))
+
+                // Advanced Stat Analytics / Radar Breakdown
+                StatRadarAnalyticsCard()
+
+                Spacer(modifier = Modifier.height(32.dp))
 
                 Text(stringResource(R.string.tier_milestones), color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(16.dp))
@@ -102,7 +106,7 @@ fun EvolutionScreen(currentOvr: Int) {
             }
 
             item {
-                Spacer(modifier = Modifier.height(48.dp))
+                Spacer(modifier = Modifier.height(32.dp))
                 Text(stringResource(R.string.card_preview), color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(16.dp))
                 Box(
@@ -116,6 +120,58 @@ fun EvolutionScreen(currentOvr: Int) {
                     Text("GOLD CARD PREVIEW", color = Color(0xFFFFD700), fontWeight = FontWeight.Bold)
                 }
                 Spacer(modifier = Modifier.height(32.dp))
+            }
+        }
+    }
+}
+
+@Composable
+fun StatRadarAnalyticsCard() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF1A1A1A)),
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, Color(0xFFFFD700).copy(alpha = 0.4f))
+    ) {
+        Column(modifier = Modifier.padding(20.dp)) {
+            Text(
+                text = "ATTRIBUTE RADAR ANALYTICS",
+                color = Color(0xFFFFD700),
+                fontWeight = FontWeight.Black,
+                fontSize = 14.sp
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+
+            val stats = listOf(
+                "PACE (PAC)" to 75f,
+                "SHOOTING (SHO)" to 70f,
+                "PASSING (PAS)" to 72f,
+                "DRIBBLING (DRI)" to 68f,
+                "DEFENDING (DEF)" to 65f,
+                "PHYSICAL (PHY)" to 72f
+            )
+
+            stats.forEach { (label, value) ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(text = label, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(text = value.toInt().toString(), color = Color(0xFFFFD700), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                }
+                LinearProgressIndicator(
+                    progress = { value / 99f },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(6.dp)
+                        .clip(CircleShape),
+                    color = Color(0xFFFFD700),
+                    trackColor = Color(0xFF0A0A0A)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
             }
         }
     }
