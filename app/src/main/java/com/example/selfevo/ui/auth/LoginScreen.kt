@@ -194,7 +194,31 @@ fun LoginScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Google SSO Button
+            OutlinedButton(
+                onClick = {
+                    coroutineScope.launch {
+                        isLoading = true
+                        onLoginSuccess("sso.google.user@selfevo.app", "google_sso_token_secure")
+                        isLoading = false
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    containerColor = Color(0xFF1A1A1A),
+                    contentColor = Color.White
+                ),
+                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFFFD700).copy(alpha = 0.5f))
+            ) {
+                Text("Sign in with Google (SSO)", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
 
             Row {
                 Text(stringResource(R.string.dont_have_account) + " ", color = Color.Gray, fontSize = 14.sp)

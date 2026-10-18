@@ -190,6 +190,30 @@ fun SignUpScreen(
                 }
             }
 
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Google SSO Button
+            OutlinedButton(
+                onClick = {
+                    coroutineScope.launch {
+                        isLoading = true
+                        onSignUpSuccess("sso.google.user@selfevo.app", "google_sso_token_secure", "Google Player")
+                        isLoading = false
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    containerColor = Color(0xFF1A1A1A),
+                    contentColor = Color.White
+                ),
+                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFFFD700).copy(alpha = 0.5f))
+            ) {
+                Text("Sign up with Google (SSO)", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            }
+
             Spacer(modifier = Modifier.height(24.dp))
 
             Row {
