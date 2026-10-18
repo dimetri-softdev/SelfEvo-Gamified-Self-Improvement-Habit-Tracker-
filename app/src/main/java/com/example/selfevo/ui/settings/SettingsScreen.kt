@@ -49,8 +49,29 @@ fun SettingsScreen(
             verticalArrangement = Arrangement.spacedBy(32.dp)
         ) {
             item {
-                Text(stringResource(R.string.configure), color = Color(0xFFFFA500), fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                Text(stringResource(R.string.settings), fontSize = 32.sp, fontWeight = FontWeight.Black, color = Color.White)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(stringResource(R.string.configure), color = Color(0xFFFFA500), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.settings), fontSize = 32.sp, fontWeight = FontWeight.Black, color = Color.White)
+                    }
+                    Surface(
+                        color = Color(0xFF2C1F00),
+                        shape = RoundedCornerShape(8.dp),
+                        border = BorderStroke(1.dp, Color(0xFFFFD700).copy(alpha = 0.5f))
+                    ) {
+                        Text(
+                            text = "PoE v3.0",
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                            color = Color(0xFFFFD700),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
             }
 
             // Language Preference
