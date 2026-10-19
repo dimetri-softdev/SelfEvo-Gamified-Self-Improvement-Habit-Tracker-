@@ -33,6 +33,7 @@ fun HabitsScreen(
     var selectedAttribute by remember { mutableStateOf("PAC") }
     var reminderTime by remember { mutableStateOf("07:00") }
     var selectedFrequency by remember { mutableStateOf("Daily") }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     val attributes = listOf(
         "PAC" to Color(0xFF00E5FF),
@@ -66,14 +67,36 @@ fun HabitsScreen(
                         text = stringResource(R.string.habit_description_sub),
                         fontSize = 14.sp,
                         color = Color.Gray,
-                        modifier = Modifier.padding(top = 8.dp, bottom = 32.dp)
+                        modifier = Modifier.padding(top = 8.dp, bottom = 24.dp)
                     )
+
+                    if (errorMessage != null) {
+                        Surface(
+                            color = Color(0xFF3E1010),
+                            shape = RoundedCornerShape(12.dp),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFFF5252)),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 24.dp)
+                        ) {
+                            Text(
+                                text = errorMessage!!,
+                                color = Color(0xFFFF5252),
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(16.dp)
+                            )
+                        }
+                    }
 
                     Text(stringResource(R.string.habit_name_label), color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(8.dp))
                     TextField(
                         value = habitName,
-                        onValueChange = { habitName = it },
+                        onValueChange = { 
+                            habitName = it 
+                            if (it.isNotBlank()) errorMessage = null
+                        },
                         modifier = Modifier.fillMaxWidth(),
                         placeholder = { Text(stringResource(R.string.habit_name_hint), color = Color.DarkGray) },
                         colors = TextFieldDefaults.colors(
@@ -178,7 +201,10 @@ fun HabitsScreen(
             ) {
                 Button(
                     onClick = {
-                        if (habitName.isNotBlank()) {
+                        if (habitName.isBlank()) {
+                            errorMessage = "⚠️ Please enter a valid habit title before adding to your plan."
+                        } else {
+                            errorMessage = null
                             val mappedAttribute = when (selectedAttribute) {
                                 "PAC" -> "PACE"
                                 "PHY" -> "PHYSICAL"

@@ -142,12 +142,50 @@ fun DashboardScreen(
                     }
                 } else {
                     val displayedHabits = if (showAllHabits) habits else habits.take(4)
-                    items(displayedHabits, key = { it.id }) { habit ->
-                        HabitItemRow(
-                            habit = habit,
-                            onCompleteClick = { viewModel.completeHabit(habit.id) }
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
+                    val attributesInList = displayedHabits.map { it.attributeType.uppercase() }.distinct()
+
+                    attributesInList.forEach { attribute: String ->
+                        val habitGroup = displayedHabits.filter { it.attributeType.equals(attribute, ignoreCase = true) }
+                        val (attrLabel, attrColor) = when (attribute) {
+                            "PAC", "PACE" -> "⚡ PACE (PAC)" to Color(0xFF00E5FF)
+                            "SHO", "SHOOTING" -> "⚽ SHOOTING (SHO)" to Color(0xFFFF4500)
+                            "PAS", "PASSING" -> "🎯 PASSING (PAS)" to Color(0xFFFFD700)
+                            "SKL", "SKILL", "DRIBBLING" -> "🪄 SKILL / DRIBBLING (SKL)" to Color(0xFFA020F0)
+                            "DEF", "DEFENDING" -> "🛡️ DEFENDING (DEF)" to Color(0xFF00FF00)
+                            "PHY", "PHYSICAL" -> "💪 PHYSICAL (PHY)" to Color(0xFFFFA500)
+                            else -> "⭐ $attribute" to Color(0xFFFFD700)
+                        }
+
+                        item(key = "section_$attribute") {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 12.dp, bottom = 4.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(8.dp)
+                                        .background(attrColor, CircleShape)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = attrLabel,
+                                    color = attrColor,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Black,
+                                    letterSpacing = 1.sp
+                                )
+                            }
+                        }
+
+                        items(habitGroup, key = { it.id }) { habit ->
+                            HabitItemRow(
+                                habit = habit,
+                                onCompleteClick = { viewModel.completeHabit(habit.id) }
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                        }
                     }
 
                     if (habits.size > 4 && !showAllHabits) {

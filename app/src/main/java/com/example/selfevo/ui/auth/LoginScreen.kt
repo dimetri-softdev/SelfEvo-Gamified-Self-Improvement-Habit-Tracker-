@@ -162,7 +162,26 @@ fun LoginScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(48.dp))
+            // Validation Warning Banner
+            if ((email.isNotBlank() || password.isNotBlank()) && !isFormValid) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Surface(
+                    color = Color(0xFF3E1010),
+                    shape = RoundedCornerShape(8.dp),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFFF5252)),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) "⚠️ Invalid email format (e.g., player@selfevo.app)" else "⚠️ Password must be at least 8 characters long",
+                        color = Color(0xFFFF5252),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
 
             // Gradient Login Button
             Button(
