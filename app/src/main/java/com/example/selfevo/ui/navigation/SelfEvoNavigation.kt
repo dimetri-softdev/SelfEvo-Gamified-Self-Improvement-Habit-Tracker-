@@ -72,6 +72,10 @@ fun SelfEvoApp(viewModel: DashboardViewModel, authRepository: AuthRepository) {
                     onLoginSuccess = { email, password ->
                         val result = authRepository.login(email, password)
                         if (result.isSuccess) {
+                            if (email.contains("sso.")) {
+                                val extractedName = email.substringAfter("sso.").substringBefore("@").replace(".", " ").uppercase()
+                                viewModel.updatePlayerName(if (extractedName.isNotBlank()) extractedName else "GOOGLE PLAYER")
+                            }
                             navController.navigate(Screen.Home.route) {
                                 popUpTo(Screen.Login.route) { inclusive = true }
                             }
