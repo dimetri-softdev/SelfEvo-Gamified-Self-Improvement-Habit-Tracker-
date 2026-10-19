@@ -42,6 +42,7 @@ fun DashboardScreen(
     val habits by viewModel.habits.collectAsState()
 
     var showWalkoutOvr by remember { mutableStateOf<Int?>(null) }
+    var showAllHabits by remember { mutableStateOf(false) }
 
     LaunchedEffect(key1 = viewModel) {
         viewModel.levelUpEvent.collectLatest { newOvr ->
@@ -82,14 +83,29 @@ fun DashboardScreen(
 
                     Spacer(modifier = Modifier.height(48.dp))
 
-                    Text(
-                        text = stringResource(R.string.todays_habits),
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Black,
-                        color = Color.White,
+                    Row(
                         modifier = Modifier.fillMaxWidth(),
-                        textAlign = TextAlign.Start
-                    )
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = stringResource(R.string.todays_habits),
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Black,
+                            color = Color.White
+                        )
+
+                        if (habits.size > 4) {
+                            TextButton(onClick = { showAllHabits = !showAllHabits }) {
+                                Text(
+                                    text = if (showAllHabits) "Show Less" else "See All (${habits.size})",
+                                    color = Color(0xFFFFD700),
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 13.sp
+                                )
+                            }
+                        }
+                    }
 
                     Spacer(modifier = Modifier.height(16.dp))
                 }
@@ -125,12 +141,37 @@ fun DashboardScreen(
                         }
                     }
                 } else {
-                    items(habits, key = { it.id }) { habit ->
+                    val displayedHabits = if (showAllHabits) habits else habits.take(4)
+                    items(displayedHabits, key = { it.id }) { habit ->
                         HabitItemRow(
                             habit = habit,
                             onCompleteClick = { viewModel.completeHabit(habit.id) }
                         )
                         Spacer(modifier = Modifier.height(12.dp))
+                    }
+
+                    if (habits.size > 4 && !showAllHabits) {
+                        item {
+                            OutlinedButton(
+                                onClick = { showAllHabits = true },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(48.dp),
+                                shape = RoundedCornerShape(12.dp),
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    containerColor = Color(0xFF1A1A1A),
+                                    contentColor = Color(0xFFFFD700)
+                                ),
+                                border = BorderStroke(1.dp, Color(0xFFFFD700).copy(alpha = 0.4f))
+                            ) {
+                                Text(
+                                    text = "+ ${habits.size - 4} More Habits",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFFFFD700)
+                                )
+                            }
+                        }
                     }
                 }
 
