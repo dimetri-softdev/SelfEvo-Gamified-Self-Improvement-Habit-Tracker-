@@ -6,11 +6,11 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 /**
- * Singleton Retrofit client for real backend communication with ASP.NET Core production URL.
+ * Singleton Retrofit client for real backend communication with live cloud production REST API.
  */
 object RetrofitClient {
-    // Replace this with the actual production ASP.NET Core backend URL
-    private const val BASE_URL = "https://selfevo-api-production.azurewebsites.net/" 
+    // Live Cloud Production REST API URL
+    private const val BASE_URL = "https://selfevo-api.onrender.com/" 
 
     private val logging = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
