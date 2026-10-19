@@ -48,7 +48,7 @@ fun HabitsScreen(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize().imePadding()) {
             // Scrollable Content
             Box(modifier = Modifier.weight(1f)) {
                 Column(
