@@ -33,14 +33,13 @@ import androidx.compose.foundation.verticalScroll
 @Composable
 fun LoginScreen(
     onLoginSuccess: suspend (String, String) -> Unit,
+    onGoogleSignIn: suspend () -> Unit,
     onSignUpClick: () -> Unit
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
     var passwordVisible by remember { mutableStateOf(false) }
-    var showSsoPrompt by remember { mutableStateOf(false) }
-    var ssoName by remember { mutableStateOf("") }
 
     val coroutineScope = rememberCoroutineScope()
 
@@ -51,7 +50,9 @@ fun LoginScreen(
     )
 
     Surface(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .windowInsetsPadding(WindowInsets.safeDrawing),
         color = MaterialTheme.colorScheme.background
     ) {
         Column(
@@ -166,8 +167,11 @@ fun LoginScreen(
                 onClick = {
                     coroutineScope.launch {
                         isLoading = true
-                        onLoginSuccess(email, password)
-                        isLoading = false
+                        try {
+                            onLoginSuccess(email, password)
+                        } finally {
+                            isLoading = false
+                        }
                     }
                 },
                 enabled = isFormValid && !isLoading,
@@ -199,9 +203,18 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Google SSO Button
             OutlinedButton(
-                onClick = { showSsoPrompt = true },
+                onClick = {
+                    coroutineScope.launch {
+                        isLoading = true
+                        try {
+                            onGoogleSignIn()
+                        } finally {
+                            isLoading = false
+                        }
+                    }
+                },
+                enabled = !isLoading,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp),
@@ -212,31 +225,7 @@ fun LoginScreen(
                 ),
                 border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFFFD700).copy(alpha = 0.5f))
             ) {
-                Text("Sign in with Google (SSO)", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color.White)
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Biometric Fingerprint Button
-            OutlinedButton(
-                onClick = {
-                    coroutineScope.launch {
-                        isLoading = true
-                        onLoginSuccess("biometric.user@selfevo.app", "google_sso_token_secure")
-                        isLoading = false
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    containerColor = Color(0xFF1A1A1A),
-                    contentColor = Color(0xFF00E5FF)
-                ),
-                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF00E5FF).copy(alpha = 0.5f))
-            ) {
-                Text("🔓 Fingerprint / Biometric Login", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFF00E5FF))
+                Text("Continue with Google", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color.White)
             }
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -254,52 +243,4 @@ fun LoginScreen(
         }
     }
 
-    // Google SSO Account Selector Dialog
-    if (showSsoPrompt) {
-        AlertDialog(
-            onDismissRequest = { showSsoPrompt = false },
-            title = { Text("Google Account Selector", color = Color.White, fontWeight = FontWeight.Bold) },
-            text = {
-                Column {
-                    Text("Select your Google account or enter your player name:", color = Color.Gray, fontSize = 13.sp)
-                    Spacer(modifier = Modifier.height(12.dp))
-                    TextField(
-                        value = ssoName,
-                        onValueChange = { ssoName = it },
-                        placeholder = { Text("e.g., MAKHO", color = Color.DarkGray) },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = Color(0xFF1A1A1A),
-                            unfocusedContainerColor = Color(0xFF1A1A1A),
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White
-                        ),
-                        shape = RoundedCornerShape(8.dp)
-                    )
-                }
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        val nameToUse = if (ssoName.isNotBlank()) ssoName else "Google Player"
-                        showSsoPrompt = false
-                        coroutineScope.launch {
-                            isLoading = true
-                            onLoginSuccess("sso.$nameToUse@selfevo.app", "google_sso_token_secure")
-                            isLoading = false
-                        }
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700))
-                ) {
-                    Text("SIGN IN AS GOOGLE USER", color = Color.Black, fontWeight = FontWeight.Bold)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showSsoPrompt = false }) {
-                    Text("Cancel", color = Color.Gray)
-                }
-            },
-            containerColor = Color(0xFF1A1A1A)
-        )
-    }
 }

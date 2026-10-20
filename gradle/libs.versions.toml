@@ -1,6 +1,6 @@
 [versions]
 ksp = "2.1.0-1.0.29"
-agp = "8.7.3"
+agp = "8.10.1"
 kotlin = "2.1.0"
 coreKtx = "1.12.0"
 junit = "4.13.2"
@@ -12,7 +12,6 @@ activityKtx = "1.8.2"
 constraintlayout = "2.1.4"
 room = "2.6.1"
 retrofit = "2.9.0"
-okhttp = "4.12.0"
 coroutines = "1.7.3"
 serializationJson = "1.6.2"
 composeBom = "2024.02.01"
@@ -22,6 +21,8 @@ workRuntime = "2.9.0"
 navigationCompose = "2.7.7"
 firebaseBom = "32.8.0"
 biometric = "1.1.0"
+credentials = "1.5.0"
+googleId = "1.1.1"
 googleServices = "4.4.1"
 mockk = "1.14.11"
 coroutinesTest = "1.7.3"
@@ -41,7 +42,6 @@ room-compiler = { group = "androidx.room", name = "room-compiler", version.ref =
 room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
 retrofit-converter-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
-okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "serializationJson" }
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
@@ -61,8 +61,10 @@ firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.r
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth-ktx" }
 firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging-ktx" }
 firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics-ktx" }
-firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore-ktx" }
 androidx-biometric = { group = "androidx.biometric", name = "biometric", version.ref = "biometric" }
+androidx-credentials = { group = "androidx.credentials", name = "credentials", version.ref = "credentials" }
+androidx-credentials-play-services-auth = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "credentials" }
+googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleId" }
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutinesTest" }
 

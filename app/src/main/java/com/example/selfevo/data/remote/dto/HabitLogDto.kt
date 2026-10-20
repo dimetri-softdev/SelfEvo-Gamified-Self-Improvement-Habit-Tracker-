@@ -3,7 +3,8 @@ package com.example.selfevo.data.remote.dto
 import com.google.gson.annotations.SerializedName
 
 data class HabitLogRequest(
-    @SerializedName("habitId") val habitId: String
+    @SerializedName("habitId") val habitId: String,
+    @SerializedName("completedOn") val completedOn: String
 )
 
 data class HabitLogResponse(

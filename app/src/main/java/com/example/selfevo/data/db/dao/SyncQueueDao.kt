@@ -12,7 +12,7 @@ interface SyncQueueDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addItemToQueue(item: SyncQueueEntity)
 
-    @Query("SELECT * FROM sync_queue")
+    @Query("SELECT * FROM sync_queue ORDER BY id")
     suspend fun getAllPendingItems(): List<SyncQueueEntity>
 
     @Delete

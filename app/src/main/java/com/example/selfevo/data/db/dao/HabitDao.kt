@@ -16,8 +16,8 @@ interface HabitDao {
     @Query("SELECT * FROM habits WHERE userId = :userId")
     suspend fun getAllHabits(userId: String): List<HabitEntity>
 
-    @Query("SELECT * FROM habits WHERE id = :habitId")
-    suspend fun getHabitById(habitId: String): HabitEntity?
+    @Query("SELECT * FROM habits WHERE id = :habitId AND userId = :userId")
+    suspend fun getHabitById(habitId: String, userId: String): HabitEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertHabits(habits: List<HabitEntity>)
@@ -27,6 +27,9 @@ interface HabitDao {
 
     @Update
     suspend fun updateHabit(habit: HabitEntity)
+
+    @Query("UPDATE habits SET isCompletedToday = 1, lastCompletedDate = :today WHERE id = :habitId AND userId = :userId AND isCompletedToday = 0")
+    suspend fun markCompletedToday(habitId: String, userId: String, today: String): Int
 
     @Query("DELETE FROM habits")
     suspend fun deleteAllHabits()

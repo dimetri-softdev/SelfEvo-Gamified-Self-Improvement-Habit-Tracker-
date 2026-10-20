@@ -33,7 +33,6 @@ abstract class SelfEvoDatabase : RoomDatabase() {
                     SelfEvoDatabase::class.java,
                     "selfevo_database"
                 )
-                .fallbackToDestructiveMigration()
                 .build()
                 INSTANCE = instance
                 instance

@@ -42,11 +42,14 @@ class SyncWorker(
 
             // 2. Perform synchronized heavy lifting operations
             Log.d(TAG, "Pushing pending local changes to cloud...")
-            repository.syncPendingLogs()
+            if (!repository.syncPendingLogs(userId)) {
+                return Result.retry()
+            }
 
             Log.d(TAG, "Pulling latest data from cloud...")
-            repository.refreshHabits(userId)
-            repository.refreshPlayerCard(userId)
+            if (!repository.refreshHabits(userId) || !repository.refreshPlayerCard(userId)) {
+                return Result.retry()
+            }
 
             Log.i(TAG, "Background Sync Job Completed Successfully.")
             Result.success()

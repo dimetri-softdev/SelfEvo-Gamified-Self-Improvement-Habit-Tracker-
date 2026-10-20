@@ -8,16 +8,22 @@ plugins {
 
 android {
     namespace = "com.example.selfevo"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.selfevo"
         minSdk = 29
-        targetSdk = 34
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        val apiBaseUrl = providers.gradleProperty("selfEvoApiBaseUrl")
+            .orElse("https://selfevo-api.onrender.com/")
+            .get()
+            .replace("\\", "\\\\")
+            .replace("\"", "\\\"")
+        buildConfigField("String", "SELF_EVO_API_BASE_URL", "\"$apiBaseUrl\"")
         vectorDrawables {
             useSupportLibrary = true
         }
@@ -30,8 +36,8 @@ android {
         }
     }
     lint {
-        checkReleaseBuilds = false
-        abortOnError = false
+        checkReleaseBuilds = true
+        abortOnError = true
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -42,6 +48,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     testOptions {
         unitTests.isReturnDefaultValues = true
@@ -68,7 +75,6 @@ dependencies {
     // Retrofit Networking
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.gson)
-    implementation(libs.okhttp.logging)
 
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
@@ -93,10 +99,12 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.firebase.messaging)
     implementation(libs.firebase.analytics)
-    implementation(libs.firebase.firestore)
 
     // Biometrics
     implementation(libs.androidx.biometric)
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.googleid)
 
     testImplementation(libs.junit)
     testImplementation(libs.mockk)

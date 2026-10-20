@@ -53,11 +53,7 @@ class DashboardViewModel(
 
     fun refreshData() {
         viewModelScope.launch {
-            val userId = currentUserId
-            repository.refreshHabits(userId)
-            repository.refreshPlayerCard(userId)
-            repository.syncPendingLogs()
-            _lastSyncTime.value = DateTimeFormatter.ofPattern("HH:mm").format(LocalTime.now())
+            refreshDataFor(currentUserId)
         }
     }
 
@@ -76,16 +72,24 @@ class DashboardViewModel(
 
     fun addHabit(title: String, attribute: String, frequency: String, reminder: String) {
         viewModelScope.launch {
-            repository.addHabit(currentUserId, title, "Custom Habit", attribute, frequency, reminder)
-            // Explicitly refresh to ensure it shows up immediately
-            refreshData()
+            val userId = currentUserId
+            repository.addHabit(userId, title, "Custom Habit", attribute, frequency, reminder)
+            refreshDataFor(userId)
         }
     }
 
-    fun updatePlayerName(name: String) {
-        viewModelScope.launch {
-            val userId = currentUserId
-            repository.updatePlayerName(userId, name)
+    suspend fun updatePlayerName(name: String) {
+        repository.updatePlayerName(currentUserId, name)
+    }
+
+    private suspend fun refreshDataFor(userId: String) {
+        val queueSynced = repository.syncPendingLogs(userId)
+        val habitsSynced = repository.refreshHabits(userId)
+        val cardSynced = repository.refreshPlayerCard(userId)
+        _lastSyncTime.value = if (queueSynced && habitsSynced && cardSynced) {
+            DateTimeFormatter.ofPattern("HH:mm").format(LocalTime.now())
+        } else {
+            "Sync failed"
         }
     }
 }

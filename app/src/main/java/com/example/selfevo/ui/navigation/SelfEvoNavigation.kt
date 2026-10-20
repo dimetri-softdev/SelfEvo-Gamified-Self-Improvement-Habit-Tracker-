@@ -61,27 +61,31 @@ fun SelfEvoApp(viewModel: DashboardViewModel, authRepository: AuthRepository) {
             startDestination = if (currentUser != null) Screen.Home.route else Screen.Login.route
         ) {
             composable(Screen.Login.route) {
-                LaunchedEffect(currentUser) {
-                    if (currentUser != null) {
-                        navController.navigate(Screen.Home.route) {
-                            popUpTo(Screen.Login.route) { inclusive = true }
-                        }
-                    }
-                }
                 LoginScreen(
                     onLoginSuccess = { email, password ->
                         val result = authRepository.login(email, password)
                         if (result.isSuccess) {
-                            if (email.contains("sso.")) {
-                                val extractedName = email.substringAfter("sso.").substringBefore("@").replace(".", " ").uppercase()
-                                viewModel.updatePlayerName(if (extractedName.isNotBlank()) extractedName else "GOOGLE PLAYER")
-                            }
                             navController.navigate(Screen.Home.route) {
                                 popUpTo(Screen.Login.route) { inclusive = true }
                             }
                             viewModel.refreshData()
                         } else {
                             Toast.makeText(context, "Login Failed: ${result.exceptionOrNull()?.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    onGoogleSignIn = {
+                        val result = authRepository.signInWithGoogle(context)
+                        if (result.isSuccess) {
+                            val displayName = result.getOrNull()?.displayName
+                            if (!displayName.isNullOrBlank()) {
+                                viewModel.updatePlayerName(displayName)
+                            }
+                            navController.navigate(Screen.Home.route) {
+                                popUpTo(Screen.Login.route) { inclusive = true }
+                            }
+                            viewModel.refreshData()
+                        } else {
+                            Toast.makeText(context, "Google sign-in failed: ${result.exceptionOrNull()?.localizedMessage}", Toast.LENGTH_SHORT).show()
                         }
                     },
                     onSignUpClick = { navController.navigate(Screen.SignUp.route) }
@@ -93,11 +97,11 @@ fun SelfEvoApp(viewModel: DashboardViewModel, authRepository: AuthRepository) {
                         val result = authRepository.signUp(email, password)
                         if (result.isSuccess) {
                             viewModel.updatePlayerName(name)
+                            viewModel.refreshData()
                             navController.navigate(Screen.Home.route) {
                                 popUpTo(Screen.SignUp.route) { inclusive = true }
                                 popUpTo(Screen.Login.route) { inclusive = true }
                             }
-                            viewModel.refreshData()
                         } else {
                             Toast.makeText(context, "SignUp Failed: ${result.exceptionOrNull()?.message}", Toast.LENGTH_SHORT).show()
                         }

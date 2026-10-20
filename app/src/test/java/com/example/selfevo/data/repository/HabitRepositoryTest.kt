@@ -7,12 +7,12 @@ import com.example.selfevo.data.db.entity.HabitEntity
 import com.example.selfevo.data.db.entity.SyncQueueEntity
 import com.example.selfevo.data.model.PlayerCard
 import com.example.selfevo.data.remote.SelfEvoApiService
-import com.example.selfevo.data.remote.dto.AuthResponse
+import com.example.selfevo.data.remote.dto.CreateHabitRequest
 import com.example.selfevo.data.remote.dto.HabitLogRequest
 import com.example.selfevo.data.remote.dto.HabitLogResponse
-import com.example.selfevo.data.remote.dto.LoginRequest
 import com.example.selfevo.data.remote.dto.NetworkHabitDto
 import com.example.selfevo.data.remote.dto.NetworkPlayerCardDto
+import com.example.selfevo.data.remote.dto.PlayerNameUpdateRequest
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -30,7 +30,14 @@ class HabitRepositoryTest {
         override suspend fun insertHabits(habits: List<HabitEntity>) { this.habits = habits }
         override suspend fun insertHabit(habit: HabitEntity) { this.habit = habit }
         override suspend fun updateHabit(habit: HabitEntity) { this.habit = habit }
-        override suspend fun getHabitById(habitId: String): HabitEntity? = habit
+        override suspend fun markCompletedToday(habitId: String, userId: String, today: String): Int {
+            val currentHabit = getHabitById(habitId, userId) ?: return 0
+            if (currentHabit.isCompletedToday) return 0
+            habit = currentHabit.copy(isCompletedToday = true, lastCompletedDate = today)
+            return 1
+        }
+        override suspend fun getHabitById(habitId: String, userId: String): HabitEntity? =
+            habit?.takeIf { it.id == habitId && it.userId == userId }
         override suspend fun getAllHabits(userId: String): List<HabitEntity> = habits
         override suspend fun deleteAllHabits() {}
         override fun getAllHabitsFlow(userId: String): Flow<List<HabitEntity>> = throw NotImplementedError()
@@ -51,11 +58,11 @@ class HabitRepositoryTest {
     }
 
     private val apiService = object : SelfEvoApiService {
-        override suspend fun login(request: LoginRequest): Response<AuthResponse> = throw NotImplementedError()
-        override suspend fun getHabits(): Response<List<NetworkHabitDto>> = throw NotImplementedError()
+        override suspend fun getHabits(date: String): Response<List<NetworkHabitDto>> = throw NotImplementedError()
+        override suspend fun createHabit(request: CreateHabitRequest): Response<NetworkHabitDto> = throw NotImplementedError()
         override suspend fun logHabit(request: HabitLogRequest): Response<HabitLogResponse> = Response.success(HabitLogResponse(true, "success", null))
         override suspend fun getPlayerCard(): Response<NetworkPlayerCardDto> = throw NotImplementedError()
-        override suspend fun syncPlayerCard(card: NetworkPlayerCardDto): Response<NetworkPlayerCardDto> = throw NotImplementedError()
+        override suspend fun updatePlayerName(request: PlayerNameUpdateRequest): Response<NetworkPlayerCardDto> = throw NotImplementedError()
     }
 
     @Before
@@ -91,6 +98,27 @@ class HabitRepositoryTest {
         // Assert
         assertEquals(62, resultCard?.shooting)
         assertEquals(62, playerCardDao.card?.shooting)
+    }
+
+    @Test
+    fun `completeHabit supports the short attribute codes used by the habit form`() = runBlocking {
+        habitDao.habit = HabitEntity("h5", "user1", "Pace", "Run", "PAC", false, null)
+        playerCardDao.card = PlayerCard(id = "user1", playerName = "Test Player", pace = 50)
+
+        val resultCard = repository.completeHabit("h5", "user1")
+
+        assertEquals(52, resultCard?.pace)
+    }
+
+    @Test
+    fun `completeHabit cannot load another user's habit`() = runBlocking {
+        habitDao.habit = HabitEntity("h6", "user1", "Pace", "Run", "PACE", false, null)
+        playerCardDao.card = PlayerCard(id = "user2", playerName = "Other User", pace = 50)
+
+        val resultCard = repository.completeHabit("h6", "user2")
+
+        assertEquals(null, resultCard)
+        assertEquals(50, playerCardDao.card?.pace)
     }
 
     @Test
