@@ -1,5 +1,6 @@
 package com.example.selfevo.ui.navigation
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -10,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -23,6 +25,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.selfevo.R
+import com.example.selfevo.data.auth.AuthRepository
 import com.example.selfevo.ui.auth.LoginScreen
 import com.example.selfevo.ui.auth.SignUpScreen
 import com.example.selfevo.ui.dashboard.DashboardScreen
@@ -44,27 +47,65 @@ sealed class Screen(val route: String, val resourceId: Int, val icon: ImageVecto
 }
 
 @Composable
-fun SelfEvoApp(viewModel: DashboardViewModel) {
+fun SelfEvoApp(viewModel: DashboardViewModel, authRepository: AuthRepository) {
+    val context = LocalContext.current
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    var isLoggedIn by remember { mutableStateOf(false) }
+    val currentUser by authRepository.currentUserFlow.collectAsState()
 
     SelfEvoTheme {
         NavHost(
             navController = navController,
-            startDestination = if (isLoggedIn) Screen.Home.route else Screen.Login.route
+            startDestination = if (currentUser != null) Screen.Home.route else Screen.Login.route
         ) {
             composable(Screen.Login.route) {
                 LoginScreen(
-                    onLoginSuccess = { isLoggedIn = true },
+                    onLoginSuccess = { email, password ->
+                        val result = authRepository.login(email, password)
+                        if (result.isSuccess) {
+                            navController.navigate(Screen.Home.route) {
+                                popUpTo(Screen.Login.route) { inclusive = true }
+                            }
+                            viewModel.refreshData()
+                        } else {
+                            Toast.makeText(context, "Login Failed: ${result.exceptionOrNull()?.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    onGoogleSignIn = {
+                        val result = authRepository.signInWithGoogle(context)
+                        if (result.isSuccess) {
+                            val displayName = result.getOrNull()?.displayName
+                            if (!displayName.isNullOrBlank()) {
+                                viewModel.updatePlayerName(displayName)
+                            }
+                            navController.navigate(Screen.Home.route) {
+                                popUpTo(Screen.Login.route) { inclusive = true }
+                            }
+                            viewModel.refreshData()
+                        } else {
+                            Toast.makeText(context, "Google sign-in failed: ${result.exceptionOrNull()?.localizedMessage}", Toast.LENGTH_SHORT).show()
+                        }
+                    },
                     onSignUpClick = { navController.navigate(Screen.SignUp.route) }
                 )
             }
             composable(Screen.SignUp.route) {
                 SignUpScreen(
-                    onSignUpSuccess = { isLoggedIn = true },
+                    onSignUpSuccess = { email, password, name ->
+                        val result = authRepository.signUp(email, password)
+                        if (result.isSuccess) {
+                            viewModel.updatePlayerName(name)
+                            viewModel.refreshData()
+                            navController.navigate(Screen.Home.route) {
+                                popUpTo(Screen.SignUp.route) { inclusive = true }
+                                popUpTo(Screen.Login.route) { inclusive = true }
+                            }
+                        } else {
+                            Toast.makeText(context, "SignUp Failed: ${result.exceptionOrNull()?.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    },
                     onLoginClick = { navController.navigate(Screen.Login.route) }
                 )
             }
@@ -93,8 +134,17 @@ fun SelfEvoApp(viewModel: DashboardViewModel) {
             }
             composable(Screen.Settings.route) {
                 MainScaffold(navController, currentDestination) {
+                    val playerCard by viewModel.playerCard.collectAsState()
                     SettingsScreen(
-                        onSignOut = { isLoggedIn = false },
+                        viewModel = viewModel,
+                        playerName = playerCard?.playerName ?: "Player",
+                        email = authRepository.currentUser?.email ?: "Unknown",
+                        onSignOut = {
+                            authRepository.signOut()
+                            navController.navigate(Screen.Login.route) {
+                                popUpTo(0) { inclusive = true }
+                            }
+                        },
                         onSyncClick = { viewModel.refreshData() }
                     )
                 }

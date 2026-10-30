@@ -12,3 +12,7 @@ data class NetworkPlayerCardDto(
     @SerializedName("def") val defending: Int,
     @SerializedName("phy") val physical: Int
 )
+
+data class PlayerNameUpdateRequest(
+    @SerializedName("playerName") val playerName: String
+)

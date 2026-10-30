@@ -1,80 +1,78 @@
-# SelfEvo – Gamified Self-Improvement & Habit Tracker
+# SelfEvo — Gamified Self-Improvement & Habit Tracker (OPSC63212 PoE)
 
-**Course Module:** OPSC6321 / POE Part 1  
-**Target Platform:** Android  
-**Tech Stack:** ASP.NET Core REST API, Azure SQL, Android Native (Room DB, Jetpack Compose)
-
----
+[![Android CI](https://github.com/dimetri-softdev/SelfEvo-Gamified-Self-Improvement-Habit-Tracker-/actions/workflows/android.yml/badge.svg)](https://github.com/dimetri-softdev/SelfEvo-Gamified-Self-Improvement-Habit-Tracker-/actions)
 
 ## 👥 Team Members
-* Dimetri Peters
-* Garren Gabron
-* Nelson De Vos
-* Silindokuhle Gqukani
+- **Garren Gabron** (ST10460823)
+- **Dimetri Peters** (ST10375943)
+- **Nelson De Vos** (ST10451231)
+- **Silindokuhle Gqukani** (ST10461013)
 
 ---
 
-## 🚀 About SelfEvo
-**SelfEvo** is a gamified habit-tracking application inspired by FIFA card collection mechanics [cite: 2]. Instead of traditional check-lists, completing daily real-world habits increases your player attributes (Pace, Physical, Skill, etc.) [cite: 2]. Increasing your attributes raises your overall rating (OVR) and unlocks card tiers from Bronze to Special Walkout cards [cite: 2].
+## 📱 Project Overview
+**SelfEvo** is an advanced Android application that transforms everyday self-improvement and habit building into a gamified experience inspired by **EA FIFA Ultimate Team**. Instead of a standard boring checklist, users build and evolve their own **SelfEvo Player Card** by completing daily habits across attributes such as **Pace**, **Shooting**, **Passing**, **Dribbling**, **Defending**, and **Physical**.
 
 ---
 
-## ✨ Key Features
-* **Authentication & Google SSO:** Encrypted password authentication and Google Single Sign-On [cite: 2].
-* **FUT-Style Card Progression:** Dynamic overall rating (OVR) calculations across Bronze, Silver, Gold, and Walkout tiers [cite: 2].
-* **Offline-First Sync:** Habit logging works offline via Room Database and automatically syncs to the REST API when online [cite: 2].
-* **Push Notifications:** Firebase Cloud Messaging (FCM) integration for daily habit reminders and level-up alerts [cite: 2].
-* **Multi-Language Support:** Localized UI for English, isiXhosa, and Afrikaans [cite: 2].
+## ✨ Core Features
+1. **FIFA-Style Player Card Progression:**
+   - Real-time overall rating (OVR) calculation based on weighted attributes.
+   - Dynamic tier evolution (Bronze ➔ Silver ➔ Gold ➔ Walkout).
+2. **Firebase Authentication:**
+   - Firebase-managed email/password accounts and Google sign-in.
+3. **Offline-First Architecture & Sync:**
+   - Local data persistence via **Room Database**.
+   - Per-user server persistence in **PostgreSQL**; API requests are authenticated with Firebase ID tokens.
+   - Automatic background synchronization (`WorkManager` + `SyncWorker`) when network connectivity is restored.
+4. **Multi-Language Localization:**
+   - Full support for **English (`en`)**, **isiXhosa (`xh`)**, and **Afrikaans (`af`)**.
+5. **REST API Backend (`selfevo-api`):**
+   - Hosted in a separate repository: [`selfevo-api`](https://github.com/dimetri-softdev/selfevo-api).
+   - Firebase-authenticated endpoints for user-scoped habits and player-card synchronization.
+   - PostgreSQL persistence; see the API repository README for Neon/Render setup.
 
 ---
 
-## 🛠 Tech Stack & Architecture
-
-* **Mobile Client:** Android Native, Jetpack Compose / UI Views, Room DB, WorkManager, Firebase SDK [cite: 2].
-* **Backend:** ASP.NET Core REST API (Azure App Service / SmarterASP) [cite: 2].
-* **Database:** Azure SQL Database (Cloud) & Room Database (Local Client) [cite: 2].
-
----
-
-## 📡 Core API Endpoints
-
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `POST` | `/api/auth/register` | Register new user account [cite: 2] |
-| `POST` | `/api/auth/login` | Authenticate credentials & return JWT access token [cite: 2] |
-| `POST` | `/api/auth/sso` | Validate Google OAuth token [cite: 2] |
-| `GET` | `/api/habits` | Fetch user habits and completion flags [cite: 2] |
-| `POST` | `/api/habits/log` | Submit habit completion & calculate stat increases [cite: 2] |
-| `GET` | `/api/card` | Retrieve active player card stats & OVR rating [cite: 2] |
-| `POST` | `/api/sync` | Sync offline local database queue with cloud storage [cite: 2] |
+## 🛠️ Tech Stack
+- **UI Framework:** Jetpack Compose & Material Design 3
+- **Architecture:** MVVM (Model-View-ViewModel) with Kotlin Coroutines & Flow
+- **Local Storage:** Android Room Database
+- **Networking:** Retrofit 2, Gson, and OkHttp
+- **Background Tasks:** WorkManager & Firebase Cloud Messaging (FCM)
+- **Testing:** JUnit 4 & AndroidX Compose UI Test Framework
 
 ---
 
-## 📅 Project Timeline
+## 🚀 Getting Started & Installation
 
-```mermaid
-gantt
-    title SelfEvo Development Timeline (2026)
-    dateFormat  YYYY-MM-DD
-    axisFormat  %b %d
+### 1. Android Application (`SelfEvo`)
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/dimetri-softdev/SelfEvo-Gamified-Self-Improvement-Habit-Tracker-.git
+   ```
+2. Open the project in **Android Studio** (Koala / Jellyfish or newer).
+3. Sync Gradle and run the app on an Android emulator or physical device (Min SDK 29, Target SDK 36).
+4. To point builds at a different API deployment, pass its HTTPS base URL (including the trailing slash) as `-PselfEvoApiBaseUrl=https://your-api.example/`.
+5. Enable Email/Password and Google sign-in in Firebase Authentication. Add the Android app's signing certificate SHA fingerprints, configure a web OAuth client, and download the updated `google-services.json` before testing Google sign-in.
 
-    section Requirements & Design
-    Requirements & UML Diagrams           :done, a1, 2026-08-25, 2026-09-01
+### 2. Standalone REST API Backend (`selfevo-api`)
+1. Clone the backend repository:
+   ```bash
+   git clone https://github.com/dimetri-softdev/selfevo-api.git
+   ```
+2. Install dependencies. Configure `DATABASE_URL` and Firebase Admin credentials as described in the API README, then start the server:
+   ```bash
+   npm ci
+   npm start
+   ```
+3. The local server runs on `http://localhost:3000`.
 
-    section Backend & Database
-    ASP.NET Core REST API & Azure SQL     :active, a2, 2026-08-25, 2026-09-08
-    JWT Auth Controller & Google SSO      :a3, 2026-09-01, 2026-09-08
+---
 
-    section Android Development
-    UI Layouts & FUT Player Card Views    :a4, 2026-09-01, 2026-09-15
-    Room DB & Local Persistence Engine    :a5, 2026-09-08, 2026-09-22
-
-    section Cloud Sync & Services
-    Background WorkManager Sync Engine    :a6, 2026-09-15, 2026-09-29
-    Firebase Cloud Messaging & Push Alerts:a7, 2026-09-15, 2026-09-25
-    Multi-Language Support (EN/XHO/AFR)   :a8, 2026-09-22, 2026-09-29
-
-    section Testing & Release
-    Unit Testing & Offline Edge Cases     :a9, 2026-09-22, 2026-10-06
-    Walkout Animations & Final POE Submit :a10, 2026-09-29, 2026-10-06
+## 🧪 Testing
+Run unit tests and instrumentation tests via Gradle:
+```bash
+./gradlew testDebugUnit
+./gradlew connectedAndroidTest
 ```

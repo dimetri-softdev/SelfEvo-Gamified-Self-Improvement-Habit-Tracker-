@@ -1,9 +1,10 @@
 package com.example.selfevo.ui.dashboard
 
 import androidx.compose.animation.*
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -16,6 +17,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -40,6 +42,7 @@ fun DashboardScreen(
     val habits by viewModel.habits.collectAsState()
 
     var showWalkoutOvr by remember { mutableStateOf<Int?>(null) }
+    var showAllHabits by remember { mutableStateOf(false) }
 
     LaunchedEffect(key1 = viewModel) {
         viewModel.levelUpEvent.collectLatest { newOvr ->
@@ -49,7 +52,7 @@ fun DashboardScreen(
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = Color.Black // AMOLED Black
+        color = MaterialTheme.colorScheme.background
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             LazyColumn(
@@ -61,61 +64,152 @@ fun DashboardScreen(
                 item {
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // 1. MAKHO Header Section
-                    HeaderSection(playerName = playerCard?.playerName ?: "MAKHO")
+                    // 1. Personalized Header Section with dynamic greeting
+                    HeaderSection(playerName = playerCard?.playerName ?: "Player")
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    // 2. Daily Progress Section
+                    // 2. Daily Progress Section with high-fidelity bar
                     ProgressSection(completedCount = habits.count { it.isCompletedToday }, totalCount = habits.size)
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    // 3. High-Fidelity FUT Card
-                    playerCard?.let { card ->
-                        FutPlayerCard(playerCard = card)
-                    } ?: run {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(280.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator(color = Color(0xFFFFD700))
-                        }
+                    // 3. Creative Card Placeholder or real card
+                    if (playerCard != null) {
+                        FutPlayerCard(playerCard = playerCard!!)
+                    } else {
+                        SkeletonCard()
                     }
 
                     Spacer(modifier = Modifier.height(48.dp))
 
-                    Text(
-                        text = "TODAY'S HABITS",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Black,
-                        color = Color.White,
+                    Row(
                         modifier = Modifier.fillMaxWidth(),
-                        textAlign = TextAlign.Start
-                    )
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = stringResource(R.string.todays_habits),
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Black,
+                            color = Color.White
+                        )
+
+                        if (habits.size > 4) {
+                            TextButton(onClick = { showAllHabits = !showAllHabits }) {
+                                Text(
+                                    text = if (showAllHabits) "Show Less" else "See All (${habits.size})",
+                                    color = Color(0xFFFFD700),
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 13.sp
+                                )
+                            }
+                        }
+                    }
 
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
                 if (habits.isEmpty()) {
                     item {
-                        Text(
-                            text = stringResource(R.string.no_habits),
-                            color = Color.DarkGray,
-                            fontSize = 14.sp,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(top = 32.dp)
-                        )
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 32.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFF1A1A1A)),
+                            shape = RoundedCornerShape(16.dp),
+                            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(24.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    text = "NO ACTIVE HABITS",
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.Gray,
+                                    fontSize = 12.sp
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = stringResource(R.string.no_habits),
+                                    color = Color.DarkGray,
+                                    fontSize = 14.sp,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
                     }
                 } else {
-                    items(habits, key = { it.id }) { habit ->
-                        HabitItemRow(
-                            habit = habit,
-                            onCompleteClick = { viewModel.completeHabit(habit.id) }
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
+                    val displayedHabits = if (showAllHabits) habits else habits.take(4)
+                    val attributesInList = displayedHabits.map { it.attributeType.uppercase() }.distinct()
+
+                    attributesInList.forEach { attribute: String ->
+                        val habitGroup = displayedHabits.filter { it.attributeType.equals(attribute, ignoreCase = true) }
+                        val (attrLabel, attrColor) = when (attribute) {
+                            "PAC", "PACE" -> "⚡ PACE (PAC)" to Color(0xFF00E5FF)
+                            "SHO", "SHOOTING" -> "⚽ SHOOTING (SHO)" to Color(0xFFFF4500)
+                            "PAS", "PASSING" -> "🎯 PASSING (PAS)" to Color(0xFFFFD700)
+                            "SKL", "SKILL", "DRIBBLING" -> "🪄 SKILL / DRIBBLING (SKL)" to Color(0xFFA020F0)
+                            "DEF", "DEFENDING" -> "🛡️ DEFENDING (DEF)" to Color(0xFF00FF00)
+                            "PHY", "PHYSICAL" -> "💪 PHYSICAL (PHY)" to Color(0xFFFFA500)
+                            else -> "⭐ $attribute" to Color(0xFFFFD700)
+                        }
+
+                        item(key = "section_$attribute") {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 12.dp, bottom = 4.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(8.dp)
+                                        .background(attrColor, CircleShape)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = attrLabel,
+                                    color = attrColor,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Black,
+                                    letterSpacing = 1.sp
+                                )
+                            }
+                        }
+
+                        items(habitGroup, key = { it.id }) { habit ->
+                            HabitItemRow(
+                                habit = habit,
+                                onCompleteClick = { viewModel.completeHabit(habit.id) }
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                        }
+                    }
+
+                    if (habits.size > 4 && !showAllHabits) {
+                        item {
+                            OutlinedButton(
+                                onClick = { showAllHabits = true },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(48.dp),
+                                shape = RoundedCornerShape(12.dp),
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    containerColor = Color(0xFF1A1A1A),
+                                    contentColor = Color(0xFFFFD700)
+                                ),
+                                border = BorderStroke(1.dp, Color(0xFFFFD700).copy(alpha = 0.4f))
+                            ) {
+                                Text(
+                                    text = "+ ${habits.size - 4} More Habits",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFFFFD700)
+                                )
+                            }
+                        }
                     }
                 }
 
@@ -189,6 +283,37 @@ fun DashboardScreen(
 }
 
 @Composable
+fun SkeletonCard() {
+    val infiniteTransition = rememberInfiniteTransition()
+    val alpha by infiniteTransition.animateFloat(
+        initialValue = 0.3f,
+        targetValue = 0.6f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(280.dp)
+            .alpha(alpha)
+            .background(Color(0xFF1A1A1A), RoundedCornerShape(20.dp))
+            .clip(RoundedCornerShape(20.dp)),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Box(modifier = Modifier.size(100.dp).background(Color(0xFF2C2C2C), CircleShape))
+            Spacer(modifier = Modifier.height(16.dp))
+            Box(modifier = Modifier.width(150.dp).height(20.dp).background(Color(0xFF2C2C2C)))
+            Spacer(modifier = Modifier.height(8.dp))
+            Box(modifier = Modifier.width(100.dp).height(10.dp).background(Color(0xFF2C2C2C)))
+        }
+    }
+}
+
+@Composable
 fun HeaderSection(playerName: String) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -206,7 +331,7 @@ fun HeaderSection(playerName: String) {
             }
             Spacer(modifier = Modifier.width(16.dp))
             Column {
-                Text("Good morning,", color = Color.Gray, fontSize = 12.sp)
+                Text(stringResource(R.string.good_morning), color = Color.Gray, fontSize = 12.sp)
                 Text(playerName.uppercase(), color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Black)
             }
         }
@@ -228,10 +353,11 @@ fun HeaderSection(playerName: String) {
 @Composable
 fun ProgressSection(completedCount: Int, totalCount: Int) {
     val progress = if (totalCount > 0) completedCount.toFloat() / totalCount else 0f
+    val animatedProgress by animateFloatAsState(targetValue = progress, animationSpec = tween(1000))
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text("DAILY PROGRESS", color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.daily_progress), color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
             Text("$completedCount/$totalCount", color = Color(0xFFFFD700), fontSize = 12.sp, fontWeight = FontWeight.Black)
         }
         Spacer(modifier = Modifier.height(12.dp))
@@ -243,7 +369,7 @@ fun ProgressSection(completedCount: Int, totalCount: Int) {
         ) {
             Box(
                 modifier = Modifier
-                    .fillMaxWidth(progress)
+                    .fillMaxWidth(animatedProgress)
                     .fillMaxHeight()
                     .background(
                         brush = Brush.horizontalGradient(listOf(Color(0xFFFFA500), Color(0xFFFFD700))),

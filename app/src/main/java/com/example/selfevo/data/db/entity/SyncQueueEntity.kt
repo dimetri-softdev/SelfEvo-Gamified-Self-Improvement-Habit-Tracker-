@@ -1,4 +1,4 @@
-package com.example.selfevo.data.local.entity
+package com.example.selfevo.data.db.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -7,6 +7,5 @@ import androidx.room.PrimaryKey
 data class SyncQueueEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val habitId: String,
-    val operation: String, // LOG_COMPLETION
-    val timestamp: Long = System.currentTimeMillis()
+    val operation: String
 )

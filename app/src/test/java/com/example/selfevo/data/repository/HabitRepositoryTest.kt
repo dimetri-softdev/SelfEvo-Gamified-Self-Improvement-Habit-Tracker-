@@ -1,18 +1,18 @@
 package com.example.selfevo.data.repository
 
-import com.example.selfevo.data.local.dao.HabitDao
-import com.example.selfevo.data.local.dao.PlayerCardDao
-import com.example.selfevo.data.local.dao.SyncQueueDao
-import com.example.selfevo.data.local.entity.HabitEntity
-import com.example.selfevo.data.local.entity.SyncQueueEntity
+import com.example.selfevo.data.db.dao.HabitDao
+import com.example.selfevo.data.db.dao.PlayerCardDao
+import com.example.selfevo.data.db.dao.SyncQueueDao
+import com.example.selfevo.data.db.entity.HabitEntity
+import com.example.selfevo.data.db.entity.SyncQueueEntity
 import com.example.selfevo.data.model.PlayerCard
 import com.example.selfevo.data.remote.SelfEvoApiService
-import com.example.selfevo.data.remote.dto.AuthResponse
+import com.example.selfevo.data.remote.dto.CreateHabitRequest
 import com.example.selfevo.data.remote.dto.HabitLogRequest
 import com.example.selfevo.data.remote.dto.HabitLogResponse
-import com.example.selfevo.data.remote.dto.LoginRequest
 import com.example.selfevo.data.remote.dto.NetworkHabitDto
 import com.example.selfevo.data.remote.dto.NetworkPlayerCardDto
+import com.example.selfevo.data.remote.dto.PlayerNameUpdateRequest
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -26,13 +26,21 @@ class HabitRepositoryTest {
 
     private val habitDao = object : HabitDao {
         var habit: HabitEntity? = null
-        override suspend fun insertHabits(habits: List<HabitEntity>) {}
-        override suspend fun insertHabit(habit: HabitEntity) {}
+        var habits: List<HabitEntity> = emptyList()
+        override suspend fun insertHabits(habits: List<HabitEntity>) { this.habits = habits }
+        override suspend fun insertHabit(habit: HabitEntity) { this.habit = habit }
         override suspend fun updateHabit(habit: HabitEntity) { this.habit = habit }
-        override suspend fun getHabitById(habitId: String): HabitEntity? = habit
-        override suspend fun getAllHabits(): List<HabitEntity> = emptyList()
+        override suspend fun markCompletedToday(habitId: String, userId: String, today: String): Int {
+            val currentHabit = getHabitById(habitId, userId) ?: return 0
+            if (currentHabit.isCompletedToday) return 0
+            habit = currentHabit.copy(isCompletedToday = true, lastCompletedDate = today)
+            return 1
+        }
+        override suspend fun getHabitById(habitId: String, userId: String): HabitEntity? =
+            habit?.takeIf { it.id == habitId && it.userId == userId }
+        override suspend fun getAllHabits(userId: String): List<HabitEntity> = habits
         override suspend fun deleteAllHabits() {}
-        override fun getAllHabitsFlow(): Flow<List<HabitEntity>> = throw NotImplementedError()
+        override fun getAllHabitsFlow(userId: String): Flow<List<HabitEntity>> = throw NotImplementedError()
     }
 
     private val playerCardDao = object : PlayerCardDao {
@@ -50,11 +58,11 @@ class HabitRepositoryTest {
     }
 
     private val apiService = object : SelfEvoApiService {
-        override suspend fun login(request: LoginRequest): Response<AuthResponse> = throw NotImplementedError()
-        override suspend fun getHabits(): Response<List<NetworkHabitDto>> = throw NotImplementedError()
+        override suspend fun getHabits(date: String): Response<List<NetworkHabitDto>> = throw NotImplementedError()
+        override suspend fun createHabit(request: CreateHabitRequest): Response<NetworkHabitDto> = throw NotImplementedError()
         override suspend fun logHabit(request: HabitLogRequest): Response<HabitLogResponse> = Response.success(HabitLogResponse(true, "success", null))
         override suspend fun getPlayerCard(): Response<NetworkPlayerCardDto> = throw NotImplementedError()
-        override suspend fun syncPlayerCard(card: NetworkPlayerCardDto): Response<NetworkPlayerCardDto> = throw NotImplementedError()
+        override suspend fun updatePlayerName(request: PlayerNameUpdateRequest): Response<NetworkPlayerCardDto> = throw NotImplementedError()
     }
 
     @Before
@@ -66,11 +74,11 @@ class HabitRepositoryTest {
     fun `completeHabit increments pace stat when attribute type is PACE`() = runBlocking {
         // Arrange
         val habitId = "h3"
-        habitDao.habit = HabitEntity(habitId, "Sprint", "Sprint training", "PACE", false, null)
+        habitDao.habit = HabitEntity(habitId, "user1", "Sprint", "Sprint training", "PACE", false, null)
         playerCardDao.card = PlayerCard(id = "user1", playerName = "Test Player", pace = 50)
 
         // Act
-        val resultCard = repository.completeHabit(habitId)
+        val resultCard = repository.completeHabit(habitId, "user1")
 
         // Assert
         assertEquals(52, resultCard?.pace)
@@ -81,11 +89,11 @@ class HabitRepositoryTest {
     fun `completeHabit increments shooting stat when attribute type is SHOOTING`() = runBlocking {
         // Arrange
         val habitId = "h4"
-        habitDao.habit = HabitEntity(habitId, "Shooting", "Shooting practice", "SHOOTING", false, null)
+        habitDao.habit = HabitEntity(habitId, "user1", "Shooting", "Shooting practice", "SHOOTING", false, null)
         playerCardDao.card = PlayerCard(id = "user1", playerName = "Test Player", shooting = 60)
 
         // Act
-        val resultCard = repository.completeHabit(habitId)
+        val resultCard = repository.completeHabit(habitId, "user1")
 
         // Assert
         assertEquals(62, resultCard?.shooting)
@@ -93,22 +101,40 @@ class HabitRepositoryTest {
     }
 
     @Test
+    fun `completeHabit supports the short attribute codes used by the habit form`() = runBlocking {
+        habitDao.habit = HabitEntity("h5", "user1", "Pace", "Run", "PAC", false, null)
+        playerCardDao.card = PlayerCard(id = "user1", playerName = "Test Player", pace = 50)
+
+        val resultCard = repository.completeHabit("h5", "user1")
+
+        assertEquals(52, resultCard?.pace)
+    }
+
+    @Test
+    fun `completeHabit cannot load another user's habit`() = runBlocking {
+        habitDao.habit = HabitEntity("h6", "user1", "Pace", "Run", "PACE", false, null)
+        playerCardDao.card = PlayerCard(id = "user2", playerName = "Other User", pace = 50)
+
+        val resultCard = repository.completeHabit("h6", "user2")
+
+        assertEquals(null, resultCard)
+        assertEquals(50, playerCardDao.card?.pace)
+    }
+
+    @Test
     fun `completeHabit triggers OVR increase when stats improve`() = runBlocking {
         // Arrange
         val habitId = "h3"
-        habitDao.habit = HabitEntity(habitId, "Sprint", "Sprint training", "PACE", false, null)
-        // All stats at 89, one more increase should bump OVR if it was rounding down or on the edge
+        habitDao.habit = HabitEntity(habitId, "user1", "Sprint", "Sprint training", "PACE", false, null)
         playerCardDao.card = PlayerCard(
             id = "user1", playerName = "Test Player",
             pace = 89, shooting = 90, passing = 90, skill = 90, defending = 90, physical = 90
         )
-        // Initial OVR: (89+90+90+90+90+90)/6 = 539/6 = 89.83 -> 89
 
         // Act
-        val resultCard = repository.completeHabit(habitId)
+        val resultCard = repository.completeHabit(habitId, "user1")
 
         // Assert
-        // New OVR: (90+90+90+90+90+90)/6 = 90
         assertEquals(90, resultCard?.ovr)
         assertEquals("Walkout", resultCard?.tier)
     }

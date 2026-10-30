@@ -1,4 +1,4 @@
-package com.example.selfevo.data.local.entity
+package com.example.selfevo.data.db.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -6,6 +6,7 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "habits")
 data class HabitEntity(
     @PrimaryKey val id: String,
+    val userId: String = "default_user",
     val title: String,
     val description: String,
     val attributeType: String, // PACE, SHOOTING, PASSING, SKILL, DEFENDING, PHYSICAL

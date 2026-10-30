@@ -8,6 +8,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -28,6 +29,9 @@ import com.example.selfevo.data.notification.HabitReminderWorker
 
 @Composable
 fun SettingsScreen(
+    viewModel: DashboardViewModel,
+    playerName: String,
+    email: String,
     onSignOut: () -> Unit,
     onSyncClick: () -> Unit
 ) {
@@ -51,7 +55,7 @@ fun SettingsScreen(
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = Color.Black
+        color = MaterialTheme.colorScheme.background
     ) {
         LazyColumn(
             modifier = Modifier
@@ -60,23 +64,59 @@ fun SettingsScreen(
             verticalArrangement = Arrangement.spacedBy(32.dp)
         ) {
             item {
-                Text("CONFIGURE", color = Color(0xFFFFA500), fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                Text("SETTINGS", fontSize = 32.sp, fontWeight = FontWeight.Black, color = Color.White)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(stringResource(R.string.configure), color = Color(0xFFFFA500), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.settings), fontSize = 32.sp, fontWeight = FontWeight.Black, color = Color.White)
+                    }
+                    Surface(
+                        color = Color(0xFF2C1F00),
+                        shape = RoundedCornerShape(8.dp),
+                        border = BorderStroke(1.dp, Color(0xFFFFD700).copy(alpha = 0.5f))
+                    ) {
+                        Text(
+                            text = "PoE v3.0",
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                            color = Color(0xFFFFD700),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
             }
 
             // Language Preference
             item {
-                SettingsSection(title = "LANGUAGE PREFERENCE") {
-                    LanguageItem("English", "Default system language", true)
-                    LanguageItem("isiXhosa", "Xhosa — South Africa", false)
-                    LanguageItem("Afrikaans", "Afrikaans — South Africa", false)
+                SettingsSection(title = stringResource(R.string.language_preference)) {
+                    LanguageItem("English", "Default system language", currentLang.value == "en") {
+                        LocaleHelper.setLocale(context, "en")
+                        currentLang.value = "en"
+                    }
+                    LanguageItem("isiXhosa", "Xhosa — South Africa", currentLang.value == "xh") {
+                        LocaleHelper.setLocale(context, "xh")
+                        currentLang.value = "xh"
+                    }
+                    LanguageItem("Afrikaans", "Afrikaans — South Africa", currentLang.value == "af") {
+                        LocaleHelper.setLocale(context, "af")
+                        currentLang.value = "af"
+                    }
                 }
             }
 
             // Appearance
             item {
-                SettingsSection(title = "APPEARANCE") {
-                    ToggleItem("AMOLED Dark Mode", "Pure pitch black — saves battery", true)
+                SettingsSection(title = stringResource(R.string.appearance)) {
+                    ToggleItem(
+                        name = stringResource(R.string.amoled_dark_mode),
+                        description = stringResource(R.string.amoled_dark_mode_sub),
+                        isEnabled = isAmoled
+                    ) { enabled ->
+                        ThemeManager.setAmoledMode(context, enabled)
+                    }
                 }
             }
 
@@ -123,7 +163,7 @@ fun SettingsScreen(
             // Data & Cloud
             item {
                 Column {
-                    Text("DATA & CLOUD", color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.data_cloud), color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(
                         onClick = onSyncClick,
@@ -137,12 +177,12 @@ fun SettingsScreen(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF00E5FF))
                             Spacer(modifier = Modifier.width(12.dp))
-                            Text("SYNC DATA TO CLOUD", color = Color(0xFF00E5FF), fontWeight = FontWeight.Black)
+                            Text(stringResource(R.string.sync_data_to_cloud), color = Color(0xFF00E5FF), fontWeight = FontWeight.Black)
                         }
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        "Last synced: Today, 08:42 AM",
+                        stringResource(R.string.last_synced, lastSync),
                         color = Color.DarkGray,
                         fontSize = 11.sp,
                         modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -171,15 +211,8 @@ fun SettingsScreen(
                         }
                         Spacer(modifier = Modifier.width(16.dp))
                         Column(modifier = Modifier.weight(1f)) {
-                            Text("MAKHO", color = Color.White, fontWeight = FontWeight.Black)
-                            Text("makho@selfevo.app", color = Color.Gray, fontSize = 12.sp)
-                        }
-                        Box(
-                            modifier = Modifier
-                                .border(1.dp, Color(0xFFFFD700), RoundedCornerShape(4.dp))
-                                .padding(horizontal = 8.dp, vertical = 2.dp)
-                        ) {
-                            Text("GOLD", color = Color(0xFFFFD700), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                            Text(playerName.uppercase(), color = Color.White, fontWeight = FontWeight.Black)
+                            Text(email, color = Color.Gray, fontSize = 12.sp)
                         }
                     }
                 }
@@ -196,7 +229,7 @@ fun SettingsScreen(
                     shape = RoundedCornerShape(12.dp),
                     border = BorderStroke(1.dp, Color.Red.copy(alpha = 0.2f))
                 ) {
-                    Text("Sign Out", color = Color.Red, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.sign_out), color = Color.Red, fontWeight = FontWeight.Bold)
                 }
                 Spacer(modifier = Modifier.height(48.dp))
             }
@@ -221,11 +254,12 @@ fun SettingsSection(title: String, content: @Composable ColumnScope.() -> Unit) 
 }
 
 @Composable
-fun LanguageItem(name: String, description: String, isSelected: Boolean) {
+fun LanguageItem(name: String, description: String, isSelected: Boolean, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(16.dp)
+            .clickable { onClick() },
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -233,14 +267,12 @@ fun LanguageItem(name: String, description: String, isSelected: Boolean) {
             Text(name, color = if (isSelected) Color(0xFFFFD700) else Color.White, fontWeight = FontWeight.Bold)
             Text(description, color = Color.Gray, fontSize = 12.sp)
         }
-        Switch(
-            checked = isSelected,
-            onCheckedChange = {},
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = Color.Black,
-                checkedTrackColor = Color(0xFFFFD700),
-                uncheckedThumbColor = Color.Gray,
-                uncheckedTrackColor = Color(0xFF0A0A0A)
+        RadioButton(
+            selected = isSelected,
+            onClick = onClick,
+            colors = RadioButtonDefaults.colors(
+                selectedColor = Color(0xFFFFD700),
+                unselectedColor = Color.Gray
             )
         )
     }

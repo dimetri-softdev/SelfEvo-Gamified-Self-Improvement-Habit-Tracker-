@@ -2,28 +2,50 @@ package com.example.selfevo.ui.dashboard
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.selfevo.data.local.entity.HabitEntity
+import com.example.selfevo.data.auth.AuthRepository
+import com.example.selfevo.data.db.entity.HabitEntity
 import com.example.selfevo.data.model.PlayerCard
 import com.example.selfevo.data.repository.HabitRepository
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 class DashboardViewModel(
-    private val repository: HabitRepository
+    private val repository: HabitRepository,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
-    val playerCard: StateFlow<PlayerCard?> = repository.getPlayerCardStream()
+    private val currentUserIdFlow = authRepository.currentUserFlow.map { it?.uid ?: "default_user" }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val playerCard: StateFlow<PlayerCard?> = currentUserIdFlow
+        .flatMapLatest { userId -> repository.getPlayerCardStream(userId) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
-    val habits: StateFlow<List<HabitEntity>> = repository.getHabitsForTodayStream()
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val habits: StateFlow<List<HabitEntity>> = currentUserIdFlow
+        .flatMapLatest { userId -> repository.getHabitsForTodayStream(userId) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    private val currentUserId: String
+        get() = authRepository.currentUser?.uid ?: "default_user"
 
     private val _levelUpEvent = MutableSharedFlow<Int>()
     val levelUpEvent: SharedFlow<Int> = _levelUpEvent
+
+    private val _lastSyncTime = MutableStateFlow<String>("Never")
+    val lastSyncTime: StateFlow<String> = _lastSyncTime
 
     init {
         refreshData()
@@ -31,16 +53,15 @@ class DashboardViewModel(
 
     fun refreshData() {
         viewModelScope.launch {
-            repository.refreshHabits()
-            repository.refreshPlayerCard()
-            repository.syncPendingLogs()
+            refreshDataFor(currentUserId)
         }
     }
 
     fun completeHabit(habitId: String) {
         viewModelScope.launch {
+            val userId = currentUserId
             val oldOvr = playerCard.value?.ovr ?: 0
-            val updatedCard = repository.completeHabit(habitId)
+            val updatedCard = repository.completeHabit(habitId, userId)
             val newOvr = updatedCard?.ovr ?: 0
 
             if (newOvr > oldOvr) {
@@ -51,8 +72,24 @@ class DashboardViewModel(
 
     fun addHabit(title: String, attribute: String, frequency: String, reminder: String) {
         viewModelScope.launch {
-            repository.addHabit(title, "Custom Habit", attribute, frequency, reminder)
-            // No need to refresh habits manually if we are collecting from a Flow
+            val userId = currentUserId
+            repository.addHabit(userId, title, "Custom Habit", attribute, frequency, reminder)
+            refreshDataFor(userId)
+        }
+    }
+
+    suspend fun updatePlayerName(name: String) {
+        repository.updatePlayerName(currentUserId, name)
+    }
+
+    private suspend fun refreshDataFor(userId: String) {
+        val queueSynced = repository.syncPendingLogs(userId)
+        val habitsSynced = repository.refreshHabits(userId)
+        val cardSynced = repository.refreshPlayerCard(userId)
+        _lastSyncTime.value = if (queueSynced && habitsSynced && cardSynced) {
+            DateTimeFormatter.ofPattern("HH:mm").format(LocalTime.now())
+        } else {
+            "Sync failed"
         }
     }
 }
