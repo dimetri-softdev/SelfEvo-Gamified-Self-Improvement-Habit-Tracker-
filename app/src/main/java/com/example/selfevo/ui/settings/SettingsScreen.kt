@@ -1,5 +1,10 @@
 package com.example.selfevo.ui.settings
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -16,14 +21,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.selfevo.R
-import com.example.selfevo.ui.dashboard.DashboardViewModel
-import com.example.selfevo.util.lang.LocaleHelper
-import com.example.selfevo.util.theme.ThemeManager
+import androidx.core.content.ContextCompat
+import com.example.selfevo.data.notification.HabitReminderWorker
 
 @Composable
 fun SettingsScreen(
@@ -34,9 +36,22 @@ fun SettingsScreen(
     onSyncClick: () -> Unit
 ) {
     val context = LocalContext.current
-    val currentLang = remember { mutableStateOf(LocaleHelper.getLocale(context)) }
-    val isAmoled = ThemeManager.isAmoledMode.value
-    val lastSync by viewModel.lastSyncTime.collectAsState()
+
+    var dailyRemindersEnabled by remember { mutableStateOf(true) }
+    var streakAlertsEnabled by remember { mutableStateOf(true) }
+
+    // Launcher for Android 13+ POST_NOTIFICATIONS runtime permission
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            dailyRemindersEnabled = true
+            HabitReminderWorker.schedule(context)
+        } else {
+            dailyRemindersEnabled = false
+            HabitReminderWorker.cancel(context)
+        }
+    }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -107,9 +122,41 @@ fun SettingsScreen(
 
             // Push Notifications
             item {
-                SettingsSection(title = stringResource(R.string.push_notifications)) {
-                    ToggleItem(stringResource(R.string.daily_reminders), stringResource(R.string.daily_reminders_sub), true) {}
-                    ToggleItem(stringResource(R.string.streak_alerts), stringResource(R.string.streak_alerts_sub), true) {}
+                SettingsSection(title = "PUSH NOTIFICATIONS") {
+                    ToggleItem(
+                        name = "Daily Reminders",
+                        description = "Get notified at your scheduled times",
+                        isEnabled = dailyRemindersEnabled,
+                        onToggleChanged = { enabled ->
+                            if (enabled) {
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                    val hasPermission = ContextCompat.checkSelfPermission(
+                                        context,
+                                        Manifest.permission.POST_NOTIFICATIONS
+                                    ) == PackageManager.PERMISSION_GRANTED
+
+                                    if (hasPermission) {
+                                        dailyRemindersEnabled = true
+                                        HabitReminderWorker.schedule(context)
+                                    } else {
+                                        permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                                    }
+                                } else {
+                                    dailyRemindersEnabled = true
+                                    HabitReminderWorker.schedule(context)
+                                }
+                            } else {
+                                dailyRemindersEnabled = false
+                                HabitReminderWorker.cancel(context)
+                            }
+                        }
+                    )
+                    ToggleItem(
+                        name = "Streak Alerts",
+                        description = "Warning when streak is at risk",
+                        isEnabled = streakAlertsEnabled,
+                        onToggleChanged = { streakAlertsEnabled = it }
+                    )
                 }
             }
 
@@ -232,7 +279,12 @@ fun LanguageItem(name: String, description: String, isSelected: Boolean, onClick
 }
 
 @Composable
-fun ToggleItem(name: String, description: String, isEnabled: Boolean, onToggle: (Boolean) -> Unit) {
+fun ToggleItem(
+    name: String,
+    description: String,
+    isEnabled: Boolean,
+    onToggleChanged: (Boolean) -> Unit = {}
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -240,13 +292,13 @@ fun ToggleItem(name: String, description: String, isEnabled: Boolean, onToggle: 
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column {
+        Column(modifier = Modifier.weight(1f)) {
             Text(name, color = Color.White, fontWeight = FontWeight.Bold)
             Text(description, color = Color.Gray, fontSize = 12.sp)
         }
         Switch(
             checked = isEnabled,
-            onCheckedChange = onToggle,
+            onCheckedChange = onToggleChanged,
             colors = SwitchDefaults.colors(
                 checkedThumbColor = Color.Black,
                 checkedTrackColor = Color(0xFFFFD700),
