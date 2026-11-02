@@ -16,6 +16,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -25,7 +26,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.selfevo.R
-import com.example.selfevo.data.auth.AuthRepository
+import com.example.selfevo.ui.auth.AuthViewModel
 import com.example.selfevo.ui.auth.LoginScreen
 import com.example.selfevo.ui.auth.SignUpScreen
 import com.example.selfevo.ui.dashboard.DashboardScreen
@@ -33,8 +34,6 @@ import com.example.selfevo.ui.dashboard.DashboardViewModel
 import com.example.selfevo.ui.evolution.EvolutionScreen
 import com.example.selfevo.ui.habits.HabitsScreen
 import com.example.selfevo.ui.settings.SettingsScreen
-import com.example.selfevo.ui.theme.Black
-import com.example.selfevo.ui.theme.Gold
 import com.example.selfevo.ui.theme.SelfEvoTheme
 
 sealed class Screen(val route: String, val resourceId: Int, val icon: ImageVector) {
@@ -47,13 +46,18 @@ sealed class Screen(val route: String, val resourceId: Int, val icon: ImageVecto
 }
 
 @Composable
-fun SelfEvoApp(viewModel: DashboardViewModel, authRepository: AuthRepository) {
+fun SelfEvoApp(
+    viewModel: DashboardViewModel = hiltViewModel(),
+    authViewModel: AuthViewModel = hiltViewModel()
+) {
     val context = LocalContext.current
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    val currentUser by authRepository.currentUserFlow.collectAsState()
+    val currentUser by authViewModel.currentUserFlow.collectAsState()
+    val customAttrs by viewModel.customAttributes.collectAsState()
+    val habits by viewModel.habits.collectAsState()
 
     SelfEvoTheme {
         NavHost(
@@ -63,30 +67,36 @@ fun SelfEvoApp(viewModel: DashboardViewModel, authRepository: AuthRepository) {
             composable(Screen.Login.route) {
                 LoginScreen(
                     onLoginSuccess = { email, password ->
-                        val result = authRepository.login(email, password)
-                        if (result.isSuccess) {
-                            navController.navigate(Screen.Home.route) {
-                                popUpTo(Screen.Login.route) { inclusive = true }
+                        authViewModel.login(
+                            email = email,
+                            pass = password,
+                            onSuccess = {
+                                navController.navigate(Screen.Home.route) {
+                                    popUpTo(Screen.Login.route) { inclusive = true }
+                                }
+                                viewModel.refreshData()
+                            },
+                            onError = { message ->
+                                Toast.makeText(context, "Login Failed: $message", Toast.LENGTH_SHORT).show()
                             }
-                            viewModel.refreshData()
-                        } else {
-                            Toast.makeText(context, "Login Failed: ${result.exceptionOrNull()?.message}", Toast.LENGTH_SHORT).show()
-                        }
+                        )
                     },
                     onGoogleSignIn = {
-                        val result = authRepository.signInWithGoogle(context)
-                        if (result.isSuccess) {
-                            val displayName = result.getOrNull()?.displayName
-                            if (!displayName.isNullOrBlank()) {
-                                viewModel.updatePlayerName(displayName)
+                        authViewModel.signInWithGoogle(
+                            context = context,
+                            onSuccess = { displayName ->
+                                if (!displayName.isNullOrBlank()) {
+                                    viewModel.updatePlayerName(displayName)
+                                }
+                                navController.navigate(Screen.Home.route) {
+                                    popUpTo(Screen.Login.route) { inclusive = true }
+                                }
+                                viewModel.refreshData()
+                            },
+                            onError = { message ->
+                                Toast.makeText(context, "Google sign-in failed: $message", Toast.LENGTH_SHORT).show()
                             }
-                            navController.navigate(Screen.Home.route) {
-                                popUpTo(Screen.Login.route) { inclusive = true }
-                            }
-                            viewModel.refreshData()
-                        } else {
-                            Toast.makeText(context, "Google sign-in failed: ${result.exceptionOrNull()?.localizedMessage}", Toast.LENGTH_SHORT).show()
-                        }
+                        )
                     },
                     onSignUpClick = { navController.navigate(Screen.SignUp.route) }
                 )
@@ -94,17 +104,22 @@ fun SelfEvoApp(viewModel: DashboardViewModel, authRepository: AuthRepository) {
             composable(Screen.SignUp.route) {
                 SignUpScreen(
                     onSignUpSuccess = { email, password, name ->
-                        val result = authRepository.signUp(email, password)
-                        if (result.isSuccess) {
-                            viewModel.updatePlayerName(name)
-                            viewModel.refreshData()
-                            navController.navigate(Screen.Home.route) {
-                                popUpTo(Screen.SignUp.route) { inclusive = true }
-                                popUpTo(Screen.Login.route) { inclusive = true }
+                        authViewModel.signUp(
+                            email = email,
+                            pass = password,
+                            name = name,
+                            onSuccess = { displayName ->
+                                viewModel.updatePlayerName(displayName)
+                                viewModel.refreshData()
+                                navController.navigate(Screen.Home.route) {
+                                    popUpTo(Screen.SignUp.route) { inclusive = true }
+                                    popUpTo(Screen.Login.route) { inclusive = true }
+                                }
+                            },
+                            onError = { message ->
+                                Toast.makeText(context, "SignUp Failed: $message", Toast.LENGTH_SHORT).show()
                             }
-                        } else {
-                            Toast.makeText(context, "SignUp Failed: ${result.exceptionOrNull()?.message}", Toast.LENGTH_SHORT).show()
-                        }
+                        )
                     },
                     onLoginClick = { navController.navigate(Screen.Login.route) }
                 )
@@ -117,11 +132,22 @@ fun SelfEvoApp(viewModel: DashboardViewModel, authRepository: AuthRepository) {
             composable(Screen.Habits.route) {
                 MainScaffold(navController, currentDestination) {
                     HabitsScreen(
-                        onAddHabit = { name, attr, freq, time ->
-                            viewModel.addHabit(name, attr, freq, time)
-                            navController.navigate(Screen.Home.route) {
-                                popUpTo(Screen.Home.route) { inclusive = true }
-                            }
+                        habits = habits,
+                        customAttributes = customAttrs,
+                        onAddHabit = { name, primAttr, secAttr, freq, time, days, duration ->
+                            viewModel.addHabit(name, primAttr, secAttr, freq, time, days, duration)
+                        },
+                        onEditHabit = { habitId, name, primAttr, secAttr, freq, time, days, duration ->
+                            viewModel.editHabit(habitId, name, primAttr, secAttr, freq, time, days, duration)
+                        },
+                        onDeleteHabit = { habitId ->
+                            viewModel.deleteHabit(habitId)
+                        },
+                        onCompleteHabit = { habitId ->
+                            viewModel.completeHabit(habitId)
+                        },
+                        onCreateCustomAttribute = { title, abbr, color ->
+                            viewModel.addCustomAttribute(title, abbr, color)
                         }
                     )
                 }
@@ -129,7 +155,15 @@ fun SelfEvoApp(viewModel: DashboardViewModel, authRepository: AuthRepository) {
             composable(Screen.Evolutions.route) {
                 MainScaffold(navController, currentDestination) {
                     val playerCard by viewModel.playerCard.collectAsState()
-                    EvolutionScreen(currentOvr = playerCard?.ovr ?: 50)
+                    EvolutionScreen(
+                        playerCard = playerCard,
+                        completedHabitCount = habits.count { it.isCompletedToday },
+                        currentStreakDays = 14,
+                        onEquipTheme = { themeKey ->
+                            viewModel.updateEquippedTheme(themeKey)
+                            Toast.makeText(context, "Card theme equipped!", Toast.LENGTH_SHORT).show()
+                        }
+                    )
                 }
             }
             composable(Screen.Settings.route) {
@@ -138,9 +172,9 @@ fun SelfEvoApp(viewModel: DashboardViewModel, authRepository: AuthRepository) {
                     SettingsScreen(
                         viewModel = viewModel,
                         playerName = playerCard?.playerName ?: "Player",
-                        email = authRepository.currentUser?.email ?: "Unknown",
+                        email = currentUser?.email ?: "Unknown",
                         onSignOut = {
-                            authRepository.signOut()
+                            authViewModel.signOut()
                             navController.navigate(Screen.Login.route) {
                                 popUpTo(0) { inclusive = true }
                             }
@@ -162,8 +196,8 @@ fun MainScaffold(
     Scaffold(
         bottomBar = {
             NavigationBar(
-                containerColor = Black,
-                contentColor = Gold,
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.primary,
                 tonalElevation = 8.dp
             ) {
                 val items = listOf(
@@ -180,7 +214,7 @@ fun MainScaffold(
                                 screen.icon,
                                 contentDescription = null,
                                 modifier = Modifier.size(24.dp),
-                                tint = if (selected) Gold else Color.Gray
+                                tint = if (selected) MaterialTheme.colorScheme.primary else Color.Gray
                             )
                         },
                         label = {
@@ -188,7 +222,7 @@ fun MainScaffold(
                                 stringResource(screen.resourceId),
                                 fontSize = 10.sp,
                                 fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
-                                color = if (selected) Gold else Color.Gray
+                                color = if (selected) MaterialTheme.colorScheme.primary else Color.Gray
                             )
                         },
                         selected = selected,
@@ -202,9 +236,9 @@ fun MainScaffold(
                             }
                         },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = Gold,
+                            selectedIconColor = MaterialTheme.colorScheme.primary,
                             unselectedIconColor = Color.Gray,
-                            indicatorColor = Black
+                            indicatorColor = MaterialTheme.colorScheme.surfaceVariant
                         )
                     )
                 }

@@ -78,10 +78,9 @@ function createRepository(pool) {
             try {
                 await client.query('BEGIN');
                 await client.query('SELECT pg_advisory_xact_lock(hashtext($1)::bigint)', [userId]);
-                await client.query('INSERT INTO app_users (user_id) VALUES ($1) ON CONFLICT DO NOTHING', [userId]);
+                const userResult = await client.query('INSERT INTO app_users (user_id) VALUES ($1) ON CONFLICT DO NOTHING', [userId]);
                 await client.query('INSERT INTO player_cards (user_id) VALUES ($1) ON CONFLICT DO NOTHING', [userId]);
-                const existing = await client.query('SELECT 1 FROM habits WHERE user_id = $1 LIMIT 1', [userId]);
-                if (existing.rowCount === 0) {
+                if (userResult.rowCount > 0) {
                     for (const [title, description, attributeType, frequency, reminderTime] of defaultHabits) {
                         await client.query(
                             `INSERT INTO habits (id, user_id, title, description, attribute_type, frequency, reminder_time)
@@ -132,6 +131,15 @@ function createRepository(pool) {
                 [habit.id, userId, habit.title, habit.description, habit.attributeType, habit.frequency, habit.reminderTime]
             );
             return result.rows[0];
+        },
+
+        async deleteHabit(userId, habitId) {
+            await this.ensureUser(userId);
+            const result = await pool.query(
+                'DELETE FROM habits WHERE user_id = $1 AND id = $2 RETURNING id',
+                [userId, habitId]
+            );
+            return result.rowCount > 0;
         },
 
         async getPlayerCard(userId) {

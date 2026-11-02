@@ -9,7 +9,9 @@ data class NetworkHabitDto(
     @SerializedName("attributeType") val attributeType: String,
     @SerializedName("isCompletedToday") val isCompletedToday: Boolean,
     @SerializedName("frequency") val frequency: String,
-    @SerializedName("reminderTime") val reminderTime: String
+    @SerializedName("reminderTime") val reminderTime: String,
+    @SerializedName("daysOfWeek") val daysOfWeek: String? = null,
+    @SerializedName("targetDuration") val targetDuration: String? = null
 )
 
 data class CreateHabitRequest(
@@ -18,5 +20,7 @@ data class CreateHabitRequest(
     @SerializedName("description") val description: String,
     @SerializedName("attributeType") val attributeType: String,
     @SerializedName("frequency") val frequency: String,
-    @SerializedName("reminderTime") val reminderTime: String
+    @SerializedName("reminderTime") val reminderTime: String,
+    @SerializedName("daysOfWeek") val daysOfWeek: String? = null,
+    @SerializedName("targetDuration") val targetDuration: String? = null
 )

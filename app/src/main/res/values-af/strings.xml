@@ -54,6 +54,8 @@
     <string name="settings">INSTELLINGS</string>
     <string name="language_preference">TAALVOORKEUR</string>
     <string name="appearance">VOORKOMS</string>
+    <string name="dark_mode">Donker Modus</string>
+    <string name="dark_mode_sub">Donker tema met goud aksente</string>
     <string name="amoled_dark_mode">AMOLED Donker Modus</string>
     <string name="amoled_dark_mode_sub">Suiwer pikswart — spaar battery</string>
     <string name="push_notifications">STUURKENNISGEWINGS</string>

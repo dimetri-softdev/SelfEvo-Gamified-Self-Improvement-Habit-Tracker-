@@ -15,6 +15,10 @@ const repository = {
         calls.push(['createHabit', userId, habit]);
         return habit;
     },
+    async deleteHabit(userId, habitId) {
+        calls.push(['deleteHabit', userId, habitId]);
+        return habitId === '123e4567-e89b-42d3-a456-426614174000';
+    },
     async logHabit(userId, habitId, completedOn) {
         calls.push(['logHabit', userId, habitId, completedOn]);
         return { success: true, message: 'Habit logged', updatedCard: { id: userId } };
@@ -130,4 +134,14 @@ test('completion endpoint requires a valid habit ID and scopes it to the token u
         headers: { Authorization: 'Bearer invalid-token' }
     });
     assert.equal(response.status, 401);
+});
+
+test('delete habit endpoint requires valid UUID and scopes to token user', async () => {
+    const response = await fetch(`${baseUrl}/api/habits/123e4567-e89b-42d3-a456-426614174000`, {
+        method: 'DELETE',
+        headers: { Authorization: 'Bearer valid-test-token' }
+    });
+    assert.equal(response.status, 200);
+    assert.deepEqual(await response.json(), { success: true, message: 'Habit deleted successfully' });
+    assert.deepEqual(calls.at(-1), ['deleteHabit', 'test-user', '123e4567-e89b-42d3-a456-426614174000']);
 });

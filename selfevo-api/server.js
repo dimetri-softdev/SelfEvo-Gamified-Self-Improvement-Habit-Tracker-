@@ -88,7 +88,7 @@ function createApp({ repository, verifyIdToken }) {
     app.post('/api/habits', async (req, res, next) => {
         const habit = req.body;
         if (!habit || typeof habit !== 'object' || Array.isArray(habit)
-            || typeof habit.id !== 'string' || !/^[0-9a-f-]{36}$/i.test(habit.id)
+            || typeof habit.id !== 'string' || habit.id.trim().length === 0 || habit.id.length > 100
             || typeof habit.title !== 'string' || habit.title.trim().length < 1 || habit.title.trim().length > 100
             || typeof habit.description !== 'string' || habit.description.length > 500
             || typeof habit.attributeType !== 'string' || !attributeAliases[habit.attributeType.toUpperCase()]
@@ -109,10 +109,27 @@ function createApp({ repository, verifyIdToken }) {
         }
     });
 
+    app.delete('/api/habits/:id', async (req, res, next) => {
+        const habitId = req.params.id;
+        if (typeof habitId !== 'string' || habitId.trim().length === 0 || habitId.length > 100) {
+            return res.status(400).json({ error: 'A valid habitId parameter is required' });
+        }
+
+        try {
+            const success = await repository.deleteHabit(req.user.uid, habitId);
+            if (!success) {
+                return res.status(404).json({ error: 'Habit not found' });
+            }
+            return res.status(200).json({ success: true, message: 'Habit deleted successfully' });
+        } catch (error) {
+            return next(error);
+        }
+    });
+
     app.post('/api/habits/log', async (req, res, next) => {
         const habitId = req.body?.habitId;
         const completedOn = req.body?.completedOn;
-        if (typeof habitId !== 'string' || !/^[0-9a-f-]{36}$/i.test(habitId) || !isDateOnly(completedOn)) {
+        if (typeof habitId !== 'string' || habitId.trim().length === 0 || habitId.length > 100 || !isDateOnly(completedOn)) {
             return res.status(400).json({ error: 'A valid habitId and completion date are required' });
         }
 

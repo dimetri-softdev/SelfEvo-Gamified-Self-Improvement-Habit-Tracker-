@@ -12,7 +12,15 @@ data class PlayerCard(
     val passing: Int = 50,
     val skill: Int = 50,
     val defending: Int = 50,
-    val physical: Int = 50
+    val physical: Int = 50,
+    val avatarUri: String? = null,
+    val equippedTheme: String = "BRONZE",
+    val slot1: String = "PAC",
+    val slot2: String = "SHO",
+    val slot3: String = "PAS",
+    val slot4: String = "SKL",
+    val slot5: String = "DEF",
+    val slot6: String = "PHY"
 ) {
     val ovr: Int
         get() = (pace + shooting + passing + skill + defending + physical) / 6
@@ -25,7 +33,7 @@ data class PlayerCard(
             else -> "Bronze"
         }
 
-    fun incrementStat(attributeType: String, amount: Int = 2): PlayerCard {
+    fun incrementStat(attributeType: String, amount: Int = 1): PlayerCard {
         return when (attributeType.uppercase()) {
             "PAC", "PACE" -> copy(pace = (pace + amount).coerceAtMost(99))
             "SHO", "SHOOTING" -> copy(shooting = (shooting + amount).coerceAtMost(99))
