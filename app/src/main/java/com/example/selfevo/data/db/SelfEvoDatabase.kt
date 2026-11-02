@@ -4,16 +4,18 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.example.selfevo.data.db.dao.CustomAttributeDao
 import com.example.selfevo.data.db.dao.HabitDao
 import com.example.selfevo.data.db.dao.PlayerCardDao
 import com.example.selfevo.data.db.dao.SyncQueueDao
+import com.example.selfevo.data.db.entity.CustomAttributeEntity
 import com.example.selfevo.data.db.entity.HabitEntity
 import com.example.selfevo.data.db.entity.SyncQueueEntity
 import com.example.selfevo.data.model.PlayerCard
 
 @Database(
-    entities = [HabitEntity::class, SyncQueueEntity::class, PlayerCard::class],
-    version = 4,
+    entities = [HabitEntity::class, SyncQueueEntity::class, PlayerCard::class, CustomAttributeEntity::class],
+    version = 7,
     exportSchema = false
 )
 abstract class SelfEvoDatabase : RoomDatabase() {
@@ -21,6 +23,7 @@ abstract class SelfEvoDatabase : RoomDatabase() {
     abstract fun habitDao(): HabitDao
     abstract fun playerCardDao(): PlayerCardDao
     abstract fun syncQueueDao(): SyncQueueDao
+    abstract fun customAttributeDao(): CustomAttributeDao
 
     companion object {
         @Volatile
@@ -33,6 +36,7 @@ abstract class SelfEvoDatabase : RoomDatabase() {
                     SelfEvoDatabase::class.java,
                     "selfevo_database"
                 )
+                .fallbackToDestructiveMigration()
                 .build()
                 INSTANCE = instance
                 instance

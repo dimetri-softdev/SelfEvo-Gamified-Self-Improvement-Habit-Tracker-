@@ -8,9 +8,11 @@ import com.example.selfevo.data.remote.dto.NetworkPlayerCardDto
 import com.example.selfevo.data.remote.dto.PlayerNameUpdateRequest
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.PATCH
 import retrofit2.http.POST
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface SelfEvoApiService {
@@ -23,6 +25,11 @@ interface SelfEvoApiService {
     suspend fun createHabit(
         @Body request: CreateHabitRequest
     ): Response<NetworkHabitDto>
+
+    @DELETE("/api/habits/{id}")
+    suspend fun deleteHabit(
+        @Path("id") id: String
+    ): Response<Unit>
 
     @POST("/api/habits/log")
     suspend fun logHabit(

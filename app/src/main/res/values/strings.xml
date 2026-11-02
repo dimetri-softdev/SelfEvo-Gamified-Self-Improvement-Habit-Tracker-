@@ -54,6 +54,8 @@
     <string name="settings">SETTINGS</string>
     <string name="language_preference">LANGUAGE PREFERENCE</string>
     <string name="appearance">APPEARANCE</string>
+    <string name="dark_mode">Dark Mode</string>
+    <string name="dark_mode_sub">Dark theme with gold accents</string>
     <string name="amoled_dark_mode">AMOLED Dark Mode</string>
     <string name="amoled_dark_mode_sub">Pure pitch black — saves battery</string>
     <string name="push_notifications">PUSH NOTIFICATIONS</string>

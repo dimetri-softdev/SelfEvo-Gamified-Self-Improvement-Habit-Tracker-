@@ -27,9 +27,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.selfevo.R
+import com.example.selfevo.data.db.entity.HabitEntity
 import com.example.selfevo.data.model.PlayerCard
 import com.example.selfevo.ui.component.FutPlayerCard
 import com.example.selfevo.ui.component.HabitItemRow
+import com.example.selfevo.ui.habits.AttributeOption
+import com.example.selfevo.ui.habits.CreateHabitDialog
+import com.example.selfevo.ui.habits.DeleteHabitConfirmationDialog
 import kotlinx.coroutines.flow.collectLatest
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,8 +45,39 @@ fun DashboardScreen(
     val playerCard by viewModel.playerCard.collectAsState()
     val habits by viewModel.habits.collectAsState()
 
+    val customAttributes by viewModel.customAttributes.collectAsState()
     var showWalkoutOvr by remember { mutableStateOf<Int?>(null) }
     var showAllHabits by remember { mutableStateOf(false) }
+    var habitToEdit by remember { mutableStateOf<HabitEntity?>(null) }
+    var habitToDelete by remember { mutableStateOf<HabitEntity?>(null) }
+
+    val defaultAttributes = remember {
+        listOf(
+            AttributeOption("PAC", "Pace", Color(0xFF00E5FF)),
+            AttributeOption("PHY", "Physical", Color(0xFFFFA500)),
+            AttributeOption("SKL", "Skill", Color(0xFFA020F0)),
+            AttributeOption("DEF", "Defending", Color(0xFF00FF00)),
+            AttributeOption("PAS", "Passing", Color(0xFFFFD700)),
+            AttributeOption("SHO", "Shooting", Color(0xFFFF4500))
+        )
+    }
+
+    val allAttributes = remember(customAttributes, defaultAttributes) {
+        val customMapped = customAttributes.map {
+            AttributeOption(
+                abbr = it.abbreviation,
+                fullName = it.title,
+                color = try { Color(android.graphics.Color.parseColor(it.colorHex)) } catch (e: Exception) { Color(0xFF00E5FF) }
+            )
+        }
+        defaultAttributes + customMapped
+    }
+
+    val completedCount = remember(habits) { habits.count { it.isCompletedToday } }
+    val groupedHabits = remember(habits, showAllHabits) {
+        val displayed = if (showAllHabits) habits else habits.take(4)
+        displayed.groupBy { it.attributeType.uppercase() }
+    }
 
     LaunchedEffect(key1 = viewModel) {
         viewModel.levelUpEvent.collectLatest { newOvr ->
@@ -69,8 +104,7 @@ fun DashboardScreen(
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    // 2. Daily Progress Section with high-fidelity bar
-                    ProgressSection(completedCount = habits.count { it.isCompletedToday }, totalCount = habits.size)
+                    ProgressSection(completedCount = completedCount, totalCount = habits.size)
 
                     Spacer(modifier = Modifier.height(32.dp))
 
@@ -92,14 +126,14 @@ fun DashboardScreen(
                             text = stringResource(R.string.todays_habits),
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Black,
-                            color = Color.White
+                            color = MaterialTheme.colorScheme.onBackground
                         )
 
                         if (habits.size > 4) {
                             TextButton(onClick = { showAllHabits = !showAllHabits }) {
                                 Text(
                                     text = if (showAllHabits) "Show Less" else "See All (${habits.size})",
-                                    color = Color(0xFFFFD700),
+                                    color = MaterialTheme.colorScheme.primary,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 13.sp
                                 )
@@ -141,11 +175,7 @@ fun DashboardScreen(
                         }
                     }
                 } else {
-                    val displayedHabits = if (showAllHabits) habits else habits.take(4)
-                    val attributesInList = displayedHabits.map { it.attributeType.uppercase() }.distinct()
-
-                    attributesInList.forEach { attribute: String ->
-                        val habitGroup = displayedHabits.filter { it.attributeType.equals(attribute, ignoreCase = true) }
+                    groupedHabits.forEach { (attribute, habitGroup) ->
                         val (attrLabel, attrColor) = when (attribute) {
                             "PAC", "PACE" -> "⚡ PACE (PAC)" to Color(0xFF00E5FF)
                             "SHO", "SHOOTING" -> "⚽ SHOOTING (SHO)" to Color(0xFFFF4500)
@@ -180,9 +210,15 @@ fun DashboardScreen(
                         }
 
                         items(habitGroup, key = { it.id }) { habit ->
+                            val habitId = habit.id
+                            val onComplete = remember(habitId, viewModel) {
+                                { viewModel.completeHabit(habitId) }
+                            }
                             HabitItemRow(
                                 habit = habit,
-                                onCompleteClick = { viewModel.completeHabit(habit.id) }
+                                onCompleteClick = onComplete,
+                                onEditClick = { habitToEdit = habit },
+                                onDeleteClick = { habitToDelete = habit }
                             )
                             Spacer(modifier = Modifier.height(12.dp))
                         }
@@ -216,6 +252,31 @@ fun DashboardScreen(
                 item {
                     Spacer(modifier = Modifier.height(48.dp))
                 }
+            }
+
+            // Edit Habit Dialog
+            habitToEdit?.let { habit ->
+                CreateHabitDialog(
+                    allAttributes = allAttributes,
+                    initialHabit = habit,
+                    onDismiss = { habitToEdit = null },
+                    onSaveHabit = { title, primAttr, secAttr, freq, time, days, duration ->
+                        viewModel.editHabit(habit.id, title, primAttr, secAttr, freq, time, days, duration)
+                        habitToEdit = null
+                    }
+                )
+            }
+
+            // Delete Habit Confirmation Dialog
+            habitToDelete?.let { habit ->
+                DeleteHabitConfirmationDialog(
+                    habitTitle = habit.title,
+                    onDismiss = { habitToDelete = null },
+                    onConfirmDelete = {
+                        viewModel.deleteHabit(habit.id)
+                        habitToDelete = null
+                    }
+                )
             }
 
             // High-Impact Walkout Overlay
@@ -324,28 +385,33 @@ fun HeaderSection(playerName: String) {
             Box(
                 modifier = Modifier
                     .size(56.dp)
-                    .background(Color(0xFF1A1A1A), CircleShape),
+                    .background(MaterialTheme.colorScheme.surface, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.Default.Person, contentDescription = null, tint = Color(0xFFFFD700))
+                Icon(Icons.Default.Person, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
             }
             Spacer(modifier = Modifier.width(16.dp))
             Column {
                 Text(stringResource(R.string.good_morning), color = Color.Gray, fontSize = 12.sp)
-                Text(playerName.uppercase(), color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Black)
+                Text(
+                    text = playerName.uppercase(),
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Black
+                )
             }
         }
 
         // Streak Flame
         Row(
             modifier = Modifier
-                .background(Color(0xFF1A1A1A), RoundedCornerShape(50.dp))
+                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(50.dp))
                 .padding(horizontal = 12.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text("🔥", fontSize = 14.sp)
             Spacer(modifier = Modifier.width(4.dp))
-            Text("14 day", color = Color(0xFFFFD700), fontSize = 14.sp, fontWeight = FontWeight.Bold)
+            Text("14 day", color = MaterialTheme.colorScheme.primary, fontSize = 14.sp, fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -358,21 +424,21 @@ fun ProgressSection(completedCount: Int, totalCount: Int) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(stringResource(R.string.daily_progress), color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-            Text("$completedCount/$totalCount", color = Color(0xFFFFD700), fontSize = 12.sp, fontWeight = FontWeight.Black)
+            Text("$completedCount/$totalCount", color = MaterialTheme.colorScheme.primary, fontSize = 12.sp, fontWeight = FontWeight.Black)
         }
         Spacer(modifier = Modifier.height(12.dp))
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(12.dp)
-                .background(Color(0xFF1A1A1A), RoundedCornerShape(50.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(50.dp))
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth(animatedProgress)
                     .fillMaxHeight()
                     .background(
-                        brush = Brush.horizontalGradient(listOf(Color(0xFFFFA500), Color(0xFFFFD700))),
+                        brush = Brush.horizontalGradient(listOf(Color(0xFFFFA500), MaterialTheme.colorScheme.primary)),
                         shape = RoundedCornerShape(50.dp)
                     )
             )

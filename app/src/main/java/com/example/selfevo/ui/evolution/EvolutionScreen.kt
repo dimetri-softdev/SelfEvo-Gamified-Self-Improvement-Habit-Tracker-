@@ -5,9 +5,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
@@ -15,17 +17,46 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
-import androidx.compose.ui.res.stringResource
 import com.example.selfevo.R
+import com.example.selfevo.data.model.PlayerCard
+import com.example.selfevo.ui.component.FutPlayerCard
+
+data class EvolutionCardTheme(
+    val key: String,
+    val name: String,
+    val requirementText: String,
+    val difficulty: String,
+    val isUnlocked: (ovr: Int, habitsCount: Int, streakDays: Int) -> Boolean
+)
 
 @Composable
-fun EvolutionScreen(currentOvr: Int) {
+fun EvolutionScreen(
+    playerCard: PlayerCard?,
+    completedHabitCount: Int = 0,
+    currentStreakDays: Int = 14,
+    onEquipTheme: (String) -> Unit = {}
+) {
+    val currentOvr = playerCard?.ovr ?: 50
+    val equippedTheme = playerCard?.equippedTheme ?: "BRONZE"
+
+    val cardThemes = listOf(
+        EvolutionCardTheme("BRONZE", "Bronze Metallic", "Unlocked by default (OVR 0-64)", "") { _, _, _ -> true },
+        EvolutionCardTheme("SILVER", "Silver Chrome", "Reach OVR 65+", "") { _, _, _ -> true },
+        EvolutionCardTheme("GOLD", "Lustrous Gold", "Reach OVR 75+", "") { _, _, _ -> true },
+        EvolutionCardTheme("ROOKIE_STARTER", "Rookie Starter Emerald", "Complete 5 total habits", "EASY") { _, _, _ -> true },
+        EvolutionCardTheme("TOTW", "TOTW In-Form Onyx", "Maintain a 7-Day Habit Streak", "MEDIUM") { _, _, _ -> true },
+        EvolutionCardTheme("WALKOUT", "Walkout Sheen Gold", "Reach OVR 85+", "MEDIUM") { _, _, _ -> true },
+        EvolutionCardTheme("CYBERPUNK", "Cyberpunk Neon Grid", "Maintain a 15-Day Habit Streak", "MEDIUM") { _, _, _ -> true },
+        EvolutionCardTheme("ICON_PRIME", "ICON Prime Marble & Gold", "Maintain a 30-Day Habit Streak", "HARD") { _, _, _ -> true },
+        EvolutionCardTheme("TOTS", "TOTS Celestial Sapphire", "Reach OVR 90+", "HARD") { _, _, _ -> true },
+        EvolutionCardTheme("DIAMOND_PLATINUM", "Diamond Platinum", "Complete 100 total habits", "END-GAME") { _, _, _ -> true }
+    )
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
@@ -33,16 +64,17 @@ fun EvolutionScreen(currentOvr: Int) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp)
+                .padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             item {
                 Text(stringResource(R.string.your_journey), color = Color(0xFFFFA500), fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                Text(stringResource(R.string.evolution), fontSize = 32.sp, fontWeight = FontWeight.Black, color = Color.White)
-                Text(stringResource(R.string.pathway_tier_progress), fontSize = 14.sp, color = Color.Gray, modifier = Modifier.padding(top = 4.dp))
+                Text(stringResource(R.string.evolution), fontSize = 32.sp, fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.onBackground)
+                Text("Unlock rare FUT card themes & equip your active design", fontSize = 14.sp, color = Color.Gray, modifier = Modifier.padding(top = 4.dp))
 
-                Spacer(modifier = Modifier.height(48.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-                // Current Tier Progress
+                // Progress Card
                 val (nextTier, nextThreshold) = when {
                     currentOvr < 65 -> "SILVER" to 65
                     currentOvr < 75 -> "GOLD" to 75
@@ -58,63 +90,104 @@ fun EvolutionScreen(currentOvr: Int) {
                 } else 1.0f
 
                 CurrentProgressCard(ovr = currentOvr, targetTier = nextTier, progress = progress)
-
-                Spacer(modifier = Modifier.height(48.dp))
-
-                Text(stringResource(R.string.tier_milestones), color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                Spacer(modifier = Modifier.height(16.dp))
             }
 
             item {
-                EvolutionMilestone(
-                    tier = "BRONZE",
-                    range = "50-64 OVR",
-                    isUnlocked = currentOvr >= 50,
-                    isCurrent = currentOvr in 50..64
-                )
-            }
-            item { Spacer(modifier = Modifier.height(16.dp)) }
-            item {
-                EvolutionMilestone(
-                    tier = "SILVER",
-                    range = "65-74 OVR",
-                    isUnlocked = currentOvr >= 65,
-                    isCurrent = currentOvr in 65..74
-                )
-            }
-            item { Spacer(modifier = Modifier.height(16.dp)) }
-            item {
-                EvolutionMilestone(
-                    tier = "GOLD",
-                    range = "75-84 OVR",
-                    isUnlocked = currentOvr >= 75,
-                    isCurrent = currentOvr in 75..84
-                )
-            }
-            item { Spacer(modifier = Modifier.height(16.dp)) }
-            item {
-                EvolutionMilestone(
-                    tier = "WALKOUT",
-                    range = "85+ OVR",
-                    isUnlocked = currentOvr >= 85,
-                    isCurrent = currentOvr >= 85
-                )
+                Text("CARD THEMES GALLERY (10 THEMES)", color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
             }
 
-            item {
-                Spacer(modifier = Modifier.height(48.dp))
-                Text(stringResource(R.string.card_preview), color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                Spacer(modifier = Modifier.height(16.dp))
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp)
-                        .background(Color(0xFF1A1A1A), RoundedCornerShape(20.dp))
-                        .border(1.dp, Color(0xFFFFD700).copy(alpha = 0.3f), RoundedCornerShape(20.dp)),
-                    contentAlignment = Alignment.Center
+            items(cardThemes, key = { it.key }) { theme ->
+                val unlocked = theme.isUnlocked(currentOvr, completedHabitCount, currentStreakDays)
+                val isEquipped = equippedTheme.equals(theme.key, ignoreCase = true)
+
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1A1A1A)),
+                    shape = RoundedCornerShape(16.dp),
+                    border = BorderStroke(
+                        width = if (isEquipped) 2.dp else 1.dp,
+                        color = if (isEquipped) Color(0xFFFFD700) else if (unlocked) Color.White.copy(alpha = 0.15f) else Color.Red.copy(alpha = 0.2f)
+                    )
                 ) {
-                    Text("GOLD CARD PREVIEW", color = Color(0xFFFFD700), fontWeight = FontWeight.Bold)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                            Box(
+                                modifier = Modifier
+                                    .size(44.dp)
+                                    .background(if (unlocked) Color(0xFF262626) else Color(0xFF121212), RoundedCornerShape(10.dp)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = if (unlocked) Icons.Default.Star else Icons.Default.Lock,
+                                    contentDescription = null,
+                                    tint = if (isEquipped) Color(0xFFFFD700) else if (unlocked) Color(0xFF00E5FF) else Color.Gray,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Column {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(theme.name, fontWeight = FontWeight.Black, color = if (unlocked) Color.White else Color.Gray, fontSize = 16.sp)
+                                    if (theme.difficulty.isNotBlank()) {
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Surface(
+                                            color = when(theme.difficulty) {
+                                                "EASY" -> Color(0xFF047857)
+                                                "MEDIUM" -> Color(0xFFB45309)
+                                                "HARD" -> Color(0xFFB91C1C)
+                                                else -> Color(0xFF6B21A8)
+                                            },
+                                            shape = RoundedCornerShape(4.dp)
+                                        ) {
+                                            Text(theme.difficulty, color = Color.White, fontSize = 8.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp))
+                                        }
+                                    }
+                                }
+                                Text(theme.requirementText, color = Color.Gray, fontSize = 12.sp, modifier = Modifier.padding(top = 2.dp))
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        if (isEquipped) {
+                            Button(
+                                onClick = { },
+                                enabled = false,
+                                colors = ButtonDefaults.buttonColors(disabledContainerColor = Color(0xFF2C2400), disabledContentColor = Color(0xFFFFD700)),
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("EQUIPPED", fontSize = 11.sp, fontWeight = FontWeight.Black)
+                            }
+                        } else if (unlocked) {
+                            Button(
+                                onClick = { onEquipTheme(theme.key) },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700)),
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Text("EQUIP", color = Color.Black, fontSize = 11.sp, fontWeight = FontWeight.Black)
+                            }
+                        } else {
+                            Surface(
+                                color = Color(0xFF261212),
+                                shape = RoundedCornerShape(8.dp),
+                                border = BorderStroke(1.dp, Color.Red.copy(alpha = 0.3f))
+                            ) {
+                                Text("LOCKED", color = Color.Red, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp))
+                            }
+                        }
+                    }
                 }
+            }
+
+            item {
                 Spacer(modifier = Modifier.height(32.dp))
             }
         }
@@ -182,73 +255,6 @@ fun CurrentProgressCard(ovr: Int, targetTier: String, progress: Float) {
                 color = Color(0xFF00E5FF),
                 trackColor = Color(0xFF1A1A1A)
             )
-        }
-    }
-}
-
-@Composable
-fun EvolutionMilestone(tier: String, range: String, isUnlocked: Boolean, isCurrent: Boolean) {
-    val borderColor = if (isCurrent) Color(0xFFFFD700) else Color.White.copy(alpha = 0.1f)
-    val textColor = if (isUnlocked) Color.White else Color.Gray
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(80.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF1A1A1A)),
-        shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(1.dp, borderColor)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 20.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .background(Color(0xFF0A0A0A), RoundedCornerShape(8.dp)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        if (isUnlocked) Icons.Default.Star else Icons.Default.Lock,
-                        contentDescription = null,
-                        tint = if (isUnlocked) Color(0xFFFFD700) else Color.Gray,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(16.dp))
-                Column {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(tier, fontWeight = FontWeight.Black, color = textColor, fontSize = 16.sp)
-                        if (isCurrent) {
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Box(
-                                modifier = Modifier
-                                    .background(Color(0xFFFFD700), RoundedCornerShape(4.dp))
-                                    .padding(horizontal = 4.dp, vertical = 2.dp)
-                            ) {
-                                Text(stringResource(R.string.current), color = Color.Black, fontSize = 8.sp, fontWeight = FontWeight.Bold)
-                            }
-                        }
-                    }
-                    Text(range, color = Color.Gray, fontSize = 12.sp)
-                }
-            }
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(modifier = Modifier.size(8.dp).background(if (isUnlocked) Color(0xFFFFA500) else Color.Gray, CircleShape))
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = if (isUnlocked) stringResource(R.string.unlocked) else stringResource(R.string.locked),
-                    color = if (isUnlocked) Color(0xFFFFA500) else Color.Gray,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
         }
     }
 }

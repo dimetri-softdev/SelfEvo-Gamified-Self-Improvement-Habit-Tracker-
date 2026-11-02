@@ -4,7 +4,9 @@ import android.app.Application
 import android.util.Log
 import androidx.work.Configuration
 import androidx.work.WorkManager
+import dagger.hilt.android.HiltAndroidApp
 
+@HiltAndroidApp
 class SelfEvoApplication : Application(), Configuration.Provider {
 
     override val workManagerConfiguration: Configuration

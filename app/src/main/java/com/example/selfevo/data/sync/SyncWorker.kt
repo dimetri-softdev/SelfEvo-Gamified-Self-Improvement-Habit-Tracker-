@@ -6,13 +6,11 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.example.selfevo.data.db.SelfEvoDatabase
 import com.example.selfevo.data.remote.RetrofitClient
-import com.example.selfevo.data.repository.HabitRepository
+import com.example.selfevo.data.repository.HabitRepositoryImpl
+import com.example.selfevo.data.repository.PlayerCardRepositoryImpl
+import com.example.selfevo.data.repository.SyncRepositoryImpl
 import com.google.firebase.auth.FirebaseAuth
 
-/**
- * SyncWorker is the automated background engine for data consistency.
- * It is managed by Jetpack WorkManager and handles offline-to-online data propagation.
- */
 class SyncWorker(
     context: Context,
     workerParams: WorkerParameters
@@ -24,30 +22,29 @@ class SyncWorker(
         Log.d(TAG, "Background Sync Job Started.")
 
         return try {
-            // Identify the current user to scoped background data operations
             val userId = FirebaseAuth.getInstance().currentUser?.uid ?: run {
                 Log.w(TAG, "Sync aborted: No active user session found.")
                 return Result.success()
             }
 
-            // 1. Initialize data layer handles inside the worker context
             val database = SelfEvoDatabase.getDatabase(applicationContext)
             val habitDao = database.habitDao()
             val playerCardDao = database.playerCardDao()
             val syncQueueDao = database.syncQueueDao()
-
-            // Connect to real Retrofit production client
+            val customAttributeDao = database.customAttributeDao()
             val apiService = RetrofitClient.apiService
-            val repository = HabitRepository(habitDao, playerCardDao, syncQueueDao, apiService)
 
-            // 2. Perform synchronized heavy lifting operations
+            val syncRepo = SyncRepositoryImpl(syncQueueDao, habitDao, apiService)
+            val playerCardRepo = PlayerCardRepositoryImpl(playerCardDao, customAttributeDao, apiService, syncRepo)
+            val habitRepo = HabitRepositoryImpl(habitDao, customAttributeDao, syncQueueDao, apiService, syncRepo, playerCardRepo)
+
             Log.d(TAG, "Pushing pending local changes to cloud...")
-            if (!repository.syncPendingLogs(userId)) {
+            if (!syncRepo.syncPendingLogs(userId)) {
                 return Result.retry()
             }
 
             Log.d(TAG, "Pulling latest data from cloud...")
-            if (!repository.refreshHabits(userId) || !repository.refreshPlayerCard(userId)) {
+            if (!habitRepo.refreshHabits(userId) || !playerCardRepo.refreshPlayerCard(userId)) {
                 return Result.retry()
             }
 
