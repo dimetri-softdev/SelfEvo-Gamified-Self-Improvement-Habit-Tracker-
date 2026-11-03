@@ -67,6 +67,12 @@
     <string name="sync_data_to_cloud">SYNC DATA TO CLOUD</string>
     <string name="last_synced">Last synced: %1$s</string>
     <string name="sign_out">Sign Out</string>
+    <string name="profile_photo">Profile photo</string>
+    <string name="change_profile_photo">Change profile photo</string>
+    <string name="uploading_profile_photo">Uploading photo…</string>
+    <string name="profile_photo_error">Profile photo error: %1$s</string>
+    <string name="notification_permission_required">Allow notifications to enable push alerts.</string>
+    <string name="notification_settings_error">Notification setting error: %1$s</string>
 
     <!-- Navigation -->
     <string name="nav_home">HOME</string>

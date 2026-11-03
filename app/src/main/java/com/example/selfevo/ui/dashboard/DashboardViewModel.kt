@@ -1,6 +1,5 @@
 package com.example.selfevo.ui.dashboard
 
-import android.content.Context
 import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -8,6 +7,9 @@ import androidx.lifecycle.viewModelScope
 import com.example.selfevo.data.db.entity.CustomAttributeEntity
 import com.example.selfevo.data.db.entity.HabitEntity
 import com.example.selfevo.data.model.PlayerCard
+import com.example.selfevo.data.repository.NotificationPreferencesRepository
+import com.example.selfevo.data.repository.ProfileImageRepository
+import com.example.selfevo.data.repository.SelfEvoNotificationTopic
 import com.example.selfevo.domain.repository.AuthRepository
 import com.example.selfevo.domain.repository.HabitRepository
 import com.example.selfevo.domain.repository.PlayerCardRepository
@@ -15,19 +17,18 @@ import com.example.selfevo.domain.repository.SyncRepository
 import com.example.selfevo.domain.usecase.CompleteHabitUseCase
 import com.example.selfevo.domain.usecase.GetDashboardDataUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.io.File
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
@@ -39,7 +40,9 @@ class DashboardViewModel @Inject constructor(
     private val habitRepository: HabitRepository,
     private val playerCardRepository: PlayerCardRepository,
     private val syncRepository: SyncRepository,
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val profileImageRepository: ProfileImageRepository,
+    private val notificationPreferencesRepository: NotificationPreferencesRepository
 ) : ViewModel() {
 
     private val currentUserId: String
@@ -50,6 +53,28 @@ class DashboardViewModel @Inject constructor(
 
     private val _lastSyncTime = MutableStateFlow("Never")
     val lastSyncTime: StateFlow<String> = _lastSyncTime
+
+    private val _profileImageUrl = MutableStateFlow<String?>(null)
+    val profileImageUrl: StateFlow<String?> = _profileImageUrl
+
+    private val _profileImageError = MutableStateFlow<String?>(null)
+    val profileImageError: StateFlow<String?> = _profileImageError
+
+    private val _isUploadingProfileImage = MutableStateFlow(false)
+    val isUploadingProfileImage: StateFlow<Boolean> = _isUploadingProfileImage
+
+    private val _dailyRemindersEnabled = MutableStateFlow(
+        notificationPreferencesRepository.isEnabled(SelfEvoNotificationTopic.DAILY_REMINDERS)
+    )
+    val dailyRemindersEnabled: StateFlow<Boolean> = _dailyRemindersEnabled
+
+    private val _streakAlertsEnabled = MutableStateFlow(
+        notificationPreferencesRepository.isEnabled(SelfEvoNotificationTopic.STREAK_ALERTS)
+    )
+    val streakAlertsEnabled: StateFlow<Boolean> = _streakAlertsEnabled
+
+    private val _notificationError = MutableStateFlow<String?>(null)
+    val notificationError: StateFlow<String?> = _notificationError
 
     private val _isLoading = MutableStateFlow(false)
 
@@ -83,7 +108,58 @@ class DashboardViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     init {
+        viewModelScope.launch {
+            authRepository.currentUserFlow.collectLatest { user ->
+                _profileImageUrl.value = null
+                _profileImageError.value = null
+                if (user != null) {
+                    loadProfileImage(user.uid)
+                }
+            }
+        }
         refreshData()
+    }
+
+    fun uploadProfileImage(imageUri: Uri) {
+        viewModelScope.launch {
+            val userId = authRepository.currentUser?.uid
+            if (userId.isNullOrBlank()) {
+                _profileImageError.value = "Sign in before uploading a profile image."
+                return@launch
+            }
+
+            _isUploadingProfileImage.value = true
+            _profileImageError.value = null
+            try {
+                _profileImageUrl.value =
+                    profileImageRepository.uploadProfileImage(userId, imageUri)
+            } catch (e: Exception) {
+                Log.e(TAG, "Profile image upload failed", e)
+                _profileImageError.value =
+                    e.localizedMessage ?: "The profile image could not be uploaded."
+            } finally {
+                _isUploadingProfileImage.value = false
+            }
+        }
+    }
+
+    fun setNotificationEnabled(topic: SelfEvoNotificationTopic, enabled: Boolean) {
+        viewModelScope.launch {
+            _notificationError.value = null
+            try {
+                notificationPreferencesRepository.setEnabled(topic, enabled)
+                when (topic) {
+                    SelfEvoNotificationTopic.DAILY_REMINDERS ->
+                        _dailyRemindersEnabled.value = enabled
+                    SelfEvoNotificationTopic.STREAK_ALERTS ->
+                        _streakAlertsEnabled.value = enabled
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Notification preference update failed for ${topic.topicName}", e)
+                _notificationError.value =
+                    e.localizedMessage ?: "Notification settings could not be updated."
+            }
+        }
     }
 
     fun refreshData() {
@@ -180,22 +256,6 @@ class DashboardViewModel @Inject constructor(
         }
     }
 
-    fun saveProfileImage(context: Context, uri: Uri) {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val inputStream = context.contentResolver.openInputStream(uri) ?: return@launch
-                val file = File(context.filesDir, "profile_avatar_${currentUserId.replace("|", "_")}.jpg")
-                file.outputStream().use { output ->
-                    inputStream.copyTo(output)
-                }
-                val persistentUriString = Uri.fromFile(file).toString()
-                playerCardRepository.updateAvatarUri(currentUserId, persistentUriString)
-            } catch (e: Exception) {
-                Log.e("DashboardViewModel", "Failed to save profile avatar image", e)
-            }
-        }
-    }
-
     fun updateEquippedTheme(theme: String) {
         viewModelScope.launch {
             playerCardRepository.updateEquippedTheme(currentUserId, theme)
@@ -224,5 +284,19 @@ class DashboardViewModel @Inject constructor(
         } else {
             "Sync failed"
         }
+    }
+
+    private suspend fun loadProfileImage(userId: String) {
+        try {
+            _profileImageUrl.value = profileImageRepository.getProfileImageUrl(userId)
+        } catch (e: Exception) {
+            Log.e(TAG, "Profile image could not be loaded", e)
+            _profileImageError.value =
+                e.localizedMessage ?: "The profile image could not be loaded."
+        }
+    }
+
+    private companion object {
+        const val TAG = "SelfEvo_DashboardVM"
     }
 }

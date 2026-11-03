@@ -9,7 +9,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -36,9 +35,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
-import coil.compose.rememberAsyncImagePainter
+import coil.compose.AsyncImage
 import com.example.selfevo.R
 import com.example.selfevo.data.notification.HabitReminderWorker
+import com.example.selfevo.data.repository.SelfEvoNotificationTopic
 import com.example.selfevo.ui.dashboard.DashboardViewModel
 import com.example.selfevo.util.lang.LocaleHelper
 import com.example.selfevo.util.theme.ThemeManager
@@ -60,11 +60,18 @@ fun SettingsScreen(
     val lastSync by viewModel.lastSyncTime.collectAsState()
     val playerCard by viewModel.playerCard.collectAsState()
     val customAttributes by viewModel.customAttributes.collectAsState()
+    val profileImageUrl by viewModel.profileImageUrl.collectAsState()
+    val profileImageError by viewModel.profileImageError.collectAsState()
+    val isUploadingProfileImage by viewModel.isUploadingProfileImage.collectAsState()
+    val dailyTopicEnabled by viewModel.dailyRemindersEnabled.collectAsState()
+    val streakAlertsEnabled by viewModel.streakAlertsEnabled.collectAsState()
+    val notificationError by viewModel.notificationError.collectAsState()
 
     var dailyRemindersEnabled by remember { mutableStateOf(true) }
-    var streakAlertsEnabled by remember { mutableStateOf(true) }
     var scheduledTimeText by remember { mutableStateOf("07:30") }
     var reminderConfirmedBanner by remember { mutableStateOf<String?>(null) }
+    var notificationPermissionError by remember { mutableStateOf(false) }
+    var pendingNotificationTopic by remember { mutableStateOf<SelfEvoNotificationTopic?>(null) }
 
     // Slot states
     var slot1 by remember(playerCard) { mutableStateOf(playerCard?.slot1 ?: "PAC") }
@@ -77,9 +84,35 @@ fun SettingsScreen(
     val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri: Uri? ->
-        uri?.let {
-            viewModel.saveProfileImage(context, it)
-            Toast.makeText(context, "Profile photo updated on card!", Toast.LENGTH_SHORT).show()
+        uri?.let(viewModel::uploadProfileImage)
+    }
+
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        val topic = pendingNotificationTopic
+        pendingNotificationTopic = null
+        if (granted && topic != null) {
+            notificationPermissionError = false
+            viewModel.setNotificationEnabled(topic, true)
+        } else if (!granted) {
+            notificationPermissionError = true
+        }
+    }
+
+    fun updateNotificationPreference(topic: SelfEvoNotificationTopic, enabled: Boolean) {
+        notificationPermissionError = false
+        if (!enabled) {
+            viewModel.setNotificationEnabled(topic, false)
+        } else if (
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) !=
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            pendingNotificationTopic = topic
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            viewModel.setNotificationEnabled(topic, true)
         }
     }
 
@@ -96,6 +129,8 @@ fun SettingsScreen(
             reminderConfirmedBanner = "⚠️ Notification permission denied."
         }
     }
+
+    val profilePhotoModel = profileImageUrl ?: playerCard?.avatarUri
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -158,10 +193,10 @@ fun SettingsScreen(
                                 },
                             contentAlignment = Alignment.Center
                         ) {
-                            if (!playerCard?.avatarUri.isNullOrBlank()) {
-                                Image(
-                                    painter = rememberAsyncImagePainter(model = Uri.parse(playerCard!!.avatarUri)),
-                                    contentDescription = "User Photo",
+                            if (!profilePhotoModel.isNullOrBlank()) {
+                                AsyncImage(
+                                    model = profilePhotoModel,
+                                    contentDescription = stringResource(R.string.profile_photo),
                                     modifier = Modifier.fillMaxSize(),
                                     contentScale = ContentScale.Crop
                                 )
@@ -175,11 +210,32 @@ fun SettingsScreen(
                         TextButton(
                             onClick = {
                                 photoPickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-                            }
+                            },
+                            enabled = !isUploadingProfileImage
                         ) {
-                            Icon(Icons.Default.CameraAlt, contentDescription = null, tint = Color(0xFF00E5FF), modifier = Modifier.size(16.dp))
+                            if (isUploadingProfileImage) {
+                                CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                            } else {
+                                Icon(Icons.Default.CameraAlt, contentDescription = null, tint = Color(0xFF00E5FF), modifier = Modifier.size(16.dp))
+                            }
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("Upload / Change Profile Photo", color = Color(0xFF00E5FF), fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                            Text(
+                                if (isUploadingProfileImage) {
+                                    stringResource(R.string.uploading_profile_photo)
+                                } else {
+                                    stringResource(R.string.change_profile_photo)
+                                },
+                                color = Color(0xFF00E5FF),
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                        if (profileImageError != null) {
+                            Text(
+                                stringResource(R.string.profile_photo_error, profileImageError.orEmpty()),
+                                color = MaterialTheme.colorScheme.error,
+                                fontSize = 12.sp
+                            )
                         }
 
                         Spacer(modifier = Modifier.height(4.dp))
@@ -266,6 +322,42 @@ fun SettingsScreen(
                                 )
                             }
                         }
+                    }
+                }
+            }
+
+            // Push Notification Topic Preferences
+            item {
+                SettingsSection(title = stringResource(R.string.push_notifications)) {
+                    ToggleItem(
+                        name = stringResource(R.string.daily_reminders),
+                        description = stringResource(R.string.daily_reminders_sub),
+                        isEnabled = dailyTopicEnabled
+                    ) { enabled ->
+                        updateNotificationPreference(SelfEvoNotificationTopic.DAILY_REMINDERS, enabled)
+                    }
+                    ToggleItem(
+                        name = stringResource(R.string.streak_alerts),
+                        description = stringResource(R.string.streak_alerts_sub),
+                        isEnabled = streakAlertsEnabled
+                    ) { enabled ->
+                        updateNotificationPreference(SelfEvoNotificationTopic.STREAK_ALERTS, enabled)
+                    }
+                    if (notificationPermissionError) {
+                        Text(
+                            stringResource(R.string.notification_permission_required),
+                            color = MaterialTheme.colorScheme.error,
+                            fontSize = 12.sp,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        )
+                    }
+                    if (notificationError != null) {
+                        Text(
+                            stringResource(R.string.notification_settings_error, notificationError.orEmpty()),
+                            color = MaterialTheme.colorScheme.error,
+                            fontSize = 12.sp,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        )
                     }
                 }
             }

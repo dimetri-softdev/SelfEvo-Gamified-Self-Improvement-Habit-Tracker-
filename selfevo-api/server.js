@@ -1,7 +1,8 @@
 const express = require('express');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
-const admin = require('firebase-admin');
+const { cert, getApps, initializeApp } = require('firebase-admin/app');
+const { getAuth } = require('firebase-admin/auth');
 const { Pool } = require('pg');
 const { createRepository } = require('./repository');
 
@@ -26,6 +27,65 @@ function isDateOnly(value) {
     if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
     const parsed = new Date(`${value}T00:00:00.000Z`);
     return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+}
+
+function getDatabaseSslOptions(nodeEnv, sslMode) {
+    if (nodeEnv !== 'production' && !sslMode) {
+        return undefined;
+    }
+
+    const mode = sslMode || 'verify-full';
+    switch (mode) {
+        case 'disable':
+            return false;
+        case 'require':
+            return { rejectUnauthorized: false };
+        case 'verify-full':
+            return { rejectUnauthorized: true };
+        default:
+            throw new Error('DATABASE_SSL_MODE must be disable, require, or verify-full');
+    }
+}
+
+function normalizeServiceAccount(serviceAccount) {
+    if (!serviceAccount || typeof serviceAccount !== 'object'
+        || typeof serviceAccount.project_id !== 'string'
+        || typeof serviceAccount.client_email !== 'string'
+        || typeof serviceAccount.private_key !== 'string') {
+        throw new Error('FIREBASE_SERVICE_ACCOUNT_JSON must be a complete Firebase Admin service-account JSON');
+    }
+
+    return {
+        ...serviceAccount,
+        private_key: serviceAccount.private_key.replace(/\\n/g, '\n').replace(/\r\n/g, '\n')
+    };
+}
+
+function parseServiceAccountCredentials({ jsonValue, base64Value }) {
+    if (base64Value) {
+        try {
+            const decoded = Buffer.from(base64Value, 'base64').toString('utf8');
+            return normalizeServiceAccount(JSON.parse(decoded));
+        } catch (error) {
+            if (error instanceof SyntaxError) {
+                throw new Error('FIREBASE_SERVICE_ACCOUNT_BASE64 must be base64-encoded service-account JSON');
+            }
+            throw error;
+        }
+    }
+
+    if (!jsonValue) {
+        throw new Error('FIREBASE_SERVICE_ACCOUNT_JSON or FIREBASE_SERVICE_ACCOUNT_BASE64 must be configured');
+    }
+
+    try {
+        return normalizeServiceAccount(JSON.parse(jsonValue));
+    } catch (error) {
+        if (error instanceof SyntaxError) {
+            throw new Error('FIREBASE_SERVICE_ACCOUNT_JSON must contain valid JSON');
+        }
+        throw error;
+    }
 }
 
 function createApp({ repository, verifyIdToken }) {
@@ -191,27 +251,21 @@ function createApp({ repository, verifyIdToken }) {
 }
 
 function initializeFirebaseAdmin() {
-    if (admin.apps.length > 0) {
-        return admin.auth();
+    const existingApp = getApps()[0];
+    if (existingApp) {
+        return getAuth(existingApp);
     }
 
-    const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
-    if (!serviceAccountJson) {
-        throw new Error('FIREBASE_SERVICE_ACCOUNT_JSON must be configured');
-    }
+    const serviceAccount = parseServiceAccountCredentials({
+        jsonValue: process.env.FIREBASE_SERVICE_ACCOUNT_JSON,
+        base64Value: process.env.FIREBASE_SERVICE_ACCOUNT_BASE64
+    });
 
-    let serviceAccount;
-    try {
-        serviceAccount = JSON.parse(serviceAccountJson);
-    } catch (error) {
-        throw new Error('FIREBASE_SERVICE_ACCOUNT_JSON must contain valid JSON');
-    }
-
-    const app = admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
+    const app = initializeApp({
+        credential: cert(serviceAccount),
         projectId: process.env.FIREBASE_PROJECT_ID || serviceAccount.project_id
     });
-    return admin.auth(app);
+    return getAuth(app);
 }
 
 async function start() {
@@ -222,7 +276,7 @@ async function start() {
     const firebaseAuth = initializeFirebaseAdmin();
     const pool = new Pool({
         connectionString: process.env.DATABASE_URL,
-        ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: true } : undefined,
+        ssl: getDatabaseSslOptions(process.env.NODE_ENV, process.env.DATABASE_SSL_MODE),
         max: 10,
         connectionTimeoutMillis: 10000,
         idleTimeoutMillis: 30000
@@ -263,4 +317,10 @@ if (require.main === module) {
     });
 }
 
-module.exports = { createApp, start };
+module.exports = {
+    createApp,
+    getDatabaseSslOptions,
+    normalizeServiceAccount,
+    parseServiceAccountCredentials,
+    start
+};

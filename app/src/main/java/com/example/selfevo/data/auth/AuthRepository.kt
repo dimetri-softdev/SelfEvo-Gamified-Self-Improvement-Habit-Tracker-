@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
+import com.example.selfevo.BuildConfig
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.firebase.auth.FirebaseAuth
@@ -51,17 +52,21 @@ class AuthRepository(
 
     suspend fun signInWithGoogle(context: Context): Result<FirebaseUser?> {
         return try {
-            val clientIdResource = context.resources.getIdentifier(
-                "default_web_client_id",
-                "string",
-                context.packageName
-            )
-            if (clientIdResource == 0) {
-                return Result.failure(IllegalStateException("Google sign-in is not configured for this Firebase project"))
+            val configuredClientId = BuildConfig.GOOGLE_WEB_CLIENT_ID
+            val generatedClientId = context.resources.getIdentifier(
+                "default_web_client_id", "string", context.packageName
+            ).takeIf { it != 0 }?.let(context::getString)
+            val webClientId = configuredClientId.ifBlank { generatedClientId.orEmpty() }
+            if (webClientId.isBlank()) {
+                return Result.failure(
+                    IllegalStateException(
+                        "Google sign-in needs a Web OAuth client ID. Set googleWebClientId in Gradle properties or update google-services.json."
+                    )
+                )
             }
             val googleIdOption = GetGoogleIdOption.Builder()
                 .setFilterByAuthorizedAccounts(false)
-                .setServerClientId(context.getString(clientIdResource))
+                .setServerClientId(webClientId)
                 .setAutoSelectEnabled(false)
                 .build()
             val request = GetCredentialRequest.Builder()

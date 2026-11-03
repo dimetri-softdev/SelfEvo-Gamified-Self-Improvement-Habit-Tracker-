@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
+import com.example.selfevo.BuildConfig
 import com.example.selfevo.domain.repository.AuthRepository
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
@@ -55,12 +56,15 @@ class AuthRepositoryImpl @Inject constructor() : AuthRepository {
                 "string",
                 context.packageName
             )
-            if (clientIdResource == 0) {
+            val serverClientId = BuildConfig.GOOGLE_WEB_CLIENT_ID
+                .takeIf { it.isNotBlank() }
+                ?: clientIdResource.takeIf { it != 0 }?.let(context::getString)
+            if (serverClientId == null) {
                 return Result.failure(IllegalStateException("Google sign-in is not configured for this Firebase project"))
             }
             val googleIdOption = GetGoogleIdOption.Builder()
                 .setFilterByAuthorizedAccounts(false)
-                .setServerClientId(context.getString(clientIdResource))
+                .setServerClientId(serverClientId)
                 .setAutoSelectEnabled(false)
                 .build()
             val request = GetCredentialRequest.Builder()

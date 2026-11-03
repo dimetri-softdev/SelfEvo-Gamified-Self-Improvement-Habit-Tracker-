@@ -67,6 +67,12 @@
     <string name="sync_data_to_cloud">SINKRONA IDATHA KWI-CLOUD</string>
     <string name="last_synced">Igqityelwe ukungqamaniswa: %1$s</string>
     <string name="sign_out">Phuma</string>
+    <string name="profile_photo">Ifoto yeprofayile</string>
+    <string name="change_profile_photo">Tshintsha ifoto yeprofayile</string>
+    <string name="uploading_profile_photo">Kulayishwa ifoto…</string>
+    <string name="profile_photo_error">Impazamo yefoto yeprofayile: %1$s</string>
+    <string name="notification_permission_required">Vumela izaziso ukuze uvule izilumkiso ze-push.</string>
+    <string name="notification_settings_error">Impazamo yoseto lwezaziso: %1$s</string>
 
     <!-- Navigation -->
     <string name="nav_home">EKHAYA</string>

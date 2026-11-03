@@ -67,6 +67,12 @@
     <string name="sync_data_to_cloud">SINKRONISEER DATA NA WOLK</string>
     <string name="last_synced">Laas gesinkroniseer: %1$s</string>
     <string name="sign_out">Teken uit</string>
+    <string name="profile_photo">Profiel foto</string>
+    <string name="change_profile_photo">Verander profiel foto</string>
+    <string name="uploading_profile_photo">Laai foto op…</string>
+    <string name="profile_photo_error">Profiel foto fout: %1$s</string>
+    <string name="notification_permission_required">Laat kennisgewings toe om stootwaarskuwings te aktiveer.</string>
+    <string name="notification_settings_error">Kennisgewinginstellingsfout: %1$s</string>
 
     <!-- Navigation -->
     <string name="nav_home">TUIS</string>

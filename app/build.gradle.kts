@@ -24,7 +24,13 @@ android {
             .get()
             .replace("\\", "\\\\")
             .replace("\"", "\\\"")
+        val googleWebClientId = providers.gradleProperty("googleWebClientId")
+            .orElse("")
+            .get()
+            .replace("\\", "\\\\")
+            .replace("\"", "\\\"")
         buildConfigField("String", "SELF_EVO_API_BASE_URL", "\"$apiBaseUrl\"")
+        buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"$googleWebClientId\"")
         vectorDrawables {
             useSupportLibrary = true
         }
@@ -102,6 +108,8 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.firebase.messaging)
     implementation(libs.firebase.analytics)
+    implementation(libs.firebase.firestore)
+    implementation(libs.firebase.storage)
 
     // Biometrics
     implementation(libs.androidx.biometric)
