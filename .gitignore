@@ -13,3 +13,12 @@
 .externalNativeBuild
 .cxx
 local.properties
+/.kotlin/
+/google-services.json
+/hs_err_pid*.log
+/replay_pid*.log
+/.idea/appInsightsSettings.xml
+/.idea/appInsightsSettings.xml~
+/.idea/deploymentTargetSelector.xml
+/.idea/deviceManager.xml
+/.idea/inspectionProfiles/
