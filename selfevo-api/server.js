@@ -5,6 +5,7 @@ const { cert, getApps, initializeApp } = require('firebase-admin/app');
 const { getAuth } = require('firebase-admin/auth');
 const { Pool } = require('pg');
 const { createRepository } = require('./repository');
+const { createProfileImageStorage } = require('./profile-image-storage');
 
 const attributeAliases = Object.freeze({
     PAC: 'PACE',
@@ -22,6 +23,7 @@ const attributeAliases = Object.freeze({
     PHYSICAL: 'PHYSICAL'
 });
 const frequencies = new Set(['Daily', 'Mon-Fri', 'Weekends']);
+const profileImageContentTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
 function isDateOnly(value) {
     if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
@@ -88,7 +90,7 @@ function parseServiceAccountCredentials({ jsonValue, base64Value }) {
     }
 }
 
-function createApp({ repository, verifyIdToken }) {
+function createApp({ repository, verifyIdToken, profileImageStorage = null }) {
     if (!repository || typeof verifyIdToken !== 'function') {
         throw new Error('API repository and Firebase token verifier are required');
     }
@@ -225,6 +227,47 @@ function createApp({ repository, verifyIdToken }) {
         }
     });
 
+    app.post(
+        '/api/profile-image',
+        express.raw({
+            type: [...profileImageContentTypes],
+            limit: '5mb'
+        }),
+        async (req, res, next) => {
+            const contentType = req.get('content-type')?.split(';')[0].trim().toLowerCase();
+            if (!profileImageContentTypes.has(contentType) || !Buffer.isBuffer(req.body) || req.body.length === 0) {
+                return res.status(415).json({ error: 'A non-empty JPEG, PNG, or WebP image is required' });
+            }
+            if (!profileImageStorage) {
+                return res.status(503).json({ error: 'Profile image storage is not configured' });
+            }
+
+            try {
+                const path = await profileImageStorage.uploadProfileImage(
+                    req.user.uid,
+                    contentType,
+                    req.body
+                );
+                return res.status(200).json({ path });
+            } catch (error) {
+                return next(error);
+            }
+        }
+    );
+
+    app.get('/api/profile-image', async (req, res, next) => {
+        if (!profileImageStorage) {
+            return res.status(503).json({ error: 'Profile image storage is not configured' });
+        }
+
+        try {
+            const url = await profileImageStorage.createProfileImageSignedUrl(req.user.uid);
+            return res.status(200).json({ url });
+        } catch (error) {
+            return next(error);
+        }
+    });
+
     app.use((req, res) => {
         res.status(404).json({ error: 'Not found' });
     });
@@ -295,7 +338,8 @@ async function start() {
 
     const app = createApp({
         repository,
-        verifyIdToken: (token) => firebaseAuth.verifyIdToken(token, true)
+        verifyIdToken: (token) => firebaseAuth.verifyIdToken(token, true),
+        profileImageStorage: createProfileImageStorage()
     });
     const server = app.listen(process.env.PORT || 3000, () => {
         console.log(`SelfEvo API listening on port ${process.env.PORT || 3000}`);

@@ -26,7 +26,7 @@
    - Per-user server persistence in **PostgreSQL**; API requests are authenticated with Firebase ID tokens.
    - Automatic background synchronization (`WorkManager` + `SyncWorker`) when network connectivity is restored.
 4. **Profile Photos and NoSQL:**
-   - Profile images are stored in Firebase Storage, with each signed-in user's image URL and update timestamp read from and written to their Cloud Firestore document.
+   - Profile images are stored in a private Supabase Storage bucket through the Firebase-authenticated API. Cloud Firestore stores the signed-in user's object path and update timestamp.
 5. **Push Notifications:**
    - Users opt in to daily-reminder and streak-alert Firebase Cloud Messaging topics from Settings.
 6. **Multi-Language Localization:**
@@ -42,7 +42,7 @@
 - **UI Framework:** Jetpack Compose & Material Design 3
 - **Architecture:** MVVM (Model-View-ViewModel) with Kotlin Coroutines & Flow
 - **Local Storage:** Android Room Database
-- **Cloud NoSQL and Blob Storage:** Firebase Cloud Firestore and Firebase Storage
+- **Cloud NoSQL and Blob Storage:** Firebase Cloud Firestore and Supabase Storage
 - **Networking:** Retrofit 2, Gson, and OkHttp
 - **Background Tasks:** WorkManager & Firebase Cloud Messaging (FCM)
 - **Testing:** JUnit 4 & AndroidX Compose UI Test Framework
@@ -53,7 +53,7 @@
 
 SelfEvo uses a Jetpack Compose interface organized around an MVVM pattern. The navigation exposes the dashboard, habit creation, evolution progress, and settings. Completing habits updates the locally cached player card immediately; the repository queues unsuccessful server writes and WorkManager retries synchronization when connectivity returns.
 
-The authenticated REST API remains the source of truth for habits and player-card data in PostgreSQL. Firebase Authentication supplies the user's identity token to that API. Room holds the offline cache and retry queue. Profile photos use Firebase Storage, while the matching download URL is stored in the signed-in user's Firestore document. FCM topics deliver opt-in push alerts. Firebase rules must restrict profile documents and images to their owner's UID, as shown in the setup instructions below.
+The authenticated REST API remains the source of truth for habits and player-card data in PostgreSQL. Firebase Authentication supplies the user's identity token to that API. Room holds the offline cache and retry queue. Profile photos are uploaded to a private Supabase Storage bucket through that authenticated API; the API derives the object path from the verified Firebase UID and returns short-lived signed read URLs. Firestore stores the profile image path and update timestamp. FCM topics deliver opt-in push alerts. Firestore rules restrict profile documents to their owner's UID.
 
 The interface uses the player-card metaphor to make progress visible, with English, Afrikaans, and isiXhosa string resources. Settings include language and appearance preferences, cloud sync, profile photos, and push-alert subscriptions.
 
@@ -75,10 +75,8 @@ See [RELEASE_NOTES.md](./RELEASE_NOTES.md) for changes made for the final submis
 2. Open the project in **Android Studio** (Koala / Jellyfish or newer).
 3. Sync Gradle and run the app on an Android emulator or physical device (Min SDK 29, Target SDK 36).
 4. To point builds at a different API deployment, pass its HTTPS base URL (including the trailing slash) as `-PselfEvoApiBaseUrl=https://your-api.example/`.
-5. Enable Email/Password and Google sign-in in Firebase Authentication. Add the Android app's signing certificate SHA-1 and SHA-256 fingerprints in Firebase project settings, configure a Web OAuth client, and download the updated `google-services.json`. Google sign-in uses the `default_web_client_id` generated from that file; if it is absent, the app uses the `googleWebClientId` Gradle property. The provided client ID in the root `gradle.properties` is a public OAuth identifier, not a secret. Replace it with your Firebase project's Web client ID when configuring a different Firebase project, or pass it as `-PgoogleWebClientId=<client-id>`.
-6. Enable **Cloud Firestore** and **Firebase Storage** in the same Firebase project to use profile photos. The Settings screen uploads the selected image to `profile-images/{uid}/profile-image` and reads/writes its download URL in the signed-in user's `users/{uid}` Firestore document. Images must be image MIME types and no larger than 5 MB.
-
-   Publish owner-only rules in Firebase Console.
+5. Enable Email/Password and Google sign-in in Firebase Authentication. Add the Android app's signing certificate SHA-1 and SHA-256 fingerprints in Firebase project settings, configure a Web OAuth client, and download the updated `app/google-services.json`. Google sign-in uses the `default_web_client_id` generated from that file; if it is absent, the app uses the `googleWebClientId` Gradle property. The client ID in the root `gradle.properties` is a public OAuth identifier, not a secret. Replace it with your Firebase project's Web client ID when configuring a different Firebase project, or pass it as `-PgoogleWebClientId=<client-id>`.
+6. Enable **Cloud Firestore** in the Firebase project. The app stores the profile image object path and update timestamp in the signed-in user's `users/{uid}` document. Publish owner-only Firestore rules:
 
    **Firestore rules**
 
@@ -93,25 +91,9 @@ See [RELEASE_NOTES.md](./RELEASE_NOTES.md) for changes made for the final submis
    }
    ```
 
-   **Firebase Storage rules**
-
-   ```javascript
-   rules_version = '2';
-   service firebase.storage {
-     match /b/{bucket}/o {
-       match /profile-images/{userId}/profile-image {
-         allow read: if request.auth != null && request.auth.uid == userId;
-         allow write: if request.auth != null
-           && request.auth.uid == userId
-           && request.resource.size <= 5 * 1024 * 1024
-           && request.resource.contentType.matches('image/.*');
-       }
-     }
-   }
-   ```
-
-   In Firebase Cloud Messaging, send test messages to the `selfevo_daily_reminders` or `selfevo_streak_alerts` topic after a user opts in from Settings. The app requests notification permission on Android 13 and later.
-7. Read the [AI usage and citation report](./AI_USAGE.md) and keep it accurate for the tools used by the team.
+7. Configure the API's **Supabase Storage** as described in [`selfevo-api/README.md`](./selfevo-api/README.md). Use a private `profile-images` bucket with a 5 MB file limit and JPEG, PNG, and WebP allowed. Store the Supabase service-role key only in the API host's secret environment variables; never put it in the Android app or source control. The authenticated API uploads to `{firebaseUid}/profile-image` and returns short-lived signed URLs for reads.
+8. In Firebase Cloud Messaging, send test messages to the `selfevo_daily_reminders` or `selfevo_streak_alerts` topic after a user opts in from Settings. The app requests notification permission on Android 13 and later.
+9. Read the [AI usage and citation report](./AI_USAGE.md) and keep it accurate for the tools used by the team.
 
 ### 2. Standalone REST API Backend (`selfevo-api`)
 1. Clone the backend repository:

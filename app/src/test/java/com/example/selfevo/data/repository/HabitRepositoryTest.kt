@@ -14,11 +14,13 @@ import com.example.selfevo.data.remote.dto.HabitLogRequest
 import com.example.selfevo.data.remote.dto.HabitLogResponse
 import com.example.selfevo.data.remote.dto.NetworkHabitDto
 import com.example.selfevo.data.remote.dto.NetworkPlayerCardDto
+import com.example.selfevo.data.remote.dto.ProfileImageDto
 import com.example.selfevo.data.remote.dto.PlayerNameUpdateRequest
 import com.example.selfevo.domain.usecase.CompleteHabitUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
+import okhttp3.RequestBody
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
@@ -99,6 +101,8 @@ class HabitRepositoryTest {
         override suspend fun logHabit(request: HabitLogRequest): Response<HabitLogResponse> = Response.success(HabitLogResponse(true, "success", null))
         override suspend fun getPlayerCard(): Response<NetworkPlayerCardDto> = throw NotImplementedError()
         override suspend fun updatePlayerName(request: PlayerNameUpdateRequest): Response<NetworkPlayerCardDto> = throw NotImplementedError()
+        override suspend fun uploadProfileImage(image: RequestBody): Response<ProfileImageDto> = throw NotImplementedError()
+        override suspend fun getProfileImageUrl(): Response<ProfileImageDto> = throw NotImplementedError()
     }
 
     @Before

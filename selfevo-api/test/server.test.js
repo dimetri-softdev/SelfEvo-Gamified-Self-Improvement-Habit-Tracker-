@@ -10,6 +10,7 @@ const {
 let server;
 let baseUrl;
 const calls = [];
+const profileImageStorageCalls = [];
 const repository = {
     async checkHealth() {},
     async getHabits(userId, date) {
@@ -37,10 +38,21 @@ const repository = {
         return { id: userId, playerName };
     }
 };
+const profileImageStorage = {
+    async uploadProfileImage(userId, contentType, image) {
+        profileImageStorageCalls.push(['upload', userId, contentType, image]);
+        return `${userId}/profile-image`;
+    },
+    async createProfileImageSignedUrl(userId) {
+        profileImageStorageCalls.push(['signedUrl', userId]);
+        return `https://images.example/${userId}/signed`;
+    }
+};
 
 before(async () => {
     const app = createApp({
         repository,
+        profileImageStorage,
         verifyIdToken: async (token) => {
             if (token !== 'valid-test-token') throw new Error('Invalid test token');
             return { uid: 'test-user' };
@@ -149,6 +161,90 @@ test('delete habit endpoint requires valid UUID and scopes to token user', async
     assert.equal(response.status, 200);
     assert.deepEqual(await response.json(), { success: true, message: 'Habit deleted successfully' });
     assert.deepEqual(calls.at(-1), ['deleteHabit', 'test-user', '123e4567-e89b-42d3-a456-426614174000']);
+});
+
+test('profile image upload requires authentication and stores under the verified user ID', async () => {
+    const image = Buffer.from([0x89, 0x50, 0x4e, 0x47]);
+    const response = await fetch(`${baseUrl}/api/profile-image`, {
+        method: 'POST',
+        headers: {
+            Authorization: 'Bearer valid-test-token',
+            'Content-Type': 'image/png'
+        },
+        body: image
+    });
+
+    assert.equal(response.status, 200);
+    assert.deepEqual(await response.json(), {
+        path: 'test-user/profile-image'
+    });
+    const [operation, userId, contentType, storedImage] = profileImageStorageCalls.at(-1);
+    assert.equal(operation, 'upload');
+    assert.equal(userId, 'test-user');
+    assert.equal(contentType, 'image/png');
+    assert.deepEqual(storedImage, image);
+});
+
+test('profile image uploads reject unsupported content types', async () => {
+    const response = await fetch(`${baseUrl}/api/profile-image`, {
+        method: 'POST',
+        headers: {
+            Authorization: 'Bearer valid-test-token',
+            'Content-Type': 'text/plain'
+        },
+        body: 'not an image'
+    });
+
+    assert.equal(response.status, 415);
+});
+
+test('profile image uploads enforce the 5 MB limit', async () => {
+    const response = await fetch(`${baseUrl}/api/profile-image`, {
+        method: 'POST',
+        headers: {
+            Authorization: 'Bearer valid-test-token',
+            'Content-Type': 'image/jpeg'
+        },
+        body: Buffer.alloc(5 * 1024 * 1024 + 1)
+    });
+
+    assert.equal(response.status, 413);
+});
+
+test('profile image signed URLs are scoped to the verified user ID', async () => {
+    const response = await fetch(`${baseUrl}/api/profile-image`, {
+        headers: { Authorization: 'Bearer valid-test-token' }
+    });
+
+    assert.equal(response.status, 200);
+    assert.deepEqual(await response.json(), {
+        url: 'https://images.example/test-user/signed'
+    });
+    assert.deepEqual(profileImageStorageCalls.at(-1), ['signedUrl', 'test-user']);
+});
+
+test('profile image routes require authentication and report missing storage configuration', async (t) => {
+    const app = createApp({
+        repository,
+        verifyIdToken: async (token) => {
+            if (token !== 'valid-test-token') throw new Error('Invalid test token');
+            return { uid: 'test-user' };
+        }
+    });
+    const unconfiguredServer = app.listen(0, '127.0.0.1');
+    await new Promise((resolve) => unconfiguredServer.once('listening', resolve));
+    t.after(() => new Promise((resolve, reject) => {
+        unconfiguredServer.close((error) => error ? reject(error) : resolve());
+    }));
+
+    const url = `http://127.0.0.1:${unconfiguredServer.address().port}/api/profile-image`;
+    const unauthorized = await fetch(url);
+    assert.equal(unauthorized.status, 401);
+
+    const unavailable = await fetch(url, {
+        headers: { Authorization: 'Bearer valid-test-token' }
+    });
+    assert.equal(unavailable.status, 503);
 });
 
 test('database TLS defaults to certificate verification in production', () => {

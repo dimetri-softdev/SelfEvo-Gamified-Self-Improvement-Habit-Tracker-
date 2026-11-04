@@ -5,7 +5,9 @@ import com.example.selfevo.data.remote.dto.HabitLogRequest
 import com.example.selfevo.data.remote.dto.HabitLogResponse
 import com.example.selfevo.data.remote.dto.NetworkHabitDto
 import com.example.selfevo.data.remote.dto.NetworkPlayerCardDto
+import com.example.selfevo.data.remote.dto.ProfileImageDto
 import com.example.selfevo.data.remote.dto.PlayerNameUpdateRequest
+import okhttp3.RequestBody
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -43,4 +45,12 @@ interface SelfEvoApiService {
     suspend fun updatePlayerName(
         @Body request: PlayerNameUpdateRequest
     ): Response<NetworkPlayerCardDto>
+
+    @POST("/api/profile-image")
+    suspend fun uploadProfileImage(
+        @Body image: RequestBody
+    ): Response<ProfileImageDto>
+
+    @GET("/api/profile-image")
+    suspend fun getProfileImageUrl(): Response<ProfileImageDto>
 }
