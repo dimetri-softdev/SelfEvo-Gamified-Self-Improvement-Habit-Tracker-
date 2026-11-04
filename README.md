@@ -76,20 +76,7 @@ See [RELEASE_NOTES.md](./RELEASE_NOTES.md) for changes made for the final submis
 3. Sync Gradle and run the app on an Android emulator or physical device (Min SDK 29, Target SDK 36).
 4. To point builds at a different API deployment, pass its HTTPS base URL (including the trailing slash) as `-PselfEvoApiBaseUrl=https://your-api.example/`.
 5. Enable Email/Password and Google sign-in in Firebase Authentication. Add the Android app's signing certificate SHA-1 and SHA-256 fingerprints in Firebase project settings, configure a Web OAuth client, and download the updated `app/google-services.json`. Google sign-in uses the `default_web_client_id` generated from that file; if it is absent, the app uses the `googleWebClientId` Gradle property. The client ID in the root `gradle.properties` is a public OAuth identifier, not a secret. Replace it with your Firebase project's Web client ID when configuring a different Firebase project, or pass it as `-PgoogleWebClientId=<client-id>`.
-6. Enable **Cloud Firestore** in the Firebase project. The app stores the profile image object path and update timestamp in the signed-in user's `users/{uid}` document. Publish owner-only Firestore rules:
-
-   **Firestore rules**
-
-   ```javascript
-   rules_version = '2';
-   service cloud.firestore {
-     match /databases/{database}/documents {
-       match /users/{userId} {
-         allow read, write: if request.auth != null && request.auth.uid == userId;
-       }
-     }
-   }
-   ```
+6. Enable **Cloud Firestore** in the Firebase project. The app stores the profile image object path and update timestamp in the signed-in user's `users/{uid}` document. Publish the owner-only rules in [`firestore.rules`](./firestore.rules) using the Firebase Console's **Firestore Database → Rules** tab. These rules allow each signed-in user to access only their own `users/{uid}` document; all other documents are denied by default.
 
 7. Configure the API's **Supabase Storage** as described in [`selfevo-api/README.md`](./selfevo-api/README.md). Use a private `profile-images` bucket with a 5 MB file limit and JPEG, PNG, and WebP allowed. Store the Supabase service-role key only in the API host's secret environment variables; never put it in the Android app or source control. The authenticated API uploads to `{firebaseUid}/profile-image` and returns short-lived signed URLs for reads.
 8. In Firebase Cloud Messaging, send test messages to the `selfevo_daily_reminders` or `selfevo_streak_alerts` topic after a user opts in from Settings. The app requests notification permission on Android 13 and later.
