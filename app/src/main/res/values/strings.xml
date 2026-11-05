@@ -41,6 +41,37 @@
     <string name="frequency_label">FREQUENCY</string>
     <string name="reminder_time_label">REMINDER TIME</string>
     <string name="add_to_selfevo">+ ADD TO SELFEVO</string>
+    <string name="habits_hub">HABITS HUB</string>
+    <string name="active_habits_count">%1$d Active Habits • Level Up Attributes</string>
+    <string name="custom_stat">+ Custom Stat</string>
+    <string name="create_new_habit">+ CREATE NEW HABIT</string>
+    <string name="your_active_habits">YOUR ACTIVE HABITS</string>
+    <string name="no_habits_yet">NO HABITS YET</string>
+    <string name="create_habit_empty_hint">Tap + CREATE NEW HABIT above to set up habits, choose target days and duration, and start gaining XP!</string>
+    <string name="create_new_habit_title">Create New Habit</string>
+    <string name="edit_habit_title">Edit Habit</string>
+    <string name="habit_name_example">Habit Name (e.g. Morning Run)</string>
+    <string name="target_duration_example">Target Duration / Goal (e.g. 30 mins, 10 reps)</string>
+    <string name="target_days_of_week">TARGET DAYS OF WEEK</string>
+    <string name="all_days">All Days</string>
+    <string name="weekdays">Mon-Fri</string>
+    <string name="weekends">Weekends</string>
+    <string name="linked_attributes_select_two">LINKED ATTRIBUTES (SELECT UP TO 2)</string>
+    <string name="attribute_xp_split">1 selected = +2 XP | 2 selected = +1 / +1 XP</string>
+    <string name="habit_daily_reminder_time">Daily Reminder Time (e.g. 07:00)</string>
+    <string name="save_changes">SAVE CHANGES</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete_habit_title">Delete Habit</string>
+    <string name="confirm_delete_habit">Are you sure you want to delete "%1$s"? This action cannot be undone.</string>
+    <string name="delete">Delete</string>
+    <string name="create_custom_attribute">Create Custom Attribute</string>
+    <string name="custom_attribute_progress_hint">Custom attributes start at rating 0 and level up as you complete linked habits.</string>
+    <string name="attribute_name_example">Attribute Name (e.g. Discipline)</string>
+    <string name="attribute_abbreviation_example">3-Letter Acronym (e.g. DIS)</string>
+    <string name="pick_accent_color">Pick Accent Color:</string>
+    <string name="create_attribute">Create Attribute</string>
+    <string name="edit_habit_action">Edit Habit</string>
+    <string name="habit_options">Habit Options</string>
 
     <!-- Evolution -->
     <string name="your_journey">YOUR JOURNEY</string>
@@ -56,6 +87,17 @@
     <!-- Settings -->
     <string name="configure">CONFIGURE</string>
     <string name="settings">SETTINGS</string>
+    <string name="player_profile_card_photo">PLAYER PROFILE &amp; CARD PHOTO</string>
+    <string name="daily_reminder_schedule">DAILY NOTIFICATION REMINDER SCHEDULE</string>
+    <string name="daily_habit_reminder_time">Daily Habit Reminder Time</string>
+    <string name="reminder_time_hint">Reminder Time (HH:mm, e.g. 07:30)</string>
+    <string name="confirm_reminder_schedule">CONFIRM REMINDER SCHEDULE</string>
+    <string name="card_stat_layout">CARD 6-SLOT STAT LAYOUT</string>
+    <string name="card_stat_layout_description">Customize which 6 attributes appear on your player card:</string>
+    <string name="save_card_stat_layout">SAVE CARD SLOT LAYOUT</string>
+    <string name="language_english_description">Default system language</string>
+    <string name="language_xhosa_description">Xhosa — South Africa</string>
+    <string name="language_afrikaans_description">Afrikaans — South Africa</string>
     <string name="language_preference">LANGUAGE PREFERENCE</string>
     <string name="appearance">APPEARANCE</string>
     <string name="dark_mode">Dark Mode</string>
@@ -63,6 +105,7 @@
     <string name="amoled_dark_mode">AMOLED Dark Mode</string>
     <string name="amoled_dark_mode_sub">Pure pitch black — saves battery</string>
     <string name="push_notifications">PUSH NOTIFICATIONS</string>
+    <string name="push_notification_channel">SelfEvo Alerts</string>
     <string name="daily_reminders">Daily Reminders</string>
     <string name="daily_reminders_sub">Get notified at your scheduled times</string>
     <string name="streak_alerts">Streak Alerts</string>
@@ -87,6 +130,12 @@
     <string name="profile_photo_load_failed">We couldn’t load your profile photo. Check your connection and try again.</string>
     <string name="notification_permission_required">Allow notifications to enable push alerts.</string>
     <string name="notification_settings_error">Notification setting error: %1$s</string>
+    <string name="reminder_time_invalid">Enter a valid time in 24-hour HH:mm format.</string>
+    <string name="reminder_scheduled">Daily reminder scheduled for %1$s.</string>
+    <string name="cancel_daily_reminder">Cancel daily reminder</string>
+    <string name="reminder_cancelled">Daily reminder cancelled.</string>
+    <string name="habit_reminder_title">Daily habit reminder</string>
+    <string name="habit_reminder_message">Don\'t forget to complete your habits today!</string>
 
     <!-- Navigation -->
     <string name="nav_home">HOME</string>

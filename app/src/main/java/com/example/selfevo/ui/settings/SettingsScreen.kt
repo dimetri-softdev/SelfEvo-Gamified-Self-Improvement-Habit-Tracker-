@@ -67,8 +67,8 @@ fun SettingsScreen(
     val streakAlertsEnabled by viewModel.streakAlertsEnabled.collectAsState()
     val notificationError by viewModel.notificationError.collectAsState()
 
-    var dailyRemindersEnabled by remember { mutableStateOf(true) }
-    var scheduledTimeText by remember { mutableStateOf("07:30") }
+    var dailyReminderScheduled by remember { mutableStateOf(HabitReminderWorker.isScheduled(context)) }
+    var scheduledTimeText by remember { mutableStateOf(HabitReminderWorker.getScheduledTime(context)) }
     var reminderConfirmedBanner by remember { mutableStateOf<String?>(null) }
     var notificationPermissionError by remember { mutableStateOf(false) }
     var pendingNotificationTopic by remember { mutableStateOf<SelfEvoNotificationTopic?>(null) }
@@ -116,17 +116,24 @@ fun SettingsScreen(
         }
     }
 
+    fun scheduleDailyReminder() {
+        if (!HabitReminderWorker.isValidTime(scheduledTimeText)) {
+            Toast.makeText(context, R.string.reminder_time_invalid, Toast.LENGTH_SHORT).show()
+            return
+        }
+        HabitReminderWorker.schedule(context, scheduledTimeText)
+        dailyReminderScheduled = true
+        reminderConfirmedBanner = context.getString(R.string.reminder_scheduled, scheduledTimeText)
+    }
+
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         if (isGranted) {
-            dailyRemindersEnabled = true
-            HabitReminderWorker.schedule(context)
-            reminderConfirmedBanner = "✓ Daily reminders scheduled for $scheduledTimeText"
+            scheduleDailyReminder()
         } else {
-            dailyRemindersEnabled = false
-            HabitReminderWorker.cancel(context)
-            reminderConfirmedBanner = "⚠️ Notification permission denied."
+            dailyReminderScheduled = HabitReminderWorker.isScheduled(context)
+            reminderConfirmedBanner = context.getString(R.string.notification_permission_required)
         }
     }
 
@@ -175,7 +182,7 @@ fun SettingsScreen(
 
             // User Profile Card & Photo Upload
             item {
-                SettingsSection(title = "PLAYER PROFILE & CARD PHOTO") {
+                SettingsSection(title = stringResource(R.string.player_profile_card_photo)) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -247,7 +254,7 @@ fun SettingsScreen(
 
             // Working Daily Notification Schedule Section with Confirm Button
             item {
-                SettingsSection(title = "DAILY NOTIFICATION REMINDER SCHEDULE") {
+                SettingsSection(title = stringResource(R.string.daily_reminder_schedule)) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -255,7 +262,7 @@ fun SettingsScreen(
                         ) {
                             Icon(Icons.Default.NotificationsActive, contentDescription = null, tint = Color(0xFFFFD700))
                             Spacer(modifier = Modifier.width(10.dp))
-                            Text("Daily Habit Reminder Time", color = Color.White, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.daily_habit_reminder_time), color = Color.White, fontWeight = FontWeight.Bold)
                         }
 
                         Spacer(modifier = Modifier.height(12.dp))
@@ -263,7 +270,7 @@ fun SettingsScreen(
                         OutlinedTextField(
                             value = scheduledTimeText,
                             onValueChange = { scheduledTimeText = it },
-                            label = { Text("Reminder Time (HH:mm, e.g. 07:30)") },
+                            label = { Text(stringResource(R.string.reminder_time_hint)) },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth(),
                             colors = OutlinedTextFieldDefaults.colors(
@@ -278,6 +285,10 @@ fun SettingsScreen(
 
                         Button(
                             onClick = {
+                                if (!HabitReminderWorker.isValidTime(scheduledTimeText)) {
+                                    Toast.makeText(context, R.string.reminder_time_invalid, Toast.LENGTH_SHORT).show()
+                                    return@Button
+                                }
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                                     val hasPermission = ContextCompat.checkSelfPermission(
                                         context,
@@ -285,16 +296,12 @@ fun SettingsScreen(
                                     ) == PackageManager.PERMISSION_GRANTED
 
                                     if (hasPermission) {
-                                        dailyRemindersEnabled = true
-                                        HabitReminderWorker.schedule(context)
-                                        reminderConfirmedBanner = "✓ Daily reminders scheduled for $scheduledTimeText"
+                                        scheduleDailyReminder()
                                     } else {
                                         permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                                     }
                                 } else {
-                                    dailyRemindersEnabled = true
-                                    HabitReminderWorker.schedule(context)
-                                    reminderConfirmedBanner = "✓ Daily reminders scheduled for $scheduledTimeText"
+                                    scheduleDailyReminder()
                                 }
                             },
                             modifier = Modifier
@@ -303,7 +310,21 @@ fun SettingsScreen(
                             shape = RoundedCornerShape(12.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700))
                         ) {
-                            Text("CONFIRM REMINDER SCHEDULE", color = Color.Black, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.sp)
+                            Text(stringResource(R.string.confirm_reminder_schedule), color = Color.Black, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.sp)
+                        }
+
+                        if (dailyReminderScheduled) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            TextButton(
+                                onClick = {
+                                    HabitReminderWorker.cancel(context)
+                                    dailyReminderScheduled = false
+                                    reminderConfirmedBanner = context.getString(R.string.reminder_cancelled)
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(stringResource(R.string.cancel_daily_reminder))
+                            }
                         }
 
                         if (reminderConfirmedBanner != null) {
@@ -364,9 +385,9 @@ fun SettingsScreen(
 
             // Card 6-Slot Layout Configuration
             item {
-                SettingsSection(title = "CARD 6-SLOT STAT LAYOUT") {
+                SettingsSection(title = stringResource(R.string.card_stat_layout)) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Customize which 6 attributes appear on your FUT player card:", color = Color.Gray, fontSize = 12.sp)
+                        Text(stringResource(R.string.card_stat_layout_description), color = Color.Gray, fontSize = 12.sp)
                         Spacer(modifier = Modifier.height(12.dp))
 
                         val availableAbbrs = remember(customAttributes) {
@@ -396,7 +417,7 @@ fun SettingsScreen(
                             shape = RoundedCornerShape(12.dp),
                             border = BorderStroke(1.dp, Color(0xFF00E5FF))
                         ) {
-                            Text("SAVE CARD SLOT LAYOUT", color = Color(0xFF00E5FF), fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.save_card_stat_layout), color = Color(0xFF00E5FF), fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -405,15 +426,15 @@ fun SettingsScreen(
             // Language Preference
             item {
                 SettingsSection(title = stringResource(R.string.language_preference)) {
-                    LanguageItem("English", "Default system language", currentLang.value == "en") {
+                    LanguageItem("English", stringResource(R.string.language_english_description), currentLang.value == "en") {
                         LocaleHelper.setLocale(context, "en")
                         currentLang.value = "en"
                     }
-                    LanguageItem("isiXhosa", "Xhosa — South Africa", currentLang.value == "xh") {
+                    LanguageItem("isiXhosa", stringResource(R.string.language_xhosa_description), currentLang.value == "xh") {
                         LocaleHelper.setLocale(context, "xh")
                         currentLang.value = "xh"
                     }
-                    LanguageItem("Afrikaans", "Afrikaans — South Africa", currentLang.value == "af") {
+                    LanguageItem("Afrikaans", stringResource(R.string.language_afrikaans_description), currentLang.value == "af") {
                         LocaleHelper.setLocale(context, "af")
                         currentLang.value = "af"
                     }

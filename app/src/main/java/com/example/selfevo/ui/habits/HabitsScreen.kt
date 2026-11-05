@@ -94,13 +94,13 @@ fun HabitsScreen(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "HABITS HUB",
+                            text = stringResource(R.string.habits_hub),
                             fontSize = 32.sp,
                             fontWeight = FontWeight.Black,
                             color = MaterialTheme.colorScheme.onBackground
                         )
                         Text(
-                            text = "${habits.size} Active Habits • Level Up Attributes",
+                            text = stringResource(R.string.active_habits_count, habits.size),
                             fontSize = 14.sp,
                             color = Color.Gray,
                             modifier = Modifier.padding(top = 4.dp)
@@ -116,7 +116,7 @@ fun HabitsScreen(
                     ) {
                         Icon(Icons.Default.Add, contentDescription = null, tint = Color(0xFF00E5FF), modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("+ Custom Stat", color = Color(0xFF00E5FF), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.custom_stat), color = Color(0xFF00E5FF), fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -146,7 +146,7 @@ fun HabitsScreen(
                             Icon(Icons.Default.Add, contentDescription = null, tint = Color.Black)
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "+ CREATE NEW HABIT",
+                                text = stringResource(R.string.create_new_habit),
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.ExtraBold,
                                 color = Color.Black,
@@ -160,7 +160,7 @@ fun HabitsScreen(
             // Active Habits List Section (Fixes Issue #3 & #5)
             item {
                 Text(
-                    text = "YOUR ACTIVE HABITS",
+                    text = stringResource(R.string.your_active_habits),
                     color = Color.Gray,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
@@ -181,14 +181,14 @@ fun HabitsScreen(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                text = "NO HABITS YET",
+                                text = stringResource(R.string.no_habits_yet),
                                 fontWeight = FontWeight.Bold,
                                 color = Color.Gray,
                                 fontSize = 12.sp
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "Tap '+ CREATE NEW HABIT' above to set up custom habits, specify target days & duration, and start gaining XP!",
+                                text = stringResource(R.string.create_habit_empty_hint),
                                 color = Color.DarkGray,
                                 fontSize = 14.sp,
                                 textAlign = TextAlign.Center
@@ -287,7 +287,7 @@ fun CreateHabitDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = if (initialHabit != null) "Edit Habit" else "Create New Habit",
+                text = stringResource(if (initialHabit != null) R.string.edit_habit_title else R.string.create_new_habit_title),
                 color = Color.White,
                 fontWeight = FontWeight.Black,
                 fontSize = 20.sp
@@ -316,7 +316,7 @@ fun CreateHabitDialog(
                         habitName = it
                         if (it.isNotBlank()) errorMessage = null
                     },
-                    label = { Text("Habit Name (e.g. Morning Run)") },
+                    label = { Text(stringResource(R.string.habit_name_example)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -331,7 +331,7 @@ fun CreateHabitDialog(
                 OutlinedTextField(
                     value = targetDuration,
                     onValueChange = { targetDuration = it },
-                    label = { Text("Target Duration / Goal (e.g. 30 mins, 10 reps)") },
+                    label = { Text(stringResource(R.string.target_duration_example)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -344,7 +344,7 @@ fun CreateHabitDialog(
 
                 // Target Days of Week Selector
                 Column {
-                    Text("TARGET DAYS OF WEEK", color = Color.Gray, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.target_days_of_week), color = Color.Gray, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -384,16 +384,16 @@ fun CreateHabitDialog(
                             .padding(top = 6.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        TextTextButton("All Days") { selectedDays = daysList.toSet() }
-                        TextTextButton("Mon-Fri") { selectedDays = setOf("Mon", "Tue", "Wed", "Thu", "Fri") }
-                        TextTextButton("Weekends") { selectedDays = setOf("Sat", "Sun") }
+                        TextTextButton(stringResource(R.string.all_days)) { selectedDays = daysList.toSet() }
+                        TextTextButton(stringResource(R.string.weekdays)) { selectedDays = setOf("Mon", "Tue", "Wed", "Thu", "Fri") }
+                        TextTextButton(stringResource(R.string.weekends)) { selectedDays = setOf("Sat", "Sun") }
                     }
                 }
 
                 // Linked Attributes
                 Column {
-                    Text("LINKED ATTRIBUTES (SELECT UP TO 2)", color = Color.Gray, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                    Text("1 selected = +2 XP | 2 selected = +1 / +1 XP", color = Color(0xFFFFD700), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.linked_attributes_select_two), color = Color.Gray, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.attribute_xp_split), color = Color(0xFFFFD700), fontSize = 10.sp, fontWeight = FontWeight.Bold)
 
                     Spacer(modifier = Modifier.height(8.dp))
 
@@ -440,7 +440,7 @@ fun CreateHabitDialog(
                 OutlinedTextField(
                     value = reminderTime,
                     onValueChange = { reminderTime = it },
-                    label = { Text("Daily Reminder Time (e.g. 07:00)") },
+                    label = { Text(stringResource(R.string.habit_daily_reminder_time)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -476,7 +476,7 @@ fun CreateHabitDialog(
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Text(
-                    if (initialHabit != null) "SAVE CHANGES" else "+ CREATE HABIT",
+                    stringResource(if (initialHabit != null) R.string.save_changes else R.string.create_new_habit),
                     color = Color.Black,
                     fontWeight = FontWeight.ExtraBold
                 )
@@ -484,7 +484,7 @@ fun CreateHabitDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismiss, modifier = Modifier.fillMaxWidth()) {
-                Text("Cancel", color = Color.Gray)
+                Text(stringResource(R.string.cancel), color = Color.Gray)
             }
         },
         containerColor = Color(0xFF1E1E1E)
@@ -500,11 +500,11 @@ fun DeleteHabitConfirmationDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text("Delete Habit", color = Color.White, fontWeight = FontWeight.Black)
+            Text(stringResource(R.string.delete_habit_title), color = Color.White, fontWeight = FontWeight.Black)
         },
         text = {
             Text(
-                "Are you sure you want to delete \"$habitTitle\"? This action cannot be undone.",
+                stringResource(R.string.confirm_delete_habit, habitTitle),
                 color = Color.Gray,
                 fontSize = 14.sp
             )
@@ -515,12 +515,12 @@ fun DeleteHabitConfirmationDialog(
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5252)),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text("Delete", color = Color.White, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.delete), color = Color.White, fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel", color = Color.Gray)
+                Text(stringResource(R.string.cancel), color = Color.Gray)
             }
         },
         containerColor = Color(0xFF1E1E1E)
@@ -551,15 +551,15 @@ fun CreateCustomAttributeDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Create Custom Attribute", color = Color.White, fontWeight = FontWeight.Bold) },
+        title = { Text(stringResource(R.string.create_custom_attribute), color = Color.White, fontWeight = FontWeight.Bold) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                Text("Custom attributes start at rating 0 and level up as you complete linked habits.", color = Color.Gray, fontSize = 12.sp)
+                Text(stringResource(R.string.custom_attribute_progress_hint), color = Color.Gray, fontSize = 12.sp)
 
                 OutlinedTextField(
                     value = newTitle,
                     onValueChange = { newTitle = it },
-                    label = { Text("Attribute Name (e.g. Discipline)") },
+                    label = { Text(stringResource(R.string.attribute_name_example)) },
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White)
                 )
@@ -567,12 +567,12 @@ fun CreateCustomAttributeDialog(
                 OutlinedTextField(
                     value = newAbbr,
                     onValueChange = { if (it.length <= 3) newAbbr = it.uppercase() },
-                    label = { Text("3-Letter Acronym (e.g. DIS)") },
+                    label = { Text(stringResource(R.string.attribute_abbreviation_example)) },
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White)
                 )
 
-                Text("Pick Accent Color:", color = Color.Gray, fontSize = 12.sp)
+                Text(stringResource(R.string.pick_accent_color), color = Color.Gray, fontSize = 12.sp)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     colorOptions.forEach { hex ->
                         val parsed = try { Color(android.graphics.Color.parseColor(hex)) } catch (e: Exception) { Color.Cyan }
@@ -596,12 +596,12 @@ fun CreateCustomAttributeDialog(
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700))
             ) {
-                Text("Create Attribute", color = Color.Black, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.create_attribute), color = Color.Black, fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel", color = Color.Gray)
+                Text(stringResource(R.string.cancel), color = Color.Gray)
             }
         },
         containerColor = Color(0xFF1E1E1E)

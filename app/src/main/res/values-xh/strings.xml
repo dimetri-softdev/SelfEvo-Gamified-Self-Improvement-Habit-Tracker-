@@ -41,6 +41,37 @@
     <string name="frequency_label">UKUPHINDAPHINDA</string>
     <string name="reminder_time_label">IXESHA LESIKHUMBUZO</string>
     <string name="add_to_selfevo">+ YONGEZA KUSELFEVO</string>
+    <string name="habits_hub">IZIKO LEEHABITHI</string>
+    <string name="active_habits_count">%1$d iihabithi ezisebenzayo • Phucula iimpawu</string>
+    <string name="custom_stat">+ I-stat yesiko</string>
+    <string name="create_new_habit">+ YILA IHABITHI ENTSHA</string>
+    <string name="your_active_habits">IIHABITHI ZAKHO EZISEBENZAYO</string>
+    <string name="no_habits_yet">AKUKHO HABITHI OKWANGOKU</string>
+    <string name="create_habit_empty_hint">Cofa u-+ YILA IHABITHI ENTSHA ngasentla ukuze usete iihabithi, iintsuku nexesha uze ufumane i-XP!</string>
+    <string name="create_new_habit_title">Yila ihabithi entsha</string>
+    <string name="edit_habit_title">Hlela ihabithi</string>
+    <string name="habit_name_example">Igama lehabithi (umz. Ukubaleka kusasa)</string>
+    <string name="target_duration_example">Ixesha / injongo (umz. imizuzu engama-30, izihlandlo ezili-10)</string>
+    <string name="target_days_of_week">IINTSUKU ZETHAGETHI ZEVEKI</string>
+    <string name="all_days">Zonke iintsuku</string>
+    <string name="weekdays">Mv-Fri</string>
+    <string name="weekends">Iimpelaveki</string>
+    <string name="linked_attributes_select_two">IIMPAWU EZINXULUMENEYO (KHETHA EZIFIKA KWEZI-2)</string>
+    <string name="attribute_xp_split">1 ekhethiweyo = +2 XP | ezi-2 = +1 / +1 XP</string>
+    <string name="habit_daily_reminder_time">Ixesha lesikhumbuzo (umz. 07:00)</string>
+    <string name="save_changes">GCINA UTshintsho</string>
+    <string name="cancel">Rhoxisa</string>
+    <string name="delete_habit_title">Cima ihabithi</string>
+    <string name="confirm_delete_habit">Uqinisekile ukuba ufuna ukucima u-"%1$s"? Le nto ayinakubuyiselwa.</string>
+    <string name="delete">Cima</string>
+    <string name="create_custom_attribute">Yila uphawu lwesiko</string>
+    <string name="custom_attribute_progress_hint">Iimpawu zesiko ziqala ku-0 zize zinyuke xa ugqiba iihabithi ezinxulumene nazo.</string>
+    <string name="attribute_name_example">Igama lophawu (umz. Ukuzimisela)</string>
+    <string name="attribute_abbreviation_example">Isifinyezo soonobumba aba-3 (umz. DIS)</string>
+    <string name="pick_accent_color">Khetha umbala:</string>
+    <string name="create_attribute">Yila uphawu</string>
+    <string name="edit_habit_action">Hlela ihabithi</string>
+    <string name="habit_options">Iinketho zehabithi</string>
 
     <!-- Evolution -->
     <string name="your_journey">UHAMBO LWAKHO</string>
@@ -56,6 +87,17 @@
     <!-- Settings -->
     <string name="configure">QWALASELA</string>
     <string name="settings">IZICWANGCISO</string>
+    <string name="player_profile_card_photo">IPROFAYILE YOMDLALI NEFOTO YEKHADI</string>
+    <string name="daily_reminder_schedule">ISICWANGCISO SEZIKHUMBUZO ZEMIHLA NGEMIHLA</string>
+    <string name="daily_habit_reminder_time">Ixesha lesikhumbuzo sehabithi yemihla ngemihla</string>
+    <string name="reminder_time_hint">Ixesha lesikhumbuzo (HH:mm, umz. 07:30)</string>
+    <string name="confirm_reminder_schedule">QINISEKISA ISICWANGCISO SESIKHUMBUZO</string>
+    <string name="card_stat_layout">UKUBEKWA KWEENDAWO ZEENKCUKACHA ZEKHADI EZINTANDATHU</string>
+    <string name="card_stat_layout_description">Khetha iimpawu ezi-6 eziboniswa kwikhadi lakho:</string>
+    <string name="save_card_stat_layout">GCINA UKUBEKWA KWEENDAWO ZEKHADI</string>
+    <string name="language_english_description">Ulwimi olumiselweyo lwenkqubo</string>
+    <string name="language_xhosa_description">IsiXhosa — uMzantsi Afrika</string>
+    <string name="language_afrikaans_description">IsiBhulu — uMzantsi Afrika</string>
     <string name="language_preference">UKUKHETHA ULWIMI</string>
     <string name="appearance">IMBONAKALO</string>
     <string name="dark_mode">I-Dark Mode</string>
@@ -63,6 +105,7 @@
     <string name="amoled_dark_mode">AMOLED I-Dark Mode</string>
     <string name="amoled_dark_mode_sub">Umnyama ococekileyo — ugcina ibhetri</string>
     <string name="push_notifications">IZAZISO</string>
+    <string name="push_notification_channel">Izilumkiso zeSelfEvo</string>
     <string name="daily_reminders">Izikhumbuzo zemihla ngemihla</string>
     <string name="daily_reminders_sub">Fumana izaziso ngamaxesha akho acwangcisiweyo</string>
     <string name="streak_alerts">Izaziso ze-Streak</string>
@@ -87,6 +130,12 @@
     <string name="profile_photo_load_failed">Asikwazanga ukulayisha ifoto yakho yeprofayile. Jonga uqhagamshelo lwakho uze uzame kwakhona.</string>
     <string name="notification_permission_required">Vumela izaziso ukuze uvule izilumkiso ze-push.</string>
     <string name="notification_settings_error">Impazamo yoseto lwezaziso: %1$s</string>
+    <string name="reminder_time_invalid">Faka ixesha elichanekileyo ngefomathi yeeyure ezingama-24 ethi HH:mm.</string>
+    <string name="reminder_scheduled">Isikhumbuzo semihla ngemihla sicwangciselwe u-%1$s.</string>
+    <string name="cancel_daily_reminder">Rhoxisa isikhumbuzo semihla ngemihla</string>
+    <string name="reminder_cancelled">Isikhumbuzo semihla ngemihla sirhoxisiwe.</string>
+    <string name="habit_reminder_title">Isikhumbuzo sehabithi yemihla ngemihla</string>
+    <string name="habit_reminder_message">Ungalibali ukugqiba iihabithi zakho namhlanje!</string>
 
     <!-- Navigation -->
     <string name="nav_home">EKHAYA</string>

@@ -41,6 +41,37 @@
     <string name="frequency_label">FREKWENSIE</string>
     <string name="reminder_time_label">HERINNERINGSTYD</string>
     <string name="add_to_selfevo">+ VOEG BY SELFEVO</string>
+    <string name="habits_hub">GEWOONTE-SENTRUM</string>
+    <string name="active_habits_count">%1$d aktiewe gewoontes • Verbeter eienskappe</string>
+    <string name="custom_stat">+ Pasgemaakte statistiek</string>
+    <string name="create_new_habit">+ SKEP NUWE GEWOONTE</string>
+    <string name="your_active_habits">JOU AKTIEWE GEWOONTES</string>
+    <string name="no_habits_yet">NOG GEEN GEWOONTES NIE</string>
+    <string name="create_habit_empty_hint">Tik hierbo op + SKEP NUWE GEWOONTE om gewoontes en teikendae en -duur op te stel en XP te verdien!</string>
+    <string name="create_new_habit_title">Skep nuwe gewoonte</string>
+    <string name="edit_habit_title">Wysig gewoonte</string>
+    <string name="habit_name_example">Gewoonte se naam (bv. Oggendhardloop)</string>
+    <string name="target_duration_example">Teikenduur / doel (bv. 30 min., 10 herhalings)</string>
+    <string name="target_days_of_week">TEIKENDAE VAN DIE WEEK</string>
+    <string name="all_days">Alle dae</string>
+    <string name="weekdays">Ma-Vr</string>
+    <string name="weekends">Naweke</string>
+    <string name="linked_attributes_select_two">GEKOPPELDE EIENSKAPPE (KIES TOT 2)</string>
+    <string name="attribute_xp_split">1 gekies = +2 XP | 2 gekies = +1 / +1 XP</string>
+    <string name="habit_daily_reminder_time">Daaglikse herinneringstyd (bv. 07:00)</string>
+    <string name="save_changes">STOOR WYSIGINGS</string>
+    <string name="cancel">Kanselleer</string>
+    <string name="delete_habit_title">Verwyder gewoonte</string>
+    <string name="confirm_delete_habit">Is jy seker jy wil "%1$s" verwyder? Hierdie aksie kan nie ontdoen word nie.</string>
+    <string name="delete">Verwyder</string>
+    <string name="create_custom_attribute">Skep pasgemaakte eienskap</string>
+    <string name="custom_attribute_progress_hint">Pasgemaakte eienskappe begin by 0 en verbeter wanneer jy gekoppelde gewoontes voltooi.</string>
+    <string name="attribute_name_example">Eienskapnaam (bv. Dissipline)</string>
+    <string name="attribute_abbreviation_example">3-letterafkorting (bv. DIS)</string>
+    <string name="pick_accent_color">Kies aksentkleur:</string>
+    <string name="create_attribute">Skep eienskap</string>
+    <string name="edit_habit_action">Wysig gewoonte</string>
+    <string name="habit_options">Gewoonte-opsies</string>
 
     <!-- Evolution -->
     <string name="your_journey">JOU REIS</string>
@@ -56,6 +87,17 @@
     <!-- Settings -->
     <string name="configure">KONFIGUREER</string>
     <string name="settings">INSTELLINGS</string>
+    <string name="player_profile_card_photo">SPELERPROFIEL EN KAARTFOTO</string>
+    <string name="daily_reminder_schedule">DAAGLIKSE HERINNERINGSKEDULE</string>
+    <string name="daily_habit_reminder_time">Daaglikse gewoonteherinneringstyd</string>
+    <string name="reminder_time_hint">Herinneringstyd (HH:mm, bv. 07:30)</string>
+    <string name="confirm_reminder_schedule">BEVESTIG HERINNERINGSKEDULE</string>
+    <string name="card_stat_layout">KAARTSTATISTIEKUITLEG MET 6 PLEKKE</string>
+    <string name="card_stat_layout_description">Pas die 6 eienskappe op jou spelerkaart aan:</string>
+    <string name="save_card_stat_layout">STOOR KAARTUITLEG</string>
+    <string name="language_english_description">Verstekstelseltaal</string>
+    <string name="language_xhosa_description">Xhosa — Suid-Afrika</string>
+    <string name="language_afrikaans_description">Afrikaans — Suid-Afrika</string>
     <string name="language_preference">TAALVOORKEUR</string>
     <string name="appearance">VOORKOMS</string>
     <string name="dark_mode">Donker Modus</string>
@@ -63,6 +105,7 @@
     <string name="amoled_dark_mode">AMOLED Donker Modus</string>
     <string name="amoled_dark_mode_sub">Suiwer pikswart — spaar battery</string>
     <string name="push_notifications">STUURKENNISGEWINGS</string>
+    <string name="push_notification_channel">SelfEvo-waarskuwings</string>
     <string name="daily_reminders">Daaglikse herinneringe</string>
     <string name="daily_reminders_sub">Word in kennis gestel op jou geskeduleerde tye</string>
     <string name="streak_alerts">Reeks-waarskuwings</string>
@@ -87,6 +130,12 @@
     <string name="profile_photo_load_failed">Ons kon nie jou profielfoto laai nie. Gaan jou internetverbinding na en probeer weer.</string>
     <string name="notification_permission_required">Laat kennisgewings toe om stootwaarskuwings te aktiveer.</string>
     <string name="notification_settings_error">Kennisgewinginstellingsfout: %1$s</string>
+    <string name="reminder_time_invalid">Voer ’n geldige tyd in 24-uur HH:mm-formaat in.</string>
+    <string name="reminder_scheduled">Daaglikse herinnering is vir %1$s geskeduleer.</string>
+    <string name="cancel_daily_reminder">Kanselleer daaglikse herinnering</string>
+    <string name="reminder_cancelled">Daaglikse herinnering gekanselleer.</string>
+    <string name="habit_reminder_title">Daaglikse gewoonteherinnering</string>
+    <string name="habit_reminder_message">Moenie vergeet om vandag jou gewoontes te voltooi nie!</string>
 
     <!-- Navigation -->
     <string name="nav_home">TUIS</string>

@@ -17,9 +17,8 @@
 - Test offline recovery, notification delivery, and the remaining user-defined feature flow on the latest release APK.
 - Rebuild and verify the signed AAB after the final Firebase OAuth configuration and release build changes.
 - Capture remaining genuine app screenshots and the required voice-over demo; review all evidence for personal details before submission.
-- Add Play Console evidence only if a Play Console account is available. No Play upload has been made.
 
-## Release build and Play evidence
+## Release build and Play Store preparation
 
 The Android release version is currently `1.0` (`versionCode` `1`) with application ID `com.example.selfevo`. Confirm that this is the intended Play Console application and version before publishing; do not change the application ID or signing key after creating the Play app.
 
@@ -43,7 +42,7 @@ After confirming the correct signing key, build a signed Play bundle with `.\gra
 - [ ] **Multi-language (10 marks):** English, Afrikaans, and isiXhosa resources are present; language switching and translated screens still need a device check/evidence.
 - [ ] **User Defined 4 (10 marks; Part 1 Planning and Design, "Custom Card Image Unlocks"):** profile-image upload was verified on the installed release using a neutral test image; see `Part3Evidence/settings-profile-photo-upload-success.png`. Verify tier progression with the photo and capture final card evidence.
 - [ ] **User Defined 5 (10 marks; Part 1 Planning and Design, "Habit & Attribute Management" and "One tap-a-day interface"):** custom habit-to-card-attribute categories with one-tap daily logging. Verify habit setup, attribute assignment, and completion updating progress on the final release; capture evidence. This maps the two selected features that are not separately named by the rubric; confirm the lecturer expects this mapping.
-- [ ] **Play Store preparation (5 marks):** rebuild and verify the final signed AAB, prepare store materials/screenshots, and document publication readiness. No Play Console upload has been made.
+- [ ] **Play Store preparation (5 marks):** rebuild and verify the final signed AAB and prepare the required store materials.
 - [x] **AI-use write-up (5 marks):** [AI_USAGE.md](./AI_USAGE.md) documents tools, use cases, review, and validation; confirm the final report matches the whole team’s use.
 - [ ] **User interface (10 marks):** capture and review genuine screens for consistency, usability, layout, fonts, and colours.
 - [x] **GitHub, README, and automated testing (10 marks):** repository history, README, CI workflow, and automated tests are present; Android unit tests passed on 2026-11-05.
@@ -58,7 +57,6 @@ After confirming the correct signing key, build a signed Play bundle with `.\gra
 - [ ] Test offline behavior and sync recovery if required by the formal rubric; capture a genuine recording or supplementary screenshots.
 - [ ] Keep submission evidence private and remove/redact personal details, email addresses, notifications, and tokens as appropriate.
 - [ ] Record the voice-over demo URL in the README and list evidence filenames/results here.
-- [ ] Play Console screenshots or upload status are applicable only if a Play Console account is available. No Play upload has been made.
 
 Current release APK evidence captured on 2026-11-05:
 
@@ -78,4 +76,4 @@ Existing AAB evidence (not final; rebuild required):
 - AAB: `app/build/outputs/bundle/release/app-release.aab`
 - Build timestamp: 2026-11-05 15:51 (local machine time), before the final release build changes.
 - SHA-256: `BF63B74EBE275E41C10CB9ADE11737CC3FEE3B3614BC193DB600EE8F82F9B85C`
-- Previous signature check passed with `jarsigner -verify`; the certificate is self-signed and not publicly trusted, and no Play Console upload was made.
+- Previous signature check passed with `jarsigner -verify`; the certificate is self-signed and not publicly trusted.

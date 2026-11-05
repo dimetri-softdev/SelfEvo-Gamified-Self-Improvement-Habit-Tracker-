@@ -25,6 +25,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.example.selfevo.R
 import com.example.selfevo.data.db.entity.HabitEntity
 
 @Composable
@@ -155,7 +157,7 @@ fun HabitItemRow(
                         ) {
                             Icon(
                                 Icons.Default.MoreVert,
-                                contentDescription = "Habit Options",
+                                contentDescription = stringResource(R.string.habit_options),
                                 tint = Color.Gray
                             )
                         }
@@ -167,7 +169,7 @@ fun HabitItemRow(
                         ) {
                             if (onEditClick != null) {
                                 DropdownMenuItem(
-                                    text = { Text("Edit Habit", color = Color.White) },
+                                    text = { Text(stringResource(R.string.edit_habit_action), color = Color.White) },
                                     leadingIcon = {
                                         Icon(Icons.Default.Edit, contentDescription = null, tint = Color(0xFF00E5FF))
                                     },
@@ -179,7 +181,7 @@ fun HabitItemRow(
                             }
                             if (onDeleteClick != null) {
                                 DropdownMenuItem(
-                                    text = { Text("Delete Habit", color = Color(0xFFFF5252)) },
+                                    text = { Text(stringResource(R.string.delete_habit_title), color = Color(0xFFFF5252)) },
                                     leadingIcon = {
                                         Icon(Icons.Default.Delete, contentDescription = null, tint = Color(0xFFFF5252))
                                     },

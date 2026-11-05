@@ -408,18 +408,6 @@ fun HeaderSection(playerName: String) {
                 )
             }
         }
-
-        // Streak Flame
-        Row(
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(50.dp))
-                .padding(horizontal = 12.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("🔥", fontSize = 14.sp)
-            Spacer(modifier = Modifier.width(4.dp))
-            Text("14 day", color = MaterialTheme.colorScheme.primary, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-        }
     }
 }
 

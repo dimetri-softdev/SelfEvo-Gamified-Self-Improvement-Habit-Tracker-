@@ -15,13 +15,15 @@ import com.google.firebase.messaging.RemoteMessage
 class SelfEvoMessagingService : FirebaseMessagingService() {
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
-        remoteMessage.notification?.let {
-            sendNotification(it.title ?: "SelfEvo", it.body ?: "")
+        val title = remoteMessage.notification?.title
+            ?: remoteMessage.data["title"]
+            ?: getString(R.string.app_name)
+        val messageBody = remoteMessage.notification?.body
+            ?: remoteMessage.data["body"]
+            ?: remoteMessage.data["message"]
+        if (!messageBody.isNullOrBlank()) {
+            sendNotification(title, messageBody)
         }
-    }
-
-    override fun onNewToken(token: String) {
-        // Send token to server if needed
     }
 
     private fun sendNotification(title: String, messageBody: String) {
@@ -32,7 +34,7 @@ class SelfEvoMessagingService : FirebaseMessagingService() {
 
         val channelId = "selfevo_notifications"
         val notificationBuilder = NotificationCompat.Builder(this, channelId)
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(title)
             .setContentText(messageBody)
             .setAutoCancel(true)
@@ -47,6 +49,7 @@ class SelfEvoMessagingService : FirebaseMessagingService() {
             notificationManager.createNotificationChannel(channel)
         }
 
-        notificationManager.notify(0, notificationBuilder.build())
+        val notificationId = (System.currentTimeMillis() % Int.MAX_VALUE).toInt()
+        notificationManager.notify(notificationId, notificationBuilder.build())
     }
 }

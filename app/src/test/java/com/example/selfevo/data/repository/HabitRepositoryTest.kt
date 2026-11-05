@@ -25,6 +25,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import retrofit2.Response
+import java.time.LocalDate
 
 class HabitRepositoryTest {
 
@@ -32,6 +33,8 @@ class HabitRepositoryTest {
     private lateinit var habitRepository: HabitRepositoryImpl
     private lateinit var playerCardRepository: PlayerCardRepositoryImpl
     private lateinit var syncRepository: SyncRepositoryImpl
+    private var remoteHabits: List<NetworkHabitDto> = emptyList()
+    private var pendingQueueItems: List<SyncQueueEntity> = emptyList()
 
     private val habitDao = object : HabitDao {
         var habit: HabitEntity? = null
@@ -89,13 +92,13 @@ class HabitRepositoryTest {
 
     private val syncQueueDao = object : SyncQueueDao {
         override suspend fun addItemToQueue(item: SyncQueueEntity) {}
-        override suspend fun getAllPendingItems(): List<SyncQueueEntity> = emptyList()
+        override suspend fun getAllPendingItems(): List<SyncQueueEntity> = pendingQueueItems
         override suspend fun deleteItemFromQueue(item: SyncQueueEntity) {}
         override suspend fun deleteById(id: Int) {}
     }
 
     private val apiService = object : SelfEvoApiService {
-        override suspend fun getHabits(date: String): Response<List<NetworkHabitDto>> = throw NotImplementedError()
+        override suspend fun getHabits(date: String): Response<List<NetworkHabitDto>> = Response.success(remoteHabits)
         override suspend fun createHabit(request: CreateHabitRequest): Response<NetworkHabitDto> = throw NotImplementedError()
         override suspend fun deleteHabit(id: String): Response<Unit> = Response.success(Unit)
         override suspend fun logHabit(request: HabitLogRequest): Response<HabitLogResponse> = Response.success(HabitLogResponse(true, "success", null))
@@ -145,6 +148,54 @@ class HabitRepositoryTest {
         val result = completeHabitUseCase("h5", "user1")
 
         assertEquals(52, result.updatedCard?.pace)
+    }
+
+    @Test
+    fun `completing an already completed habit does not award stats again`() = runBlocking {
+        habitDao.habit = HabitEntity(
+            id = "h-repeat",
+            userId = "user1",
+            title = "Run",
+            description = "Run",
+            attributeType = "PAC",
+            isCompletedToday = false
+        )
+        playerCardDao.card = PlayerCard(id = "user1", playerName = "Test Player", pace = 50)
+
+        completeHabitUseCase("h-repeat", "user1")
+        val repeatedResult = completeHabitUseCase("h-repeat", "user1")
+
+        assertEquals(52, playerCardDao.card?.pace)
+        assertEquals(52, repeatedResult.updatedCard?.pace)
+    }
+
+    @Test
+    fun `refresh preserves today's offline completion while it is queued`() = runBlocking {
+        val today = LocalDate.now().toString()
+        val habitId = "h-offline"
+        remoteHabits = listOf(
+            NetworkHabitDto(
+                id = habitId,
+                title = "Offline run",
+                description = "Run",
+                attributeType = "PACE",
+                isCompletedToday = false,
+                frequency = "Daily",
+                reminderTime = "07:00"
+            )
+        )
+        pendingQueueItems = listOf(
+            SyncQueueEntity(
+                habitId = habitId,
+                operation = """{"type":"LOG_COMPLETION","userId":"user1","completedOn":"$today"}"""
+            )
+        )
+
+        val refreshed = habitRepository.refreshHabits("user1")
+
+        assertEquals(true, refreshed)
+        assertEquals(true, habitDao.habits.single().isCompletedToday)
+        assertEquals(today, habitDao.habits.single().lastCompletedDate)
     }
 
     @Test

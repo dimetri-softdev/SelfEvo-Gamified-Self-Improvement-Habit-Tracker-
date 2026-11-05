@@ -64,6 +64,22 @@ class HabitRepositoryImpl @Inject constructor(
                     false
                 }
             }.map { it.habitId }.toSet()
+            val pendingCompletions = pendingItems.mapNotNull { item ->
+                try {
+                    val op = JSONObject(item.operation)
+                    if (
+                        op.optString("type") == "LOG_COMPLETION" &&
+                        op.optString("userId") == userId &&
+                        op.optString("completedOn") == today
+                    ) {
+                        item.habitId
+                    } else {
+                        null
+                    }
+                } catch (_: Exception) {
+                    null
+                }
+            }.toSet()
 
             val filteredDtoList = dtoList.filterNot { pendingDeleteHabitIds.contains(it.id) }
             val remoteIds = filteredDtoList.map { it.id }.toSet()
@@ -83,8 +99,8 @@ class HabitRepositoryImpl @Inject constructor(
                     title = dto.title,
                     description = dto.description,
                     attributeType = dto.attributeType,
-                    isCompletedToday = dto.isCompletedToday,
-                    lastCompletedDate = if (dto.isCompletedToday) today else null,
+                    isCompletedToday = dto.isCompletedToday || dto.id in pendingCompletions,
+                    lastCompletedDate = if (dto.isCompletedToday || dto.id in pendingCompletions) today else null,
                     frequency = dto.frequency,
                     reminderTime = dto.reminderTime,
                     daysOfWeek = dto.daysOfWeek ?: "Daily",
@@ -102,11 +118,11 @@ class HabitRepositoryImpl @Inject constructor(
 
     override suspend fun markHabitCompleted(habitId: String, userId: String): HabitEntity? = withContext(Dispatchers.IO) {
         val habit = habitDao.getHabitById(habitId, userId) ?: return@withContext null
-        if (habit.isCompletedToday) return@withContext habit
+        if (habit.isCompletedToday) return@withContext null
 
         val today = LocalDate.now().toString()
         if (habitDao.markCompletedToday(habitId, userId, today) == 0) {
-            return@withContext habit
+            return@withContext null
         }
 
         try {
