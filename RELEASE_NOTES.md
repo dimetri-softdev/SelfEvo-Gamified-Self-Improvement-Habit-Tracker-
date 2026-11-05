@@ -13,9 +13,11 @@
 
 ## Before submission
 
-- Enable Cloud Firestore, publish the owner-only rules, create the private Supabase Storage bucket, and configure the API host secrets as described in the READMEs.
-- Confirm the Firebase Google provider and registered signing fingerprints on a physical phone.
-- Record and link the voice-over demo, prepare a signed release bundle, and add the applicable Play Console evidence.
+- Complete the rubric-specific evidence checklist below using the provided POE Part 3 rubric.
+- Test offline recovery, notification delivery, and the remaining user-defined feature flow on the latest release APK.
+- Rebuild and verify the signed AAB after the final Firebase OAuth configuration and release build changes.
+- Capture remaining genuine app screenshots and the required voice-over demo; review all evidence for personal details before submission.
+- Add Play Console evidence only if a Play Console account is available. No Play upload has been made.
 
 ## Release build and Play evidence
 
@@ -30,31 +32,50 @@ Release signing reads credentials from these local environment variables:
 
 Do not commit the keystore or passwords. The repository ignores `.jks` and `.keystore` files. If the app has ever been uploaded to Play Console, locate and reuse the original upload key; do not create a replacement. Back up the keystore and its passwords securely.
 
-After confirming the correct signing key, build a signed Play bundle with `.\gradlew.bat bundleRelease` (Windows) or `./gradlew bundleRelease` (macOS/Linux). The AAB is written to `app/build/outputs/bundle/release/app-release.aab`. Verify the bundle signature and install a release APK built with the same signing configuration on a physical device. Capture genuine screenshots from that release build. Add the final build date, version, artifact signature verification, device-test result, screenshots, and applicable Play Console upload evidence here before submission.
+After confirming the correct signing key, build a signed Play bundle with `.\gradlew.bat bundleRelease` (Windows) or `./gradlew bundleRelease` (macOS/Linux). The AAB is written to `app/build/outputs/bundle/release/app-release.aab`. The current release disables code/resource shrinking because the previous minified release failed in Retrofit generic response parsing. Verify the rebuilt bundle signature and test the APK produced from the same configuration on a physical device. Capture genuine screenshots from that release build.
 
 ### Part 3 evidence checklist
 
-- [x] Record the release version, version code, build date, and SHA-256 checksum of the signed artifact.
-- [x] Verify the AAB signature and save the verification output; never include keystore passwords or private signing material.
-- [ ] Install the signed release APK on a physical phone and capture genuine screenshots of sign-in, the dashboard/player card, completed-habit progress, evolution/theme selection, settings/profile photo, and notification settings.
-- [ ] After registering the release signing fingerprints and downloading updated Firebase configuration, verify Google sign-in using the signed release build.
-- [ ] Capture a short, genuine screen recording or supplementary screenshots showing offline behavior and sync recovery, if those are rubric requirements.
-- [ ] Keep evidence in a private submission/evidence folder; review screenshots for personal details, email addresses, tokens, and other data that should not be submitted.
-- [ ] Play Console screenshots or upload status are applicable only if a Play Console account is available. Do not claim a Play upload or fabricate console evidence when it has not occurred.
-- [ ] Add evidence filenames and a brief result for each tested flow to this section once captured.
+- [x] **App runs on a mobile device (5 marks):** release APK installed and launched on the Samsung SM-A566B.
+- [x] **SSO login (10 marks):** user confirmed Google sign-in succeeds in the installed signed release APK.
+- [ ] **Offline mode (10 marks):** implementation includes local Room storage and queued sync; offline use and recovery have not been demonstrated on the final release.
+- [ ] **Real-time notification (10 marks):** FCM topic subscriptions and notification-permission handling are implemented; end-to-end notification delivery has not been verified on the final release.
+- [ ] **Multi-language (10 marks):** English, Afrikaans, and isiXhosa resources are present; language switching and translated screens still need a device check/evidence.
+- [ ] **User Defined 4 (10 marks; Part 1 Planning and Design, "Custom Card Image Unlocks"):** profile-image upload was verified on the installed release using a neutral test image; see `Part3Evidence/settings-profile-photo-upload-success.png`. Verify tier progression with the photo and capture final card evidence.
+- [ ] **User Defined 5 (10 marks; Part 1 Planning and Design, "Habit & Attribute Management" and "One tap-a-day interface"):** custom habit-to-card-attribute categories with one-tap daily logging. Verify habit setup, attribute assignment, and completion updating progress on the final release; capture evidence. This maps the two selected features that are not separately named by the rubric; confirm the lecturer expects this mapping.
+- [ ] **Play Store preparation (5 marks):** rebuild and verify the final signed AAB, prepare store materials/screenshots, and document publication readiness. No Play Console upload has been made.
+- [x] **AI-use write-up (5 marks):** [AI_USAGE.md](./AI_USAGE.md) documents tools, use cases, review, and validation; confirm the final report matches the whole team’s use.
+- [ ] **User interface (10 marks):** capture and review genuine screens for consistency, usability, layout, fonts, and colours.
+- [x] **GitHub, README, and automated testing (10 marks):** repository history, README, CI workflow, and automated tests are present; Android unit tests passed on 2026-11-05.
+- [ ] **Demonstration video (5 marks):** record a professional voice-over walkthrough of the required features.
+- [x] Build, sign, and install the release APK on a physical Samsung SM-A566B; installed app reports version `1.0` (`versionCode` `1`).
+- [x] Verify Google sign-in using the installed signed release APK after updating the Firebase Android OAuth fingerprint and configuration; user confirmed successful sign-in on 2026-11-05.
+- [x] Record the current installed release APK checksum and signing certificate fingerprints below.
+- [x] Capture profile-photo upload and successful manual sync evidence with account-identifying content excluded; files are in the private `Part3Evidence` folder.
+- [ ] Rebuild and verify the signed AAB after the latest auth configuration and release build changes. The existing AAB below is stale and must not be submitted as the final bundle.
+- [x] Re-test profile-photo upload and manual cloud sync on the latest release APK. A neutral profile image appeared after upload, and Settings advanced the last-synced time to 22:02. Redacted screenshots are in the private `Part3Evidence` folder.
+- [ ] Capture and review genuine screenshots: sign-in, dashboard/player card, completed-habit progress, evolution/theme selection, settings/profile photo, and notification settings.
+- [ ] Test offline behavior and sync recovery if required by the formal rubric; capture a genuine recording or supplementary screenshots.
+- [ ] Keep submission evidence private and remove/redact personal details, email addresses, notifications, and tokens as appropriate.
+- [ ] Record the voice-over demo URL in the README and list evidence filenames/results here.
+- [ ] Play Console screenshots or upload status are applicable only if a Play Console account is available. No Play upload has been made.
 
-Evidence captured on 2026-11-05:
+Current release APK evidence captured on 2026-11-05:
 
-- Signed Android App Bundle: `app/build/outputs/bundle/release/app-release.aab`
 - Signed release APK: `app/build/outputs/apk/release/app-release.apk`
-- Release version: `1.0` (`versionCode` `1`)
-- Build timestamp: AAB 2026-11-05 15:51; APK 2026-11-05 15:58 (local machine time)
-- Signature verification: passed with `jarsigner -verify`; output reported `jar verified`. The certificate is self-signed (expected for a locally generated upload key), is not publicly trusted, and has no timestamp; this verifies the bundle signature but is not Play Console upload evidence.
-- AAB SHA-256: `BF63B74EBE275E41C10CB9ADE11737CC3FEE3B3614BC193DB600EE8F82F9B85C`
-- APK signature verification: passed with Android SDK `apksigner`; verified using APK Signature Scheme v2 with one signer (`CN=SelfEvo Team`).
-- APK SHA-256: `5B960E5A367FC4083142B275B5DB3CF10E5B7E490B5FE77B185D1F234B8668D6`
-- Release signing certificate SHA-1 for Firebase Google sign-in: `D7:A5:55:17:AB:15:75:E5:7E:A4:FC:7F:9C:F4:47:E1:7F:8D:51:0C`
-- Release signing certificate SHA-256 for Firebase Google sign-in: `2E:E7:61:F9:E0:B1:99:08:10:BC:B9:AD:E1:17:37:AD:1D:B3:E1:84:90:81:9F:3B:F0:04:AD:B9:96:82:1B:C8`
-- Physical-device test: installed the signed release APK on a Samsung SM-A566B on 2026-11-05 and launched `MainActivity` successfully. No fatal app exception appeared in the checked device log. Installing required uninstalling the differently signed prior build, so local-only app data may have been cleared.
-- Genuine in-app screenshots and testing of signed-in flows on the release build remain pending.
-- Play Console evidence was not captured because a Play Console account is not available.
+- Release version: `1.0` (`versionCode` `1`); application ID: `com.example.selfevo`
+- APK build timestamp: 2026-11-05 21:25 (local machine time); installed on the Samsung SM-A566B at 21:29.
+- APK SHA-256: `382F41CA5D7B95921BE8BCCF10AF5809E5804D35B2F1AF54CB51D8A7404C5FA0`
+- APK signature verification: passed with Android SDK `apksigner`; verified using APK Signature Scheme v2.
+- Release signing certificate SHA-1: `D7:A5:55:17:AB:15:97:5E:57:A4:FC:7F:9C:F4:47:E1:7F:8D:51:0C`
+- Release signing certificate SHA-256: `2E:E7:61:F9:E0:B1:99:09:81:0B:C9:1E:A7:A1:7A:D1:DB:3E:18:49:08:19:F3:BF:00:4A:DB:99:68:21:BC:88`
+- Firebase OAuth configuration: current release SHA-1 is present in `app/google-services.json`; Google sign-in succeeded on the installed release per the user's device test.
+- Automated validation: `:app:compileReleaseKotlin` and `:app:testDebugUnitTest` passed; `npm test` in `selfevo-api` passed all 27 tests on 2026-11-05.
+- Device-flow evidence: `Part3Evidence/settings-profile-photo-upload-success.png` shows the neutral test image after upload; `Part3Evidence/settings-cloud-sync-success.png` shows the manual sync success timestamp. The test image is currently the profile photo; select the desired final photo before submission.
+
+Existing AAB evidence (not final; rebuild required):
+
+- AAB: `app/build/outputs/bundle/release/app-release.aab`
+- Build timestamp: 2026-11-05 15:51 (local machine time), before the final release build changes.
+- SHA-256: `BF63B74EBE275E41C10CB9ADE11737CC3FEE3B3614BC193DB600EE8F82F9B85C`
+- Previous signature check passed with `jarsigner -verify`; the certificate is self-signed and not publicly trusted, and no Play Console upload was made.
