@@ -5,7 +5,9 @@ import android.util.Log
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
+import androidx.credentials.exceptions.NoCredentialException
 import com.example.selfevo.BuildConfig
+import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.firebase.auth.FirebaseAuth
@@ -73,9 +75,16 @@ class AuthRepository(
             val request = GetCredentialRequest.Builder()
                 .addCredentialOption(googleIdOption)
                 .build()
-            val credential = CredentialManager.create(context)
-                .getCredential(context, request)
-                .credential
+            val credentialManager = CredentialManager.create(context)
+            val credential = try {
+                credentialManager.getCredential(context, request).credential
+            } catch (_: NoCredentialException) {
+                val signInOption = GetSignInWithGoogleOption.Builder(webClientId).build()
+                val signInRequest = GetCredentialRequest.Builder()
+                    .addCredentialOption(signInOption)
+                    .build()
+                credentialManager.getCredential(context, signInRequest).credential
+            }
             if (credential !is CustomCredential
                 || credential.type != GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
             ) {
