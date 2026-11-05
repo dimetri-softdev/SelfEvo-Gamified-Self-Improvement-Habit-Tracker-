@@ -14,6 +14,10 @@
     <string name="player_name_label">SPELER NAAM</string>
     <string name="email_label">EPOS</string>
     <string name="password_label">WAGWOORD</string>
+    <string name="forgot_password">Wagwoord vergeet?</string>
+    <string name="forgot_password_enter_email">Tik eers jou e-posadres hierbo in.</string>
+    <string name="forgot_password_sent">As ’n rekening met hierdie e-pos bestaan, is wagwoordherstelinstruksies gestuur.</string>
+    <string name="forgot_password_failed">Ons kon nie ’n herstel-e-pos stuur nie. Gaan jou verbinding na en probeer weer.</string>
     <string name="google_sign_in">Meld aan met Google</string>
     <string name="dont_have_account">Het jy nie \'n rekening nie?</string>
     <string name="already_have_account">Het jy reeds \'n rekening?</string>

@@ -32,7 +32,8 @@ import androidx.compose.foundation.verticalScroll
 @Composable
 fun SignUpScreen(
     onSignUpSuccess: suspend (String, String, String) -> Unit,
-    onLoginClick: () -> Unit
+    onLoginClick: () -> Unit,
+    onGoogleSignIn: () -> Unit
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -201,13 +202,8 @@ fun SignUpScreen(
 
             // Google SSO Button
             OutlinedButton(
-                onClick = {
-                    coroutineScope.launch {
-                        isLoading = true
-                        onSignUpSuccess("sso.google.user@selfevo.app", "google_sso_token_secure", "Google Player")
-                        isLoading = false
-                    }
-                },
+                onClick = onGoogleSignIn,
+                enabled = !isLoading,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),

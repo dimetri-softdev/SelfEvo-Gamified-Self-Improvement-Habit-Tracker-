@@ -98,7 +98,8 @@ fun SelfEvoApp(
                             }
                         )
                     },
-                    onSignUpClick = { navController.navigate(Screen.SignUp.route) }
+                    onSignUpClick = { navController.navigate(Screen.SignUp.route) },
+                    onForgotPassword = { email -> authViewModel.sendPasswordResetEmail(email) }
                 )
             }
             composable(Screen.SignUp.route) {
@@ -121,7 +122,25 @@ fun SelfEvoApp(
                             }
                         )
                     },
-                    onLoginClick = { navController.navigate(Screen.Login.route) }
+                    onLoginClick = { navController.navigate(Screen.Login.route) },
+                    onGoogleSignIn = {
+                        authViewModel.signInWithGoogle(
+                            context = context,
+                            onSuccess = { displayName ->
+                                if (!displayName.isNullOrBlank()) {
+                                    viewModel.updatePlayerName(displayName)
+                                }
+                                viewModel.refreshData()
+                                navController.navigate(Screen.Home.route) {
+                                    popUpTo(Screen.SignUp.route) { inclusive = true }
+                                    popUpTo(Screen.Login.route) { inclusive = true }
+                                }
+                            },
+                            onError = { message ->
+                                Toast.makeText(context, "Google sign-in failed: $message", Toast.LENGTH_SHORT).show()
+                            }
+                        )
+                    }
                 )
             }
             composable(Screen.Home.route) {

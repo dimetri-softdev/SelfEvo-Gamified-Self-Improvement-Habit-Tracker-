@@ -8,6 +8,7 @@ interface AuthRepository {
     val currentUserFlow: StateFlow<FirebaseUser?>
     val currentUser: FirebaseUser?
     suspend fun login(email: String, password: String): Result<FirebaseUser?>
+    suspend fun sendPasswordResetEmail(email: String): Result<Unit>
     suspend fun signInWithGoogle(context: Context): Result<FirebaseUser?>
     suspend fun signUp(email: String, password: String): Result<FirebaseUser?>
     fun signOut()

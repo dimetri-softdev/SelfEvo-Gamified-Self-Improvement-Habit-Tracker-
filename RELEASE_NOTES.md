@@ -7,6 +7,8 @@
 - Added JPEG, PNG, and WebP validation and a 5 MB upload limit. The Supabase service-role key remains server-side and must be configured as a secret on the API host.
 - Connected the daily-reminder and streak-alert settings to opt-in Firebase Cloud Messaging topics.
 - Added the Android 13+ notification-permission request and localized upload/notification status messages in English, Afrikaans, and isiXhosa.
+- Fixed Google SSO on the sign-up screen to use Firebase Google authentication instead of submitting placeholder email/password credentials.
+- Added a localized “Forgot password?” action to the login screen that sends a Firebase password-reset email to a valid entered email address.
 - Expanded the README with data flow, Firebase setup and security rules, and final demonstration guidance.
 
 ## Before submission

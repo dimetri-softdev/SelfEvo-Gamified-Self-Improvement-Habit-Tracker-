@@ -34,12 +34,14 @@ import androidx.compose.foundation.verticalScroll
 fun LoginScreen(
     onLoginSuccess: suspend (String, String) -> Unit,
     onGoogleSignIn: suspend () -> Unit,
-    onSignUpClick: () -> Unit
+    onSignUpClick: () -> Unit,
+    onForgotPassword: suspend (String) -> Boolean
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
     var passwordVisible by remember { mutableStateOf(false) }
+    var passwordResetMessage by remember { mutableIntStateOf(0) }
 
     val coroutineScope = rememberCoroutineScope()
 
@@ -138,6 +140,41 @@ fun LoginScreen(
                         unfocusedTextColor = Color.White
                     ),
                     shape = RoundedCornerShape(8.dp)
+                )
+            }
+
+            TextButton(
+                onClick = {
+                    coroutineScope.launch {
+                        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                            passwordResetMessage = R.string.forgot_password_enter_email
+                        } else {
+                            isLoading = true
+                            passwordResetMessage = 0
+                            passwordResetMessage = if (onForgotPassword(email.trim())) {
+                                R.string.forgot_password_sent
+                            } else {
+                                R.string.forgot_password_failed
+                            }
+                            isLoading = false
+                        }
+                    }
+                },
+                enabled = !isLoading,
+                modifier = Modifier.align(Alignment.End)
+            ) {
+                Text(stringResource(R.string.forgot_password), color = Color(0xFFFFD700))
+            }
+            if (passwordResetMessage != 0) {
+                Text(
+                    text = stringResource(passwordResetMessage),
+                    color = if (passwordResetMessage == R.string.forgot_password_sent) {
+                        Color(0xFF81C784)
+                    } else {
+                        MaterialTheme.colorScheme.error
+                    },
+                    fontSize = 12.sp,
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
 

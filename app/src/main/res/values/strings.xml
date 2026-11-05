@@ -14,6 +14,10 @@
     <string name="player_name_label">PLAYER NAME</string>
     <string name="email_label">EMAIL</string>
     <string name="password_label">PASSWORD</string>
+    <string name="forgot_password">Forgot password?</string>
+    <string name="forgot_password_enter_email">Enter your email address above first.</string>
+    <string name="forgot_password_sent">If an account exists for this email, password reset instructions have been sent.</string>
+    <string name="forgot_password_failed">We couldn’t send a reset email. Check your connection and try again.</string>
     <string name="google_sign_in">Sign in with Google</string>
     <string name="dont_have_account">Don\'t have an account?</string>
     <string name="already_have_account">Already have an account?</string>

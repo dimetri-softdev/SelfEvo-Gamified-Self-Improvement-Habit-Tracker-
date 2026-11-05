@@ -38,6 +38,9 @@ class AuthViewModel @Inject constructor(
         }
     }
 
+    suspend fun sendPasswordResetEmail(email: String): Boolean =
+        authRepository.sendPasswordResetEmail(email).isSuccess
+
     fun signUp(email: String, pass: String, name: String, onSuccess: (String) -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
