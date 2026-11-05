@@ -230,9 +230,9 @@ fun SettingsScreen(
                                 fontWeight = FontWeight.Bold
                             )
                         }
-                        if (profileImageError != null) {
+                        profileImageError?.let { errorMessage ->
                             Text(
-                                stringResource(R.string.profile_photo_error, profileImageError.orEmpty()),
+                                stringResource(errorMessage),
                                 color = MaterialTheme.colorScheme.error,
                                 fontSize = 12.sp
                             )

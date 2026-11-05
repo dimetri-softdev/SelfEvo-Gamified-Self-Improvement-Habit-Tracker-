@@ -70,7 +70,17 @@
     <string name="profile_photo">Ifoto yeprofayile</string>
     <string name="change_profile_photo">Tshintsha ifoto yeprofayile</string>
     <string name="uploading_profile_photo">Kulayishwa ifoto…</string>
-    <string name="profile_photo_error">Impazamo yefoto yeprofayile: %1$s</string>
+    <string name="profile_photo_sign_in_required">Nceda ungene kwakhona ngaphambi kokutshintsha ifoto yeprofayile.</string>
+    <string name="profile_photo_unsupported">Khetha umfanekiso we-JPG, PNG okanye WebP.</string>
+    <string name="profile_photo_too_large">Le foto ingaphezulu kwe-5 MB. Khetha encinci.</string>
+    <string name="profile_photo_unavailable">Asikwazanga ukuvula le foto. Khetha enye uze uzame kwakhona.</string>
+    <string name="profile_photo_network_error">Asikwazanga ukuqhagamshela kwi-SelfEvo. Jonga uqhagamshelo lwe-intanethi uze uzame kwakhona.</string>
+    <string name="profile_photo_service_unavailable">Iifoto zeprofayile azifumaneki okwethutyana. Nceda uzame kwakhona kamva.</string>
+    <string name="profile_photo_upload_failed">Asikwazanga ukulayisha ifoto yakho. Nceda uzame kwakhona.</string>
+    <string name="profile_photo_access_denied">Asikwazanga ukufikelela kuseto lwefoto yeprofayile yakho. Nceda uzame kwakhona kamva.</string>
+    <string name="profile_photo_permissions">Ifoto yakho ilayishiwe, kodwa ukufikelela kwiprofayile akukamiselwa. Nceda uqhagamshelane nenkxaso.</string>
+    <string name="profile_photo_saved_but_not_linked">Ifoto yakho ilayishiwe, kodwa asikwazanga ukuyidibanisa neprofayile yakho. Nceda uzame kwakhona kamva.</string>
+    <string name="profile_photo_load_failed">Asikwazanga ukulayisha ifoto yakho yeprofayile. Jonga uqhagamshelo lwakho uze uzame kwakhona.</string>
     <string name="notification_permission_required">Vumela izaziso ukuze uvule izilumkiso ze-push.</string>
     <string name="notification_settings_error">Impazamo yoseto lwezaziso: %1$s</string>
 

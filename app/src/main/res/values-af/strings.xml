@@ -70,7 +70,17 @@
     <string name="profile_photo">Profiel foto</string>
     <string name="change_profile_photo">Verander profiel foto</string>
     <string name="uploading_profile_photo">Laai foto op…</string>
-    <string name="profile_photo_error">Profiel foto fout: %1$s</string>
+    <string name="profile_photo_sign_in_required">Meld asseblief weer aan voordat jy jou profielfoto verander.</string>
+    <string name="profile_photo_unsupported">Kies ’n JPG-, PNG- of WebP-prent.</string>
+    <string name="profile_photo_too_large">Hierdie foto is groter as 5 MB. Kies ’n kleiner een.</string>
+    <string name="profile_photo_unavailable">Ons kon nie hierdie foto oopmaak nie. Kies ’n ander prent en probeer weer.</string>
+    <string name="profile_photo_network_error">Ons kon nie aan SelfEvo koppel nie. Gaan jou internetverbinding na en probeer weer.</string>
+    <string name="profile_photo_service_unavailable">Profiel foto’s is tydelik nie beskikbaar nie. Probeer asseblief later weer.</string>
+    <string name="profile_photo_upload_failed">Ons kon nie jou foto oplaai nie. Probeer asseblief weer.</string>
+    <string name="profile_photo_access_denied">Ons kon nie toegang tot jou profielfoto-instellings kry nie. Probeer asseblief later weer.</string>
+    <string name="profile_photo_permissions">Jou foto is opgelaai, maar profieltoegang is nog nie opgestel nie. Kontak asseblief ondersteuning.</string>
+    <string name="profile_photo_saved_but_not_linked">Jou foto is opgelaai, maar ons kon dit nie aan jou profiel koppel nie. Probeer asseblief later weer.</string>
+    <string name="profile_photo_load_failed">Ons kon nie jou profielfoto laai nie. Gaan jou internetverbinding na en probeer weer.</string>
     <string name="notification_permission_required">Laat kennisgewings toe om stootwaarskuwings te aktiveer.</string>
     <string name="notification_settings_error">Kennisgewinginstellingsfout: %1$s</string>
 

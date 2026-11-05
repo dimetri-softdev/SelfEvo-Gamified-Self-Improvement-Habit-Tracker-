@@ -1,6 +1,5 @@
 package com.example.selfevo.ui.component
 
-import android.net.Uri
 import java.util.Locale
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
@@ -160,9 +159,12 @@ fun getCardThemeColors(themeName: String, fallbackTier: String): CardThemeColors
 fun FutPlayerCard(
     playerCard: PlayerCard,
     customStatMap: Map<String, Int> = emptyMap(),
+    profileImageUrl: String? = null,
     modifier: Modifier = Modifier
 ) {
     val themeColors = getCardThemeColors(playerCard.equippedTheme, playerCard.tier)
+    val portraitModel = profileImageUrl?.takeIf { it.isNotBlank() }
+        ?: playerCard.avatarUri?.takeIf { it.isNotBlank() }
 
     val infiniteTransition = rememberInfiniteTransition(label = "shine")
     val shineOffset by infiniteTransition.animateFloat(
@@ -290,9 +292,9 @@ fun FutPlayerCard(
                 .padding(top = 18.dp),
             contentAlignment = Alignment.TopCenter
         ) {
-            if (!playerCard.avatarUri.isNullOrBlank()) {
+            if (portraitModel != null) {
                 Image(
-                    painter = rememberAsyncImagePainter(model = Uri.parse(playerCard.avatarUri)),
+                    painter = rememberAsyncImagePainter(model = portraitModel),
                     contentDescription = "Player Portrait",
                     modifier = Modifier
                         .fillMaxSize()

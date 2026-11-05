@@ -4,10 +4,12 @@ import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.selfevo.R
 import com.example.selfevo.data.db.entity.CustomAttributeEntity
 import com.example.selfevo.data.db.entity.HabitEntity
 import com.example.selfevo.data.model.PlayerCard
 import com.example.selfevo.data.repository.NotificationPreferencesRepository
+import com.example.selfevo.data.repository.ProfileImageException
 import com.example.selfevo.data.repository.ProfileImageRepository
 import com.example.selfevo.data.repository.SelfEvoNotificationTopic
 import com.example.selfevo.domain.repository.AuthRepository
@@ -29,6 +31,10 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.io.IOException
+import java.net.ConnectException
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
@@ -57,8 +63,8 @@ class DashboardViewModel @Inject constructor(
     private val _profileImageUrl = MutableStateFlow<String?>(null)
     val profileImageUrl: StateFlow<String?> = _profileImageUrl
 
-    private val _profileImageError = MutableStateFlow<String?>(null)
-    val profileImageError: StateFlow<String?> = _profileImageError
+    private val _profileImageError = MutableStateFlow<Int?>(null)
+    val profileImageError: StateFlow<Int?> = _profileImageError
 
     private val _isUploadingProfileImage = MutableStateFlow(false)
     val isUploadingProfileImage: StateFlow<Boolean> = _isUploadingProfileImage
@@ -124,7 +130,7 @@ class DashboardViewModel @Inject constructor(
         viewModelScope.launch {
             val userId = authRepository.currentUser?.uid
             if (userId.isNullOrBlank()) {
-                _profileImageError.value = "Sign in before uploading a profile image."
+                _profileImageError.value = R.string.profile_photo_sign_in_required
                 return@launch
             }
 
@@ -135,8 +141,7 @@ class DashboardViewModel @Inject constructor(
                     profileImageRepository.uploadProfileImage(userId, imageUri)
             } catch (e: Exception) {
                 Log.e(TAG, "Profile image upload failed", e)
-                _profileImageError.value =
-                    e.localizedMessage ?: "The profile image could not be uploaded."
+                _profileImageError.value = profileImageErrorMessage(e, isLoading = false)
             } finally {
                 _isUploadingProfileImage.value = false
             }
@@ -291,8 +296,49 @@ class DashboardViewModel @Inject constructor(
             _profileImageUrl.value = profileImageRepository.getProfileImageUrl(userId)
         } catch (e: Exception) {
             Log.e(TAG, "Profile image could not be loaded", e)
-            _profileImageError.value =
-                e.localizedMessage ?: "The profile image could not be loaded."
+            _profileImageError.value = profileImageErrorMessage(e, isLoading = true)
+        }
+    }
+
+    private fun profileImageErrorMessage(error: Throwable, isLoading: Boolean): Int {
+        val profileImageError = generateSequence(error) { it.cause }
+            .filterIsInstance<ProfileImageException>()
+            .firstOrNull()
+        if (profileImageError != null) {
+            return when (profileImageError.reason) {
+                ProfileImageException.Reason.SIGN_IN_REQUIRED ->
+                    R.string.profile_photo_sign_in_required
+                ProfileImageException.Reason.UNSUPPORTED_IMAGE ->
+                    R.string.profile_photo_unsupported
+                ProfileImageException.Reason.IMAGE_TOO_LARGE ->
+                    R.string.profile_photo_too_large
+                ProfileImageException.Reason.IMAGE_UNAVAILABLE ->
+                    R.string.profile_photo_unavailable
+                ProfileImageException.Reason.SERVICE_NOT_READY ->
+                    R.string.profile_photo_service_unavailable
+                ProfileImageException.Reason.UPLOAD_FAILED ->
+                    R.string.profile_photo_upload_failed
+                ProfileImageException.Reason.PROFILE_ACCESS_DENIED ->
+                    R.string.profile_photo_access_denied
+                ProfileImageException.Reason.PROFILE_SAVE_DENIED ->
+                    R.string.profile_photo_permissions
+                ProfileImageException.Reason.PROFILE_SAVE_FAILED ->
+                    R.string.profile_photo_saved_but_not_linked
+                ProfileImageException.Reason.PROFILE_LOAD_FAILED ->
+                    R.string.profile_photo_load_failed
+            }
+        }
+
+        val isNetworkError = generateSequence(error) { it.cause }.any {
+            it is SocketTimeoutException ||
+                it is UnknownHostException ||
+                it is ConnectException ||
+                it is IOException
+        }
+        return when {
+            isNetworkError -> R.string.profile_photo_network_error
+            isLoading -> R.string.profile_photo_load_failed
+            else -> R.string.profile_photo_upload_failed
         }
     }
 

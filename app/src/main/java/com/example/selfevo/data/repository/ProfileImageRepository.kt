@@ -5,6 +5,7 @@ import android.net.Uri
 import com.example.selfevo.data.remote.SelfEvoApiService
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.SetOptions
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.tasks.await
@@ -16,6 +17,24 @@ import java.io.ByteArrayOutputStream
 import java.io.IOException
 import javax.inject.Inject
 
+class ProfileImageException(
+    val reason: Reason,
+    cause: Throwable? = null
+) : Exception(cause) {
+    enum class Reason {
+        SIGN_IN_REQUIRED,
+        UNSUPPORTED_IMAGE,
+        IMAGE_TOO_LARGE,
+        IMAGE_UNAVAILABLE,
+        SERVICE_NOT_READY,
+        UPLOAD_FAILED,
+        PROFILE_ACCESS_DENIED,
+        PROFILE_SAVE_DENIED,
+        PROFILE_SAVE_FAILED,
+        PROFILE_LOAD_FAILED
+    }
+}
+
 class ProfileImageRepository @Inject constructor(
     @ApplicationContext private val context: Context,
     private val apiService: SelfEvoApiService
@@ -23,39 +42,48 @@ class ProfileImageRepository @Inject constructor(
     private val firestore = FirebaseFirestore.getInstance()
 
     suspend fun getProfileImageUrl(userId: String): String? {
-        require(userId.isNotBlank()) { "A signed-in user is required to load a profile image." }
+        if (userId.isBlank()) {
+            throw ProfileImageException(ProfileImageException.Reason.SIGN_IN_REQUIRED)
+        }
 
-        val imagePath = firestore.collection(USERS_COLLECTION)
-            .document(userId)
-            .get()
-            .await()
-            .getString(PROFILE_IMAGE_PATH_FIELD)
-            ?: return null
+        val hasProfileImage = try {
+            firestore.collection(USERS_COLLECTION)
+                .document(userId)
+                .get()
+                .await()
+                .let { snapshot ->
+                    snapshot.getString(PROFILE_IMAGE_PATH_FIELD)?.isNotBlank() == true
+                }
+        } catch (error: FirebaseFirestoreException) {
+            val reason = if (error.code == FirebaseFirestoreException.Code.PERMISSION_DENIED) {
+                ProfileImageException.Reason.PROFILE_ACCESS_DENIED
+            } else {
+                ProfileImageException.Reason.PROFILE_LOAD_FAILED
+            }
+            throw ProfileImageException(reason, error)
+        }
+        if (!hasProfileImage) return null
 
         val response = apiService.getProfileImageUrl()
         if (!response.isSuccessful) {
-            throw IOException("Profile image URL request failed (HTTP ${response.code()}).")
+            throw exceptionForServiceResponse(response.code(), isLoading = true)
         }
         return response.body()?.url
-            ?: throw IOException("Profile image service returned no signed URL for $imagePath.")
+            ?: throw ProfileImageException(ProfileImageException.Reason.PROFILE_LOAD_FAILED)
     }
 
     suspend fun uploadProfileImage(userId: String, imageUri: Uri): String {
-        require(userId.isNotBlank()) { "A signed-in user is required to upload a profile image." }
+        if (userId.isBlank()) {
+            throw ProfileImageException(ProfileImageException.Reason.SIGN_IN_REQUIRED)
+        }
 
         val contentType = context.contentResolver.getType(imageUri)
             ?.substringBefore(';')
             ?.lowercase()
-            ?: throw IllegalArgumentException("Choose a JPEG, PNG, or WebP image.")
-        require(contentType in SUPPORTED_CONTENT_TYPES) {
-            "Choose a JPEG, PNG, or WebP image."
+            ?: throw ProfileImageException(ProfileImageException.Reason.UNSUPPORTED_IMAGE)
+        if (contentType !in SUPPORTED_CONTENT_TYPES) {
+            throw ProfileImageException(ProfileImageException.Reason.UNSUPPORTED_IMAGE)
         }
-
-        context.contentResolver.openFileDescriptor(imageUri, "r")?.use { descriptor ->
-            require(descriptor.statSize <= MAX_IMAGE_SIZE_BYTES || descriptor.statSize < 0) {
-                "Profile images must be 5 MB or smaller."
-            }
-        } ?: throw IOException("The selected image could not be opened.")
 
         val imageBytes = readImageBytes(imageUri)
         val requestBody = object : RequestBody() {
@@ -70,49 +98,82 @@ class ProfileImageRepository @Inject constructor(
 
         val uploadResponse = apiService.uploadProfileImage(requestBody)
         if (!uploadResponse.isSuccessful) {
-            throw IOException("Profile image upload failed (HTTP ${uploadResponse.code()}).")
+            throw exceptionForServiceResponse(uploadResponse.code())
         }
         val imagePath = uploadResponse.body()?.path
-            ?: throw IOException("Profile image service returned no stored image path.")
-        firestore.collection(USERS_COLLECTION)
-            .document(userId)
-            .set(
-                mapOf(
-                    PROFILE_IMAGE_PATH_FIELD to imagePath,
-                    UPDATED_AT_FIELD to FieldValue.serverTimestamp()
-                ),
-                SetOptions.merge()
-            )
-            .await()
+            ?: throw ProfileImageException(ProfileImageException.Reason.UPLOAD_FAILED)
+        try {
+            firestore.collection(USERS_COLLECTION)
+                .document(userId)
+                .set(
+                    mapOf(
+                        PROFILE_IMAGE_PATH_FIELD to imagePath,
+                        UPDATED_AT_FIELD to FieldValue.serverTimestamp()
+                    ),
+                    SetOptions.merge()
+                )
+                .await()
+        } catch (error: FirebaseFirestoreException) {
+            val reason = if (error.code == FirebaseFirestoreException.Code.PERMISSION_DENIED) {
+                ProfileImageException.Reason.PROFILE_SAVE_DENIED
+            } else {
+                ProfileImageException.Reason.PROFILE_SAVE_FAILED
+            }
+            throw ProfileImageException(reason, error)
+        }
 
         val signedUrlResponse = apiService.getProfileImageUrl()
         if (!signedUrlResponse.isSuccessful) {
-            throw IOException("Profile image URL request failed (HTTP ${signedUrlResponse.code()}).")
+            throw exceptionForServiceResponse(signedUrlResponse.code(), isLoading = true)
         }
         return signedUrlResponse.body()?.url
-            ?: throw IOException("Profile image service returned no signed URL.")
+            ?: throw ProfileImageException(ProfileImageException.Reason.PROFILE_LOAD_FAILED)
     }
 
     private fun readImageBytes(imageUri: Uri): ByteArray {
-        val input = context.contentResolver.openInputStream(imageUri)
-            ?: throw IOException("The selected image could not be opened.")
-        input.use { stream ->
-            val output = ByteArrayOutputStream()
-            val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
-            var totalBytesRead = 0L
-            while (true) {
-                val remainingWithOverflowCheck =
-                    (MAX_IMAGE_SIZE_BYTES - totalBytesRead + 1).coerceAtMost(buffer.size.toLong()).toInt()
-                val bytesRead = stream.read(buffer, 0, remainingWithOverflowCheck)
-                if (bytesRead == -1) break
-                totalBytesRead += bytesRead
-                require(totalBytesRead <= MAX_IMAGE_SIZE_BYTES) {
-                    "Profile images must be 5 MB or smaller."
+        try {
+            val input = context.contentResolver.openInputStream(imageUri)
+                ?: throw ProfileImageException(ProfileImageException.Reason.IMAGE_UNAVAILABLE)
+            input.use { stream ->
+                val output = ByteArrayOutputStream()
+                val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+                var totalBytesRead = 0L
+                while (true) {
+                    val remainingWithOverflowCheck =
+                        (MAX_IMAGE_SIZE_BYTES - totalBytesRead + 1).coerceAtMost(buffer.size.toLong()).toInt()
+                    val bytesRead = stream.read(buffer, 0, remainingWithOverflowCheck)
+                    if (bytesRead == -1) break
+                    totalBytesRead += bytesRead
+                    if (totalBytesRead > MAX_IMAGE_SIZE_BYTES) {
+                        throw ProfileImageException(ProfileImageException.Reason.IMAGE_TOO_LARGE)
+                    }
+                    output.write(buffer, 0, bytesRead)
                 }
-                output.write(buffer, 0, bytesRead)
+                return output.toByteArray()
             }
-            return output.toByteArray()
+        } catch (error: ProfileImageException) {
+            throw error
+        } catch (error: IOException) {
+            throw ProfileImageException(ProfileImageException.Reason.IMAGE_UNAVAILABLE, error)
         }
+    }
+
+    private fun exceptionForServiceResponse(
+        statusCode: Int,
+        isLoading: Boolean = false
+    ): ProfileImageException {
+        val reason = when (statusCode) {
+            401, 403 -> ProfileImageException.Reason.SIGN_IN_REQUIRED
+            404, 503 -> ProfileImageException.Reason.SERVICE_NOT_READY
+            413 -> ProfileImageException.Reason.IMAGE_TOO_LARGE
+            415 -> ProfileImageException.Reason.UNSUPPORTED_IMAGE
+            else -> if (isLoading) {
+                ProfileImageException.Reason.PROFILE_LOAD_FAILED
+            } else {
+                ProfileImageException.Reason.UPLOAD_FAILED
+            }
+        }
+        return ProfileImageException(reason)
     }
 
     private companion object {

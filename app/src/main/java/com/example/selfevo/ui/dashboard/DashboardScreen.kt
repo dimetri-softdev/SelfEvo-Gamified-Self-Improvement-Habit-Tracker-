@@ -44,6 +44,7 @@ fun DashboardScreen(
 ) {
     val playerCard by viewModel.playerCard.collectAsState()
     val habits by viewModel.habits.collectAsState()
+    val profileImageUrl by viewModel.profileImageUrl.collectAsState()
 
     val customAttributes by viewModel.customAttributes.collectAsState()
     var showWalkoutOvr by remember { mutableStateOf<Int?>(null) }
@@ -110,7 +111,10 @@ fun DashboardScreen(
 
                     // 3. Creative Card Placeholder or real card
                     if (playerCard != null) {
-                        FutPlayerCard(playerCard = playerCard!!)
+                        FutPlayerCard(
+                            playerCard = playerCard!!,
+                            profileImageUrl = profileImageUrl
+                        )
                     } else {
                         SkeletonCard()
                     }
@@ -315,7 +319,10 @@ fun DashboardScreen(
                         Spacer(modifier = Modifier.height(32.dp))
 
                         playerCard?.let { card ->
-                            FutPlayerCard(playerCard = card)
+                            FutPlayerCard(
+                                playerCard = card,
+                                profileImageUrl = profileImageUrl
+                            )
                         }
 
                         Spacer(modifier = Modifier.height(32.dp))
