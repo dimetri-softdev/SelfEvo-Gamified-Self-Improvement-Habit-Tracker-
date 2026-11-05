@@ -15,6 +15,7 @@ import com.google.firebase.messaging.RemoteMessage
 class SelfEvoMessagingService : FirebaseMessagingService() {
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
+        // Support both notification payloads and data-only messages sent by the backend.
         val title = remoteMessage.notification?.title
             ?: remoteMessage.data["title"]
             ?: getString(R.string.app_name)

@@ -89,6 +89,7 @@ class AuthRepositoryImpl @Inject constructor() : AuthRepository {
             val credential = try {
                 credentialManager.getCredential(context, request).credential
             } catch (_: NoCredentialException) {
+                // Offer the explicit Google button flow when there is no eligible saved credential.
                 val signInOption = GetSignInWithGoogleOption.Builder(serverClientId).build()
                 val signInRequest = GetCredentialRequest.Builder()
                     .addCredentialOption(signInOption)

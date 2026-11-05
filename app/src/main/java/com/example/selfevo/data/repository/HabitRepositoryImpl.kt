@@ -12,6 +12,8 @@ import com.example.selfevo.data.remote.dto.HabitLogRequest
 import com.example.selfevo.domain.repository.HabitRepository
 import com.example.selfevo.domain.repository.PlayerCardRepository
 import com.example.selfevo.domain.repository.SyncRepository
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -56,30 +58,23 @@ class HabitRepositoryImpl @Inject constructor(
             val dtoList = response.body() ?: return@withContext false
 
             val pendingItems = syncQueueDao.getAllPendingItems()
-            val pendingDeleteHabitIds = pendingItems.filter { item ->
+            // Room is authoritative for queued writes until the server confirms them.
+            val pendingOperations = pendingItems.mapNotNull { item ->
                 try {
-                    val op = JSONObject(item.operation)
-                    op.optString("type") == "DELETE_HABIT" && op.optString("userId") == userId
-                } catch (_: Exception) {
-                    false
-                }
-            }.map { it.habitId }.toSet()
-            val pendingCompletions = pendingItems.mapNotNull { item ->
-                try {
-                    val op = JSONObject(item.operation)
-                    if (
-                        op.optString("type") == "LOG_COMPLETION" &&
-                        op.optString("userId") == userId &&
-                        op.optString("completedOn") == today
-                    ) {
-                        item.habitId
-                    } else {
-                        null
-                    }
-                } catch (_: Exception) {
+                    item to JsonParser.parseString(item.operation).asJsonObject
+                } catch (e: Exception) {
+                    Log.w(TAG, "Skipping malformed sync queue operation")
                     null
                 }
-            }.toSet()
+            }
+            val pendingDeleteHabitIds = pendingOperations.filter { (_, op) ->
+                op.stringValue("type") == "DELETE_HABIT" && op.stringValue("userId") == userId
+            }.map { (item, _) -> item.habitId }.toSet()
+            val pendingCompletions = pendingOperations.filter { (_, op) ->
+                op.stringValue("type") == "LOG_COMPLETION" &&
+                    op.stringValue("userId") == userId &&
+                    op.stringValue("completedOn") == today
+            }.map { (item, _) -> item.habitId }.toSet()
 
             val filteredDtoList = dtoList.filterNot { pendingDeleteHabitIds.contains(it.id) }
             val remoteIds = filteredDtoList.map { it.id }.toSet()
@@ -118,6 +113,7 @@ class HabitRepositoryImpl @Inject constructor(
 
     override suspend fun markHabitCompleted(habitId: String, userId: String): HabitEntity? = withContext(Dispatchers.IO) {
         val habit = habitDao.getHabitById(habitId, userId) ?: return@withContext null
+        // Avoid awarding attribute progress twice for a habit already completed today.
         if (habit.isCompletedToday) return@withContext null
 
         val today = LocalDate.now().toString()
@@ -292,4 +288,7 @@ class HabitRepositoryImpl @Inject constructor(
             habitDao.insertHabits(toUpdate.map { it.copy(isCompletedToday = false) })
         }
     }
+
+    private fun JsonObject.stringValue(name: String): String? =
+        get(name)?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isString }?.asString
 }

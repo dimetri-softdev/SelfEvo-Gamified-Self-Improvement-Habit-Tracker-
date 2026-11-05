@@ -75,6 +75,7 @@ class HabitReminderWorker(
             val now = LocalTime.now()
             val delayMillis = Duration.between(now, scheduledTime).toMillis()
                 .let { if (it <= 0) it + TimeUnit.DAYS.toMillis(1) else it }
+            // WorkManager applies this as the first-run delay; periodic execution is approximate.
             val workRequest = PeriodicWorkRequestBuilder<HabitReminderWorker>(
                 24, TimeUnit.HOURS
             )

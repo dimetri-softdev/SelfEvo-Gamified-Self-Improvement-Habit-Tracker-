@@ -14,9 +14,10 @@
 ## Before submission
 
 - Complete the rubric-specific evidence checklist below using the provided POE Part 3 rubric.
-- Test offline recovery, notification delivery, and the remaining user-defined feature flow on the latest release APK.
-- Rebuild and verify the signed AAB after the final Firebase OAuth configuration and release build changes.
-- Capture remaining genuine app screenshots and the required voice-over demo; review all evidence for personal details before submission.
+- The demonstration video is now linked in the [README](./README.md).
+- Remaining device evidence: offline recovery, real FCM notification delivery, language switching, and final card/attribute progression on the latest build.
+- The latest code passes `:app:testDebugUnitTest` and builds a debug APK; the signed release APK and AAB listed below predate these latest code changes.
+- Review all screenshots/video for personal details before submission. No Play Console upload has been made; do not upload there unless the course explicitly requires it.
 
 ## Release build and Play Store preparation
 
@@ -46,7 +47,7 @@ After confirming the correct signing key, build a signed Play bundle with `.\gra
 - [x] **AI-use write-up (5 marks):** [AI_USAGE.md](./AI_USAGE.md) documents tools, use cases, review, and validation; confirm the final report matches the whole team’s use.
 - [ ] **User interface (10 marks):** capture and review genuine screens for consistency, usability, layout, fonts, and colours.
 - [x] **GitHub, README, and automated testing (10 marks):** repository history, README, CI workflow, and automated tests are present; Android unit tests passed on 2026-11-05.
-- [ ] **Demonstration video (5 marks):** record a professional voice-over walkthrough of the required features.
+- [x] **Demonstration video (5 marks):** video link is in the [README](./README.md); confirm it is accessible to the assessor.
 - [x] Build, sign, and install the release APK on a physical Samsung SM-A566B; installed app reports version `1.0` (`versionCode` `1`).
 - [x] Verify Google sign-in using the installed signed release APK after updating the Firebase Android OAuth fingerprint and configuration; user confirmed successful sign-in on 2026-11-05.
 - [x] Record the current installed release APK checksum and signing certificate fingerprints below.
@@ -56,7 +57,7 @@ After confirming the correct signing key, build a signed Play bundle with `.\gra
 - [ ] Capture and review genuine screenshots: sign-in, dashboard/player card, completed-habit progress, evolution/theme selection, settings/profile photo, and notification settings.
 - [ ] Test offline behavior and sync recovery if required by the formal rubric; capture a genuine recording or supplementary screenshots.
 - [ ] Keep submission evidence private and remove/redact personal details, email addresses, notifications, and tokens as appropriate.
-- [ ] Record the voice-over demo URL in the README and list evidence filenames/results here.
+- [ ] Record any additional evidence filenames/results here after capturing them.
 
 Current release APK evidence captured on 2026-11-05:
 

@@ -34,6 +34,7 @@ class SyncRepositoryImpl @Inject constructor(
                 syncQueueDao.deleteItemFromQueue(item)
                 continue
             }
+            // Never replay one account's queued operations under another signed-in account.
             if (operation.optString("userId") != userId) continue
 
             try {
@@ -84,6 +85,7 @@ class SyncRepositoryImpl @Inject constructor(
                 if (success) {
                     syncQueueDao.deleteItemFromQueue(item)
                 } else {
+                    // Keep this item and later items queued so WorkManager can retry them.
                     return@withContext false
                 }
             } catch (e: Exception) {

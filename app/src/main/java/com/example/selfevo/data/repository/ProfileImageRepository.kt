@@ -103,6 +103,7 @@ class ProfileImageRepository @Inject constructor(
         val imagePath = uploadResponse.body()?.path
             ?: throw ProfileImageException(ProfileImageException.Reason.UPLOAD_FAILED)
         try {
+            // Store only the private object path in Firestore; image bytes stay in Supabase Storage.
             firestore.collection(USERS_COLLECTION)
                 .document(userId)
                 .set(

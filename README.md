@@ -63,7 +63,7 @@ See [RELEASE_NOTES.md](./RELEASE_NOTES.md) for changes made for the final submis
 
 ## Demonstration Video
 
-**Submission action required:** add the unlisted demonstration-video URL here after recording the voice-over walkthrough on a physical Android phone. Demonstrate Google sign-in; one-tap habit completion and attribute progress; custom card photos and tier progression; settings and language switching; notifications; and offline changes syncing after connectivity returns. Show API/database evidence where required, and avoid exposing personal notifications, email addresses, or tokens.
+[Watch the SelfEvo demonstration video](https://youtu.be/bRLISUoZ2iI).
 
 ## 🚀 Getting Started & Installation
 
