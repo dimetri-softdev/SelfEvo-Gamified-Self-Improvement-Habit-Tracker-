@@ -56,9 +56,12 @@ class AuthRepositoryImpl @Inject constructor() : AuthRepository {
                 "string",
                 context.packageName
             )
-            val serverClientId = BuildConfig.GOOGLE_WEB_CLIENT_ID
-                .takeIf { it.isNotBlank() }
-                ?: clientIdResource.takeIf { it != 0 }?.let(context::getString)
+            val generatedClientId = clientIdResource
+                .takeIf { it != 0 }
+                ?.let(context::getString)
+            val serverClientId = generatedClientId
+                ?.takeIf { it.isNotBlank() }
+                ?: BuildConfig.GOOGLE_WEB_CLIENT_ID.takeIf { it.isNotBlank() }
             if (serverClientId == null) {
                 return Result.failure(IllegalStateException("Google sign-in is not configured for this Firebase project"))
             }

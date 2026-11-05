@@ -52,11 +52,12 @@ class AuthRepository(
 
     suspend fun signInWithGoogle(context: Context): Result<FirebaseUser?> {
         return try {
-            val configuredClientId = BuildConfig.GOOGLE_WEB_CLIENT_ID
             val generatedClientId = context.resources.getIdentifier(
                 "default_web_client_id", "string", context.packageName
             ).takeIf { it != 0 }?.let(context::getString)
-            val webClientId = configuredClientId.ifBlank { generatedClientId.orEmpty() }
+            val webClientId = generatedClientId
+                ?.takeIf { it.isNotBlank() }
+                ?: BuildConfig.GOOGLE_WEB_CLIENT_ID.takeIf { it.isNotBlank() }.orEmpty()
             if (webClientId.isBlank()) {
                 return Result.failure(
                     IllegalStateException(

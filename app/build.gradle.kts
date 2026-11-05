@@ -7,9 +7,26 @@ plugins {
     alias(libs.plugins.hilt)
 }
 
+val releaseStoreFile = providers.environmentVariable("SELFEVO_RELEASE_STORE_FILE").orNull
+val releaseStorePassword = providers.environmentVariable("SELFEVO_RELEASE_STORE_PASSWORD").orNull
+val releaseKeyAlias = providers.environmentVariable("SELFEVO_RELEASE_KEY_ALIAS").orNull
+val releaseKeyPassword = providers.environmentVariable("SELFEVO_RELEASE_KEY_PASSWORD").orNull
+
 android {
     namespace = "com.example.selfevo"
     compileSdk = 36
+
+    signingConfigs {
+        create("release") {
+            storeFile = file(
+                releaseStoreFile?.takeIf { it.isNotBlank() }
+                    ?: "release-signing-not-configured.jks"
+            )
+            storePassword = releaseStorePassword.orEmpty()
+            keyAlias = releaseKeyAlias.orEmpty()
+            keyPassword = releaseKeyPassword.orEmpty()
+        }
+    }
 
     defaultConfig {
         applicationId = "com.example.selfevo"
@@ -40,6 +57,7 @@ android {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }

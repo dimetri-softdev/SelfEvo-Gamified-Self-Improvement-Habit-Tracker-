@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "971279768876",
+    "firebase_url": "https://selfevo-68d9ae13-default-rtdb.firebaseio.com",
     "project_id": "selfevo-68d9ae13",
     "storage_bucket": "selfevo-68d9ae13.firebasestorage.app"
   },
@@ -12,7 +13,28 @@
           "package_name": "com.example.selfevo"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "971279768876-592o6rcbc9cvoqjhp02kqsec550a4gl5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.selfevo",
+            "certificate_hash": "d7a55517ab1575e57ea4fc7f9cf447e17f8d510c"
+          }
+        },
+        {
+          "client_id": "971279768876-pb69vl1htt4lpjek8cr2ips6hkk15rnk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.selfevo",
+            "certificate_hash": "15e596d455cab0d469f662b08b774e9297d0a2cb"
+          }
+        },
+        {
+          "client_id": "971279768876-gkchscctrmuo840d2gat20h98dprb2re.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDpohg8KWs_96TnrkxNR8c8dSh8RT97muQ"
@@ -20,7 +42,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "971279768876-gkchscctrmuo840d2gat20h98dprb2re.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
